@@ -1,0 +1,127 @@
+// CareerNext — Prisma schema (PostgreSQL).
+//
+// This baseline models the V1 domain. Feature work fills in relations and
+// adds the V2 interview flow. Domain enums mirror `@careernext/shared-types`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum ApplicationStatus {
+  SAVED
+  APPLIED
+  OA_SCHEDULED
+  INTERVIEW_ROUND_1
+  INTERVIEW_ROUND_2
+  HR_ROUND
+  OFFER_RECEIVED
+  ACCEPTED
+  REJECTED
+}
+
+enum DocumentType {
+  RESUME
+  CERTIFICATE
+  OFFER_LETTER
+  EXPERIENCE_LETTER
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  password        String
+  firstName       String
+  lastName        String
+  role            UserRole @default(USER)
+  isEmailVerified Boolean  @default(false)
+  refreshTokenHash String?
+
+  profile      Profile?
+  applications Application[]
+  documents    Document[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Profile {
+  id                   String  @id @default(uuid())
+  userId               String  @unique
+  headline             String?
+  bio                  String?
+  location             String?
+  githubUrl            String?
+  linkedinUrl          String?
+  portfolioUrl         String?
+  completionPercentage Int     @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model Job {
+  id          String   @id @default(uuid())
+  title       String
+  company     String
+  location    String?
+  description String
+  externalUrl String?
+
+  applications Application[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("jobs")
+}
+
+model Application {
+  id       String            @id @default(uuid())
+  userId   String
+  jobId    String
+  status   ApplicationStatus @default(SAVED)
+  notes    String?
+  appliedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, jobId])
+  @@map("applications")
+}
+
+model Document {
+  id       String       @id @default(uuid())
+  userId   String
+  type     DocumentType
+  fileName String
+  fileUrl  String
+  fileSize Int
+  mimeType String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("documents")
+}
