@@ -1,0 +1,29 @@
+# CareerNext API image (multi-stage) — activated in V3 (Docker).
+# Built from the monorepo root so workspace packages resolve.
+# Usage: docker build -f infrastructure/docker/Dockerfile.api .
+
+# ---- deps ----
+FROM node:20-alpine AS deps
+RUN corepack enable
+WORKDIR /repo
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* .npmrc ./
+COPY apps/api/package.json apps/api/
+COPY packages ./packages
+RUN pnpm install --frozen-lockfile --filter @careernext/api...
+
+# ---- build ----
+FROM node:20-alpine AS build
+RUN corepack enable
+WORKDIR /repo
+COPY --from=deps /repo ./
+COPY . .
+RUN pnpm --filter @careernext/api prisma:generate \
+ && pnpm --filter @careernext/api build
+
+# ---- runtime ----
+FROM node:20-alpine AS runtime
+ENV NODE_ENV=production
+WORKDIR /repo/apps/api
+COPY --from=build /repo ./
+EXPOSE 4000
+CMD ["node", "dist/main.js"]

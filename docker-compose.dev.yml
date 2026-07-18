@@ -1,0 +1,59 @@
+# CareerNext — Development environment (Docker + Local PostgreSQL).
+# Fully wired in V3; PostgreSQL is usable now for local API development:
+#   docker compose -f docker-compose.dev.yml up -d postgres
+name: careernext-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: careernext-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: careernext
+      POSTGRES_PASSWORD: careernext
+      POSTGRES_DB: careernext
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U careernext"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.api
+    container_name: careernext-api-dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: postgresql://careernext:careernext@postgres:5432/careernext?schema=public
+      WEB_ORIGIN: http://localhost:3000
+    ports:
+      - "4000:4000"
+    profiles: ["full"]
+
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.web
+    container_name: careernext-web-dev
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_GRAPHQL_ENDPOINT: http://localhost:4000/graphql
+    ports:
+      - "3000:3000"
+    profiles: ["full"]
+
+volumes:
+  postgres_dev_data:
