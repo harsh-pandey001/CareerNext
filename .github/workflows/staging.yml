@@ -1,0 +1,24 @@
+# CareerNext — Staging deployment (PLACEHOLDER, activated in V3).
+# Builds Docker images and deploys to AWS EC2 (staging) on `main`.
+name: Deploy Staging
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-staging:
+    name: Build & Deploy (Staging)
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      # Placeholder — implemented in V3 (Docker + AWS EC2/S3 + CI/CD).
+      # 1. Setup pnpm + Node, install, run CI verify (see ci.yml).
+      # 2. Build & push api/web images (infrastructure/docker/*).
+      # 3. Configure AWS credentials from GitHub Actions secrets.
+      # 4. Deploy via docker-compose.stage.yml (Nginx + web + api) on EC2.
+      - name: Placeholder
+        run: echo "Staging deployment is implemented in V3."

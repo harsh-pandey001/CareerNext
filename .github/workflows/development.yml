@@ -1,0 +1,24 @@
+# CareerNext — Development deployment (PLACEHOLDER, activated in V3).
+# Builds Docker images and deploys to the Development environment on `develop`.
+name: Deploy Development
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  deploy-development:
+    name: Build & Deploy (Development)
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - uses: actions/checkout@v4
+
+      # Placeholder — implemented in V3 (Docker + CI/CD).
+      # 1. Setup pnpm + Node, install, run CI verify (see ci.yml).
+      # 2. docker build -f infrastructure/docker/Dockerfile.{api,web} .
+      # 3. Push images to the registry.
+      # 4. Deploy via docker compose -f docker-compose.dev.yml on the dev host.
+      - name: Placeholder
+        run: echo "Development deployment is implemented in V3."
