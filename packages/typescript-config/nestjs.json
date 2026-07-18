@@ -16,6 +16,7 @@
     "declaration": false,
     "declarationMap": false,
     "noUncheckedIndexedAccess": false,
-    "isolatedModules": false
+    "isolatedModules": false,
+    "incremental": false
   }
 }
