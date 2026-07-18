@@ -1,0 +1,12 @@
+{
+  "name": "@careernext/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CareerNext MCP server — PLACEHOLDER, implemented in V7.",
+  "scripts": {
+    "build": "echo \"[mcp-server] placeholder — implemented in V7\" && exit 0",
+    "lint": "echo \"[mcp-server] placeholder\" && exit 0",
+    "test": "echo \"[mcp-server] placeholder\" && exit 0",
+    "typecheck": "echo \"[mcp-server] placeholder\" && exit 0"
+  }
+}

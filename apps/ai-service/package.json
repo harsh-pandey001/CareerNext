@@ -1,0 +1,12 @@
+{
+  "name": "@careernext/ai-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CareerNext AI service (FastAPI/Python) — PLACEHOLDER, implemented in V6.",
+  "scripts": {
+    "build": "echo \"[ai-service] placeholder — implemented in V6\" && exit 0",
+    "lint": "echo \"[ai-service] placeholder\" && exit 0",
+    "test": "echo \"[ai-service] placeholder\" && exit 0",
+    "typecheck": "echo \"[ai-service] placeholder\" && exit 0"
+  }
+}

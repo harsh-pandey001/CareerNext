@@ -1,0 +1,12 @@
+{
+  "name": "@careernext/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CareerNext mobile app (React Native) — PLACEHOLDER, implemented in V5.",
+  "scripts": {
+    "build": "echo \"[mobile] placeholder — implemented in V5\" && exit 0",
+    "lint": "echo \"[mobile] placeholder\" && exit 0",
+    "test": "echo \"[mobile] placeholder\" && exit 0",
+    "typecheck": "echo \"[mobile] placeholder\" && exit 0"
+  }
+}
