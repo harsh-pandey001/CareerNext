@@ -1,0 +1,24 @@
+{
+  "extends": "@careernext/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/app/*": ["./src/app/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/graphql/*": ["./src/graphql/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/providers/*": ["./src/providers/*"],
+      "@/layouts/*": ["./src/layouts/*"],
+      "@/store/*": ["./src/store/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/config/*": ["./src/config/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/constants/*": ["./src/constants/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/styles/*": ["./src/styles/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

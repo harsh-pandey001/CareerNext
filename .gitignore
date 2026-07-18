@@ -1,0 +1,49 @@
+# Local AI context (never committed)
+CLAUDE.md
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Testing
+coverage/
+playwright-report/
+test-results/
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Prisma
+apps/api/prisma/migrations/dev.db*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
