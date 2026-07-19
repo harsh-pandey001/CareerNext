@@ -1,10 +1,10 @@
 # CareerNext — Staging deployment (PLACEHOLDER, activated in V3).
-# Builds Docker images and deploys to AWS EC2 (staging) on `main`.
+# Builds Docker images and deploys to AWS EC2 (staging) on `stg`.
 name: Deploy Staging
 
 on:
   push:
-    branches: [main]
+    branches: [stg]
   workflow_dispatch:
 
 jobs:

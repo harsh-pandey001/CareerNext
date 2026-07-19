@@ -1,10 +1,10 @@
 # CareerNext — Development deployment (PLACEHOLDER, activated in V3).
-# Builds Docker images and deploys to the Development environment on `develop`.
+# Builds Docker images and deploys to the Development environment on `Dev`.
 name: Deploy Development
 
 on:
   push:
-    branches: [develop]
+    branches: [Dev]
   workflow_dispatch:
 
 jobs:
