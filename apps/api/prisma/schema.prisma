@@ -39,21 +39,53 @@ enum DocumentType {
 model User {
   id              String   @id @default(uuid())
   email           String   @unique
-  password        String
+  passwordHash    String
   firstName       String
   lastName        String
   role            UserRole @default(USER)
   isEmailVerified Boolean  @default(false)
-  refreshTokenHash String?
 
-  profile      Profile?
-  applications Application[]
-  documents    Document[]
+  profile             Profile?
+  applications        Application[]
+  documents           Document[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model RefreshToken {
+  id                  String    @id @default(uuid())
+  userId              String
+  tokenHash           String    @unique
+  replacedByTokenHash String?
+  userAgent           String?
+  ipAddress           String?
+  expiresAt           DateTime
+  revokedAt           DateTime?
+  createdAt           DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 model Profile {
