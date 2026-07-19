@@ -19,10 +19,14 @@ import { NOTICE_PERIOD_OPTIONS, WORK_PREFERENCE_OPTIONS, PREFERRED_ROLE_SUGGESTI
 import { useOnboardingStore } from '../store';
 
 const toggleGroupSx = {
-  '& .MuiToggleButton-root': {
+  gap: 1,
+  '& .MuiToggleButtonGroup-grouped': {
+    margin: 0,
+    border: '1px solid',
+    borderColor: 'divider',
+    borderRadius: '10px !important',
     textTransform: 'none',
     fontWeight: 600,
-    borderRadius: '10px !important',
     py: 1,
   },
 } as const;
@@ -50,8 +54,8 @@ export function StepPreferences() {
 
   return (
     <Stack component="form" spacing={3} noValidate onSubmit={handleSubmit(savePreferences)}>
-      <Typography variant="h4" component="h1" fontWeight={700} letterSpacing="-0.02em">
-        Career Preferences
+      <Typography variant="h4" component="h2" fontWeight={700} letterSpacing="-0.02em">
+        Your Career Goals
       </Typography>
 
       <Controller
@@ -106,6 +110,33 @@ export function StepPreferences() {
 
       <Stack spacing={1}>
         <Typography variant="body2" fontWeight={600}>
+          Open To Work
+        </Typography>
+        <Controller
+          name="openToWork"
+          control={control}
+          render={({ field }) => (
+            <ToggleButtonGroup
+              exclusive
+              value={field.value}
+              onChange={(_, value) => {
+                if (value !== null) field.onChange(value);
+              }}
+              sx={toggleGroupSx}
+            >
+              <ToggleButton value={true} sx={{ px: 4 }}>
+                Yes
+              </ToggleButton>
+              <ToggleButton value={false} sx={{ px: 4 }}>
+                No
+              </ToggleButton>
+            </ToggleButtonGroup>
+          )}
+        />
+      </Stack>
+
+      <Stack spacing={1}>
+        <Typography variant="body2" fontWeight={600}>
           Work Preference
         </Typography>
         <Controller
@@ -130,33 +161,6 @@ export function StepPreferences() {
           )}
         />
         {errors.workPreference && <FormHelperText error>{errors.workPreference.message}</FormHelperText>}
-      </Stack>
-
-      <Stack spacing={1}>
-        <Typography variant="body2" fontWeight={600}>
-          Open To Work
-        </Typography>
-        <Controller
-          name="openToWork"
-          control={control}
-          render={({ field }) => (
-            <ToggleButtonGroup
-              exclusive
-              value={field.value}
-              onChange={(_, value) => {
-                if (value !== null) field.onChange(value);
-              }}
-              sx={toggleGroupSx}
-            >
-              <ToggleButton value={true} sx={{ px: 4 }}>
-                Yes
-              </ToggleButton>
-              <ToggleButton value={false} sx={{ px: 4 }}>
-                No
-              </ToggleButton>
-            </ToggleButtonGroup>
-          )}
-        />
       </Stack>
 
       <Stack direction="row" spacing={2} justifyContent="space-between">

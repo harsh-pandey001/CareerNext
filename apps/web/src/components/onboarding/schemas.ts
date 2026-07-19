@@ -5,10 +5,11 @@ export const basicInfoSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
+  countryCode: z.string().min(1, 'Select a country code'),
   phone: z
     .string()
     .min(1, 'Phone number is required')
-    .regex(/^[+]?[\d\s()-]{7,20}$/, 'Enter a valid phone number'),
+    .regex(/^\d{6,14}$/, 'Enter a valid phone number (digits only)'),
   location: z.string().min(1, 'Current location is required'),
   currentRole: z.string().min(1, 'Current role is required'),
   experience: z.enum(EXPERIENCE_OPTIONS, {

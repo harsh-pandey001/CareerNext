@@ -11,7 +11,7 @@ import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 
 const ACCEPTED_EXTENSIONS = ['.pdf', '.doc', '.docx'];
-const ANALYSIS_STEPS = ['Name Found', 'Skills Found', 'Experience Found', 'Education Found'];
+const ANALYSIS_STEPS = ['Skills Found', 'Experience Found', 'Education Found'];
 
 interface ResumeDropzoneProps {
   fileName: string | null;
@@ -85,7 +85,7 @@ export function ResumeDropzone({ fileName, onFileSelected }: ResumeDropzoneProps
               {fileName}
             </Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              {analyzing ? 'Analyzing résumé…' : 'Ready'}
+              {analyzing ? 'Analyzing Resume...' : 'Ready'}
             </Typography>
           </Box>
           <Button size="small" onClick={handleRemove} sx={{ textTransform: 'none', fontWeight: 600 }}>

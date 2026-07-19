@@ -10,6 +10,7 @@ import TextField from '@mui/material/TextField';
 import { FormTextField } from '@/components/auth/fields/FormTextField';
 import { SubmitButton } from '@/components/auth/SubmitButton';
 import { BackButton } from '../BackButton';
+import { PhoneField } from '../PhoneField';
 import { basicInfoSchema, type BasicInfoFormValues } from '../schemas';
 import { ROLE_SUGGESTIONS, EXPERIENCE_OPTIONS } from '../constants';
 import { useOnboardingStore } from '../store';
@@ -30,6 +31,7 @@ export function StepBasicInfo() {
       firstName: basicInfo.firstName ?? '',
       lastName: basicInfo.lastName ?? '',
       email: basicInfo.email ?? '',
+      countryCode: basicInfo.countryCode ?? '+91',
       phone: basicInfo.phone ?? '',
       location: basicInfo.location ?? '',
       currentRole: basicInfo.currentRole ?? '',
@@ -39,7 +41,7 @@ export function StepBasicInfo() {
 
   return (
     <Stack component="form" spacing={3} noValidate onSubmit={handleSubmit(saveBasicInfo)}>
-      <Typography variant="h4" component="h1" fontWeight={700} letterSpacing="-0.02em">
+      <Typography variant="h4" component="h2" fontWeight={700} letterSpacing="-0.02em">
         Tell Us About Yourself.
       </Typography>
 
@@ -55,13 +57,7 @@ export function StepBasicInfo() {
         registration={register('email')}
         error={errors.email?.message}
       />
-      <FormTextField
-        label="Phone Number"
-        type="tel"
-        autoComplete="tel"
-        registration={register('phone')}
-        error={errors.phone?.message}
-      />
+      <PhoneField control={control} error={errors.phone?.message} />
       <FormTextField label="Current Location" registration={register('location')} error={errors.location?.message} />
 
       <Controller

@@ -8,7 +8,14 @@ import { ProfileCompletionCard } from '../ProfileCompletionCard';
 import { SubmitButton } from '@/components/auth/SubmitButton';
 import { ROUTES } from '@/constants';
 
-const NEXT_STEPS = ['Add Skills', 'Complete Education Details', 'Upload Certificates', 'Add Github Profile'];
+const NEXT_STEPS = [
+  'Add Skills',
+  'Complete Education Details',
+  'Add Github Profile',
+  'Add Linkedin Profile',
+  'Upload Certificates',
+  'Explore Opportunities',
+];
 
 export function StepSuccess() {
   const router = useRouter();
@@ -17,13 +24,10 @@ export function StepSuccess() {
     <Stack spacing={4} alignItems="center" textAlign="center">
       <Stack spacing={1}>
         <Typography variant="h3" component="h1" fontWeight={700} letterSpacing="-0.02em">
-          Congratulations 🎉
-        </Typography>
-        <Typography variant="h6" sx={{ color: 'text.secondary' }} fontWeight={500}>
-          Welcome to CareerNext.
+          Welcome To CareerNext.
         </Typography>
         <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-          Your Career Workspace is Ready.
+          Your Career Workspace Is Ready.
         </Typography>
       </Stack>
 

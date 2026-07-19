@@ -20,7 +20,7 @@ export function BackButton({ onClick }: BackButtonProps) {
         '&:hover': { borderColor: 'primary.main', backgroundColor: 'action.hover' },
       }}
     >
-      Back
+      Previous
     </Button>
   );
 }

@@ -2,7 +2,7 @@
 
 import Box from '@mui/material/Box';
 import Fade from '@mui/material/Fade';
-import { StepProgress } from './StepProgress';
+import { OnboardingHeader } from './OnboardingHeader';
 import { StepAuthentication } from './steps/StepAuthentication';
 import { StepResumeUpload } from './steps/StepResumeUpload';
 import { StepBasicInfo } from './steps/StepBasicInfo';
@@ -14,8 +14,8 @@ export function SignupWizard() {
   const step = useOnboardingStore((s) => s.step);
 
   return (
-    <Box sx={{ width: '100%', maxWidth: 480 }}>
-      {step <= TOTAL_STEPS && <StepProgress step={step} totalSteps={TOTAL_STEPS} />}
+    <Box sx={{ width: '100%' }}>
+      {step <= TOTAL_STEPS && <OnboardingHeader step={step} totalSteps={TOTAL_STEPS} />}
       <Box aria-live="polite">
         <Fade in key={step} timeout={350}>
           <Box>

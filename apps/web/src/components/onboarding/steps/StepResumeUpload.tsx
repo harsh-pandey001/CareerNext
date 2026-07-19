@@ -15,11 +15,11 @@ export function StepResumeUpload() {
   return (
     <Stack spacing={3}>
       <Stack spacing={0.75}>
-        <Typography variant="h4" component="h1" fontWeight={700} letterSpacing="-0.02em">
-          Upload Your Resume
+        <Typography variant="h4" component="h2" fontWeight={700} letterSpacing="-0.02em">
+          Build Your Profile Faster.
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Upload your resume and let CareerNext build your profile smarter.
+          Upload your resume and let CareerNext help you setup your Career Workspace smarter.
         </Typography>
       </Stack>
 

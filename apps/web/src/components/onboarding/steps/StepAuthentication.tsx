@@ -38,11 +38,11 @@ export function StepAuthentication() {
   return (
     <Stack spacing={3}>
       <Stack spacing={0.75}>
-        <Typography variant="h4" component="h1" fontWeight={700} letterSpacing="-0.02em">
-          Welcome to CareerNext
+        <Typography variant="h4" component="h2" fontWeight={700} letterSpacing="-0.02em">
+          Let&apos;s Start Your Journey.
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Let&apos;s begin your career journey.
+          Manage your career growth, opportunities and interviews smarter than ever.
         </Typography>
       </Stack>
 
