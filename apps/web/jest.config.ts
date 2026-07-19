@@ -10,6 +10,8 @@ const config: Config = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
+  // e2e/ holds Playwright specs (run via `test:e2e`), not Jest tests.
+  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/e2e/'],
 };
 
 export default createJestConfig(config);
