@@ -16,6 +16,11 @@ jobs:
   verify:
     name: Lint / Typecheck / Test / Build
     runs-on: ubuntu-latest
+    env:
+      # Placeholder only — `prisma generate` (run via apps/api's postinstall
+      # hook) needs DATABASE_URL to be defined to parse the schema's
+      # datasource block, but it never connects to a real database.
+      DATABASE_URL: postgresql://careernext:careernext@localhost:5432/careernext?schema=public
     steps:
       - uses: actions/checkout@v4
 
