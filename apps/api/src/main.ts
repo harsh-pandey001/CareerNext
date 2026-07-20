@@ -1,11 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+
+  // Required to read the httpOnly refresh-token cookie (auth module).
+  app.use(cookieParser());
 
   // Global DTO validation (Clean Architecture: transport-layer guard).
   app.useGlobalPipes(

@@ -15,6 +15,10 @@ export interface AppConfig {
     playground: boolean;
   };
   webOrigin: string;
+  auth: {
+    cookieDomain?: string;
+    resetTokenTtlMin: number;
+  };
 }
 
 export default (): AppConfig => ({
@@ -30,4 +34,8 @@ export default (): AppConfig => ({
     playground: process.env.GRAPHQL_PLAYGROUND === 'true',
   },
   webOrigin: process.env.WEB_ORIGIN ?? 'http://localhost:3000',
+  auth: {
+    cookieDomain: process.env.COOKIE_DOMAIN,
+    resetTokenTtlMin: parseInt(process.env.RESET_TOKEN_TTL_MIN ?? '30', 10),
+  },
 });

@@ -7,6 +7,9 @@ import { ApolloDriver, type ApolloDriverConfig } from '@nestjs/apollo';
 import { configuration } from './config';
 import { PrismaModule } from './database/prisma.module';
 import { AppResolver } from './app.resolver';
+import type { GqlContext } from './graphql/gql-context';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 
 /**
  * Root application module.
@@ -33,12 +36,15 @@ import { AppResolver } from './app.resolver';
         autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
         sortSchema: true,
         playground: config.get<boolean>('graphql.playground') ?? false,
+        // Exposes req/res on the GraphQL context so resolvers can read/set
+        // the httpOnly refresh-token cookie (auth module).
+        context: ({ req, res }: GqlContext): GqlContext => ({ req, res }),
       }),
     }),
     PrismaModule,
     // ---- Feature modules (added incrementally per the version roadmap) ----
-    // AuthModule,
-    // UsersModule,
+    AuthModule,
+    UsersModule,
     // ProfileModule,
     // JobsModule,
     // ApplicationsModule,
