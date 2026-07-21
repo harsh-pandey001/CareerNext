@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import { ProfileCompletionCard } from '../ProfileCompletionCard';
+import { ProfileCompletionCard } from '@careernext/shared-ui';
 import { SubmitButton } from '@/components/auth/SubmitButton';
 import { ROUTES } from '@/constants';
 

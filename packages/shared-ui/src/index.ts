@@ -9,7 +9,4 @@
  * an app (monorepo rule: reusable shared components live here).
  */
 
-// export * from './components/Button';
-// export * from './components/Card';
-
-export {};
+export * from './components/ProfileCompletionCard';
