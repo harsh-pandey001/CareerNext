@@ -10,6 +10,4 @@
  * (monorepo rule: no duplicate GraphQL types).
  */
 
-// export * from './generated/graphql';
-
-export {};
+export * from './generated/graphql';

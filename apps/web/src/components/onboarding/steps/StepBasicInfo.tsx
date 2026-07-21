@@ -16,6 +16,7 @@ import { ROLE_SUGGESTIONS, EXPERIENCE_OPTIONS } from '../constants';
 import { useOnboardingStore } from '../store';
 
 export function StepBasicInfo() {
+  const credentials = useOnboardingStore((s) => s.credentials);
   const basicInfo = useOnboardingStore((s) => s.basicInfo);
   const saveBasicInfo = useOnboardingStore((s) => s.saveBasicInfo);
   const prevStep = useOnboardingStore((s) => s.prevStep);
@@ -30,7 +31,7 @@ export function StepBasicInfo() {
     defaultValues: {
       firstName: basicInfo.firstName ?? '',
       lastName: basicInfo.lastName ?? '',
-      email: basicInfo.email ?? '',
+      email: basicInfo.email ?? credentials?.email ?? '',
       countryCode: basicInfo.countryCode ?? '+91',
       phone: basicInfo.phone ?? '',
       location: basicInfo.location ?? '',
@@ -54,6 +55,8 @@ export function StepBasicInfo() {
         label="Email Address"
         type="email"
         autoComplete="email"
+        disabled
+        helperText="This is the email you signed up with."
         registration={register('email')}
         error={errors.email?.message}
       />

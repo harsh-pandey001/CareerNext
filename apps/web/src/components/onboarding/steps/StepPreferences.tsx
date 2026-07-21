@@ -11,8 +11,10 @@ import Chip from '@mui/material/Chip';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import FormHelperText from '@mui/material/FormHelperText';
+import Alert from '@mui/material/Alert';
 import { FormTextField } from '@/components/auth/fields/FormTextField';
 import { SubmitButton } from '@/components/auth/SubmitButton';
+import { useRegister } from '@/hooks/auth/useRegister';
 import { BackButton } from '../BackButton';
 import { preferencesSchema, type PreferencesFormValues } from '../schemas';
 import { NOTICE_PERIOD_OPTIONS, WORK_PREFERENCE_OPTIONS, PREFERRED_ROLE_SUGGESTIONS } from '../constants';
@@ -32,9 +34,13 @@ const toggleGroupSx = {
 } as const;
 
 export function StepPreferences() {
+  const credentials = useOnboardingStore((s) => s.credentials);
+  const basicInfo = useOnboardingStore((s) => s.basicInfo);
   const preferences = useOnboardingStore((s) => s.preferences);
   const savePreferences = useOnboardingStore((s) => s.savePreferences);
   const prevStep = useOnboardingStore((s) => s.prevStep);
+  const nextStep = useOnboardingStore((s) => s.nextStep);
+  const { registerUser, loading, error } = useRegister();
 
   const {
     register,
@@ -52,11 +58,30 @@ export function StepPreferences() {
     },
   });
 
+  const onSubmit = async (data: PreferencesFormValues) => {
+    savePreferences(data);
+    if (!credentials || !basicInfo.firstName || !basicInfo.lastName) return;
+
+    const success = await registerUser({
+      email: credentials.email,
+      password: credentials.password,
+      firstName: basicInfo.firstName,
+      lastName: basicInfo.lastName,
+    });
+    if (success) nextStep();
+  };
+
   return (
-    <Stack component="form" spacing={3} noValidate onSubmit={handleSubmit(savePreferences)}>
+    <Stack component="form" spacing={3} noValidate onSubmit={handleSubmit(onSubmit)}>
       <Typography variant="h4" component="h2" fontWeight={700} letterSpacing="-0.02em">
         Your Career Goals
       </Typography>
+
+      {error && (
+        <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       <Controller
         name="preferredRoles"
@@ -165,7 +190,7 @@ export function StepPreferences() {
 
       <Stack direction="row" spacing={2} justifyContent="space-between">
         <BackButton onClick={prevStep} />
-        <SubmitButton type="submit" fullWidth={false} sx={{ px: 5 }}>
+        <SubmitButton type="submit" fullWidth={false} loading={loading} sx={{ px: 5 }}>
           Complete Profile
         </SubmitButton>
       </Stack>

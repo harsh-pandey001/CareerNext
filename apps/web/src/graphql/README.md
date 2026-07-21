@@ -8,10 +8,13 @@ graphql/
     queries.ts       # gql documents
     mutations.ts
     fragments.ts
-  codegen.ts         # graphql-codegen config (added with V1 auth)
 ```
 
-- Operations are authored here as `.graphql`/`gql` documents.
-- `graphql-codegen` consumes the API schema and emits typed hooks into
-  `@careernext/graphql-types` — clients import those typed hooks, never
-  hand-written response types.
+- Operations are authored here as `gql` documents.
+- `packages/graphql-types/codegen.ts` (added with V1 auth) points
+  `graphql-codegen` at the API's schema (`apps/api/src/graphql/schema.gql`)
+  and these documents, emitting typed hooks into
+  `@careernext/graphql-types/src/generated/graphql.ts` — clients import
+  those typed hooks, never hand-written response types. Regenerate with
+  `pnpm --filter @careernext/graphql-types generate` after changing an
+  operation here or the API schema.
