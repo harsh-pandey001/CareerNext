@@ -8,7 +8,14 @@ RUN corepack enable
 WORKDIR /repo
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* .npmrc ./
 COPY apps/api/package.json apps/api/
+COPY apps/api/prisma apps/api/prisma
 COPY packages ./packages
+# apps/api's postinstall runs `prisma generate`, which needs both the schema
+# (copied above — schema only, not the rest of the source, to keep this
+# layer cache-friendly) and DATABASE_URL defined to parse it (it never
+# connects to a real database at generate time). Other packages' own install
+# scripts (e.g. bcrypt's native build) still run normally here.
+ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
 RUN pnpm install --frozen-lockfile --filter @careernext/api...
 
 # ---- build ----
@@ -17,8 +24,13 @@ RUN corepack enable
 WORKDIR /repo
 COPY --from=deps /repo ./
 COPY . .
+# @careernext/api imports @careernext/shared-types (and @careernext/utils),
+# which only exist as raw TS source until their own `build` script runs and
+# produces dist/ — `pnpm --filter @careernext/api build` alone builds api
+# ONLY. Use turbo so its `dependsOn: ["^build"]` pipeline builds those
+# workspace deps first, same as `pnpm build` does at the repo root.
 RUN pnpm --filter @careernext/api prisma:generate \
- && pnpm --filter @careernext/api build
+ && pnpm exec turbo run build --filter=@careernext/api
 
 # ---- runtime ----
 FROM node:20-alpine AS runtime
