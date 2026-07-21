@@ -1,22 +1,48 @@
 # CareerNext — Staging environment (AWS EC2 + Nginx).
-# Activated in V3. On AWS, PostgreSQL is provided by RDS (managed) rather than a
-# container — set DATABASE_URL via deploy secrets. Nginx fronts web + api.
+# Activated in V3. PostgreSQL runs as a container here (simple, single-box
+# staging) — migrate DATABASE_URL to AWS RDS later without touching app code.
+# Nginx fronts both web + api on one origin (port 80), so the browser calls
+# GraphQL same-origin — no CORS, and refresh cookies work without SameSite issues.
 name: careernext-stage
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-careernext}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: ${POSTGRES_DB:-careernext}
+    volumes:
+      - postgres_stage_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-careernext}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api:
     image: careernext/api:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: infrastructure/docker/Dockerfile.api
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
       NODE_ENV: staging
       PORT: 4000
-      DATABASE_URL: ${DATABASE_URL}
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-careernext}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-careernext}?schema=public}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET must be set}
+      JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN:-15m}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET must be set}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      GRAPHQL_PLAYGROUND: ${GRAPHQL_PLAYGROUND:-true}
       WEB_ORIGIN: ${WEB_ORIGIN}
+      RESET_TOKEN_TTL_MIN: ${RESET_TOKEN_TTL_MIN:-30}
     expose:
       - "4000"
 
@@ -25,12 +51,15 @@ services:
     build:
       context: .
       dockerfile: infrastructure/docker/Dockerfile.web
+      args:
+        NEXT_PUBLIC_GRAPHQL_ENDPOINT: ${NEXT_PUBLIC_GRAPHQL_ENDPOINT}
+        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-CareerNext}
+        NEXT_PUBLIC_APP_ENV: staging
     restart: unless-stopped
     depends_on:
       - api
     environment:
       NODE_ENV: staging
-      NEXT_PUBLIC_GRAPHQL_ENDPOINT: ${NEXT_PUBLIC_GRAPHQL_ENDPOINT}
     expose:
       - "3000"
 
@@ -44,3 +73,6 @@ services:
       - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "80:80"
+
+volumes:
+  postgres_stage_data:

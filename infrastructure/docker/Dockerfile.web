@@ -17,6 +17,15 @@ RUN corepack enable
 WORKDIR /repo
 COPY --from=deps /repo ./
 COPY . .
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time, so they
+# must be passed as build args here — setting them at container runtime (in
+# docker-compose's `environment:`) has no effect on an already-built bundle.
+ARG NEXT_PUBLIC_GRAPHQL_ENDPOINT
+ARG NEXT_PUBLIC_APP_NAME
+ARG NEXT_PUBLIC_APP_ENV
+ENV NEXT_PUBLIC_GRAPHQL_ENDPOINT=$NEXT_PUBLIC_GRAPHQL_ENDPOINT \
+    NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME \
+    NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV
 RUN pnpm --filter @careernext/web build
 
 # ---- runtime ----
