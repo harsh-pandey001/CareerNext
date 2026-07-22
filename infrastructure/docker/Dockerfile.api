@@ -4,6 +4,12 @@
 
 # ---- deps ----
 FROM node:20-alpine AS deps
+# Prisma's engine-selection needs OpenSSL to detect the right binary target;
+# without it here, `prisma generate` (postinstall below) silently defaults to
+# the wrong target (openssl-1.1.x) instead of what Alpine actually has
+# (openssl-3.0.x) — the engine then fails to load at runtime with a missing
+# libssl.so.1.1 error.
+RUN apk add --no-cache openssl
 RUN corepack enable
 WORKDIR /repo
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* .npmrc ./
@@ -20,6 +26,7 @@ RUN pnpm install --frozen-lockfile --filter @careernext/api...
 
 # ---- build ----
 FROM node:20-alpine AS build
+RUN apk add --no-cache openssl
 RUN corepack enable
 WORKDIR /repo
 COPY --from=deps /repo ./
@@ -34,8 +41,12 @@ RUN pnpm --filter @careernext/api prisma:generate \
 
 # ---- runtime ----
 FROM node:20-alpine AS runtime
+RUN apk add --no-cache openssl
 ENV NODE_ENV=production
-WORKDIR /repo/apps/api
+WORKDIR /repo
 COPY --from=build /repo ./
 EXPOSE 4000
-CMD ["node", "dist/main.js"]
+# WORKDIR is the monorepo root (not apps/api) — node_modules resolution for
+# workspace deps (@careernext/shared-types etc.) needs the root node_modules
+# tree alongside apps/api, so the whole /repo is copied in, not just apps/api.
+CMD ["node", "apps/api/dist/main.js"]
