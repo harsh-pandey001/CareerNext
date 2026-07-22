@@ -15,8 +15,12 @@ import { loginSchema, type LoginFormValues } from './schemas';
 import { useLogin } from '@/hooks/auth/useLogin';
 import { ROUTES } from '@/constants';
 
-export function LoginForm() {
-  const { login, loading, error } = useLogin();
+interface LoginFormProps {
+  redirectTo?: string;
+}
+
+export function LoginForm({ redirectTo }: LoginFormProps) {
+  const { login, loading, error } = useLogin(redirectTo);
   const {
     register,
     handleSubmit,

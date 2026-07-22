@@ -1,5 +1,4 @@
-# CareerNext — Staging environment (AWS EC2 + Nginx).
-# Activated in V3. PostgreSQL runs as a container here (simple, single-box
+# CareerNext — Staging environment (AWS EC2 + Nginx)# Activated in V3. PostgreSQL runs as a container here (simple, single-box
 # staging) — migrate DATABASE_URL to AWS RDS later without touching app code.
 # Nginx fronts both web + api on one origin (port 80), so the browser calls
 # GraphQL same-origin — no CORS, and refresh cookies work without SameSite issues.

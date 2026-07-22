@@ -14,7 +14,15 @@ interface UseLoginResult {
   error: string | null;
 }
 
-export function useLogin(): UseLoginResult {
+/** Only follow same-origin, path-relative redirects — never an absolute/protocol-relative URL. */
+function resolveRedirectTarget(redirectTo?: string): string {
+  if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')) {
+    return redirectTo;
+  }
+  return ROUTES.DASHBOARD;
+}
+
+export function useLogin(redirectTo?: string): UseLoginResult {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +38,12 @@ export function useLogin(): UseLoginResult {
         if (!data) throw new Error('Unable to sign in. Please try again.');
 
         setAuth({ user: data.login.user, accessToken: data.login.accessToken });
-        router.push(ROUTES.DASHBOARD);
+        router.push(resolveRedirectTarget(redirectTo));
       } catch (err) {
         setError(getApolloErrorMessage(err, 'Unable to sign in. Please try again.'));
       }
     },
-    [loginMutation, router, setAuth],
+    [loginMutation, router, setAuth, redirectTo],
   );
 
   return { login, loading, error };

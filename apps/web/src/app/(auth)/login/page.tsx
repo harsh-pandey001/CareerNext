@@ -11,7 +11,11 @@ export const metadata: Metadata = {
   description: 'Sign in to manage your career journey, applications and interviews seamlessly.',
 };
 
-export default function LoginPage() {
+interface LoginPageProps {
+  searchParams: { redirectTo?: string };
+}
+
+export default function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthCard
       heading="Welcome Back!"
@@ -20,7 +24,7 @@ export default function LoginPage() {
     >
       <SocialAuthButtons />
       <OrDivider />
-      <LoginForm />
+      <LoginForm redirectTo={searchParams.redirectTo} />
     </AuthCard>
   );
 }
