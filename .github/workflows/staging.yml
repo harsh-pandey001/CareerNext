@@ -1,5 +1,7 @@
-# CareerNext — Staging deployment (PLACEHOLDER, activated in V3).
-# Builds Docker images and deploys to AWS EC2 (staging) on `stg`.
+# CareerNext — Staging deployment (AWS EC2 + Nginx).
+# Builds both Docker images on the runner (the EC2 box itself is a t3.micro —
+# too little RAM/disk to build there reliably), transfers the finished images
+# over SSH, then deploys via docker-compose.stage.yml on the box.
 name: Deploy Staging
 
 on:
@@ -15,10 +17,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Placeholder — implemented in V3 (Docker + AWS EC2/S3 + CI/CD).
-      # 1. Setup pnpm + Node, install, run CI verify (see ci.yml).
-      # 2. Build & push api/web images (infrastructure/docker/*).
-      # 3. Configure AWS credentials from GitHub Actions secrets.
-      # 4. Deploy via docker-compose.stage.yml (Nginx + web + api) on EC2.
-      - name: Placeholder
-        run: echo "Staging deployment is implemented in V3."
+      - name: Build API image
+        run: docker build -f infrastructure/docker/Dockerfile.api -t careernext/api:latest .
+
+      - name: Build web image
+        run: |
+          docker build -f infrastructure/docker/Dockerfile.web \
+            --build-arg NEXT_PUBLIC_GRAPHQL_ENDPOINT="http://${{ vars.EC2_HOST }}/graphql" \
+            --build-arg NEXT_PUBLIC_APP_NAME="CareerNext" \
+            --build-arg NEXT_PUBLIC_APP_ENV="staging" \
+            -t careernext/web:latest .
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ vars.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Transfer images to EC2
+        run: |
+          docker save careernext/api:latest careernext/web:latest | gzip | \
+            ssh -i ~/.ssh/deploy_key ubuntu@${{ vars.EC2_HOST }} 'gunzip | sudo docker load'
+
+      - name: Deploy on EC2
+        run: |
+          ssh -i ~/.ssh/deploy_key ubuntu@${{ vars.EC2_HOST }} '
+            set -e
+            cd ~/CareerNext
+            git fetch origin stg
+            git checkout stg 2>/dev/null || git checkout -b stg origin/stg
+            git reset --hard origin/stg
+            sudo docker compose --env-file .env.stage -f docker-compose.stage.yml up -d --force-recreate api web nginx
+            sudo docker compose --env-file .env.stage -f docker-compose.stage.yml exec -T api sh -c "cd apps/api && node_modules/.bin/prisma migrate deploy"
+          '
+
+      - name: Smoke test
+        run: |
+          sleep 5
+          curl -sf "http://${{ vars.EC2_HOST }}/graphql" \
+            -H "Content-Type: application/json" \
+            -d '{"query":"{ health }"}' | grep -q '"ok"'
