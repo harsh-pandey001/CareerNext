@@ -2,6 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Self-contained production build (just the files actually needed to run,
+  // with a minimal node_modules) — keeps the Docker runtime image small
+  // instead of shipping the whole monorepo checkout.
+  output: 'standalone',
   // Compile shared workspace packages that ship raw TypeScript.
   transpilePackages: [
     '@careernext/shared-ui',

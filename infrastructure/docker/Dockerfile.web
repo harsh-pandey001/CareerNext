@@ -29,9 +29,18 @@ ENV NEXT_PUBLIC_GRAPHQL_ENDPOINT=$NEXT_PUBLIC_GRAPHQL_ENDPOINT \
 RUN pnpm --filter @careernext/web build
 
 # ---- runtime ----
+# next.config.mjs sets `output: 'standalone'`, which traces and copies only
+# the files actually needed to run (plus a minimal node_modules) instead of
+# the whole monorepo checkout — shrinks this image from ~1.5GB to ~150MB.
+# Static assets and public/ aren't included in standalone output by design
+# (see Next.js docs) and must be copied in separately.
 FROM node:20-alpine AS runtime
-ENV NODE_ENV=production
-WORKDIR /repo/apps/web
-COPY --from=build /repo ./
+ENV NODE_ENV=production \
+    HOSTNAME=0.0.0.0 \
+    PORT=3000
+WORKDIR /repo
+COPY --from=build /repo/apps/web/.next/standalone ./
+COPY --from=build /repo/apps/web/.next/static ./apps/web/.next/static
+COPY --from=build /repo/apps/web/public ./apps/web/public
 EXPOSE 3000
-CMD ["pnpm", "start"]
+CMD ["node", "apps/web/server.js"]
