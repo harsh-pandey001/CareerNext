@@ -5,13 +5,42 @@ export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' |
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
 const defaultOptions = {} as const;
+export type ApplicationStatus =
+  | 'ACCEPTED'
+  | 'APPLIED'
+  | 'HR_ROUND'
+  | 'INTERVIEW_ROUND_1'
+  | 'INTERVIEW_ROUND_2'
+  | 'OA_SCHEDULED'
+  | 'OFFER_RECEIVED'
+  | 'REJECTED'
+  | 'SAVED';
+
 export type ForgotPasswordInput = {
   email: string;
 };
 
+export type JobFilterInput = {
+  location?: string | null | undefined;
+  query?: string | null | undefined;
+  type?: JobType | null | undefined;
+  workMode?: WorkMode | null | undefined;
+};
+
+export type JobType =
+  | 'CONTRACT'
+  | 'FULL_TIME'
+  | 'INTERNSHIP'
+  | 'PART_TIME';
+
 export type LoginInput = {
   email: string;
   password: string;
+};
+
+export type PaginationInput = {
+  page?: number;
+  pageSize?: number;
 };
 
 export type RegisterInput = {
@@ -29,6 +58,11 @@ export type ResetPasswordInput = {
 export type UserRole =
   | 'ADMIN'
   | 'USER';
+
+export type WorkMode =
+  | 'HYBRID'
+  | 'ONSITE'
+  | 'REMOTE';
 
 export type AuthUserFieldsFragment = { id: string, email: string, firstName: string, lastName: string, role: UserRole, isEmailVerified: boolean, createdAt: string };
 
@@ -75,6 +109,44 @@ export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type MeQuery = { me: { id: string, email: string, firstName: string, lastName: string, role: UserRole, isEmailVerified: boolean, createdAt: string } };
 
+export type JobFieldsFragment = { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string };
+
+export type SaveJobMutationVariables = Exact<{
+  jobId: string | number;
+}>;
+
+
+export type SaveJobMutation = { saveJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
+
+export type UnsaveJobMutationVariables = Exact<{
+  jobId: string | number;
+}>;
+
+
+export type UnsaveJobMutation = { unsaveJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
+
+export type ApplyToJobMutationVariables = Exact<{
+  jobId: string | number;
+}>;
+
+
+export type ApplyToJobMutation = { applyToJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
+
+export type JobsQueryVariables = Exact<{
+  filter?: JobFilterInput | null | undefined;
+  pagination?: PaginationInput | null | undefined;
+}>;
+
+
+export type JobsQuery = { jobs: { total: number, page: number, pageSize: number, totalPages: number, items: Array<{ id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string }> } };
+
+export type JobQueryVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type JobQuery = { job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
+
 export const AuthUserFieldsFragmentDoc = gql`
     fragment AuthUserFields on User {
   id
@@ -83,6 +155,23 @@ export const AuthUserFieldsFragmentDoc = gql`
   lastName
   role
   isEmailVerified
+  createdAt
+}
+    `;
+export const JobFieldsFragmentDoc = gql`
+    fragment JobFields on Job {
+  id
+  title
+  company
+  location
+  description
+  type
+  workMode
+  salaryMin
+  salaryMax
+  externalUrl
+  skills
+  applicationStatus
   createdAt
 }
     `;
@@ -327,3 +416,195 @@ export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeSuspenseQueryHookResult = ReturnType<typeof useMeSuspenseQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
+export const SaveJobDocument = gql`
+    mutation SaveJob($jobId: ID!) {
+  saveJob(jobId: $jobId) {
+    ...JobFields
+  }
+}
+    ${JobFieldsFragmentDoc}`;
+export type SaveJobMutationFn = Apollo.MutationFunction<SaveJobMutation, SaveJobMutationVariables>;
+
+/**
+ * __useSaveJobMutation__
+ *
+ * To run a mutation, you first call `useSaveJobMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSaveJobMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [saveJobMutation, { data, loading, error }] = useSaveJobMutation({
+ *   variables: {
+ *      jobId: // value for 'jobId'
+ *   },
+ * });
+ */
+export function useSaveJobMutation(baseOptions?: Apollo.MutationHookOptions<SaveJobMutation, SaveJobMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SaveJobMutation, SaveJobMutationVariables>(SaveJobDocument, options);
+      }
+export type SaveJobMutationHookResult = ReturnType<typeof useSaveJobMutation>;
+export type SaveJobMutationResult = Apollo.MutationResult<SaveJobMutation>;
+export type SaveJobMutationOptions = Apollo.BaseMutationOptions<SaveJobMutation, SaveJobMutationVariables>;
+export const UnsaveJobDocument = gql`
+    mutation UnsaveJob($jobId: ID!) {
+  unsaveJob(jobId: $jobId) {
+    ...JobFields
+  }
+}
+    ${JobFieldsFragmentDoc}`;
+export type UnsaveJobMutationFn = Apollo.MutationFunction<UnsaveJobMutation, UnsaveJobMutationVariables>;
+
+/**
+ * __useUnsaveJobMutation__
+ *
+ * To run a mutation, you first call `useUnsaveJobMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUnsaveJobMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [unsaveJobMutation, { data, loading, error }] = useUnsaveJobMutation({
+ *   variables: {
+ *      jobId: // value for 'jobId'
+ *   },
+ * });
+ */
+export function useUnsaveJobMutation(baseOptions?: Apollo.MutationHookOptions<UnsaveJobMutation, UnsaveJobMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UnsaveJobMutation, UnsaveJobMutationVariables>(UnsaveJobDocument, options);
+      }
+export type UnsaveJobMutationHookResult = ReturnType<typeof useUnsaveJobMutation>;
+export type UnsaveJobMutationResult = Apollo.MutationResult<UnsaveJobMutation>;
+export type UnsaveJobMutationOptions = Apollo.BaseMutationOptions<UnsaveJobMutation, UnsaveJobMutationVariables>;
+export const ApplyToJobDocument = gql`
+    mutation ApplyToJob($jobId: ID!) {
+  applyToJob(jobId: $jobId) {
+    ...JobFields
+  }
+}
+    ${JobFieldsFragmentDoc}`;
+export type ApplyToJobMutationFn = Apollo.MutationFunction<ApplyToJobMutation, ApplyToJobMutationVariables>;
+
+/**
+ * __useApplyToJobMutation__
+ *
+ * To run a mutation, you first call `useApplyToJobMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useApplyToJobMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [applyToJobMutation, { data, loading, error }] = useApplyToJobMutation({
+ *   variables: {
+ *      jobId: // value for 'jobId'
+ *   },
+ * });
+ */
+export function useApplyToJobMutation(baseOptions?: Apollo.MutationHookOptions<ApplyToJobMutation, ApplyToJobMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ApplyToJobMutation, ApplyToJobMutationVariables>(ApplyToJobDocument, options);
+      }
+export type ApplyToJobMutationHookResult = ReturnType<typeof useApplyToJobMutation>;
+export type ApplyToJobMutationResult = Apollo.MutationResult<ApplyToJobMutation>;
+export type ApplyToJobMutationOptions = Apollo.BaseMutationOptions<ApplyToJobMutation, ApplyToJobMutationVariables>;
+export const JobsDocument = gql`
+    query Jobs($filter: JobFilterInput, $pagination: PaginationInput) {
+  jobs(filter: $filter, pagination: $pagination) {
+    total
+    page
+    pageSize
+    totalPages
+    items {
+      ...JobFields
+    }
+  }
+}
+    ${JobFieldsFragmentDoc}`;
+
+/**
+ * __useJobsQuery__
+ *
+ * To run a query within a React component, call `useJobsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useJobsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useJobsQuery({
+ *   variables: {
+ *      filter: // value for 'filter'
+ *      pagination: // value for 'pagination'
+ *   },
+ * });
+ */
+export function useJobsQuery(baseOptions?: Apollo.QueryHookOptions<JobsQuery, JobsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<JobsQuery, JobsQueryVariables>(JobsDocument, options);
+      }
+export function useJobsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<JobsQuery, JobsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<JobsQuery, JobsQueryVariables>(JobsDocument, options);
+        }
+// @ts-ignore
+export function useJobsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<JobsQuery, JobsQueryVariables>): Apollo.UseSuspenseQueryResult<JobsQuery, JobsQueryVariables>;
+export function useJobsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<JobsQuery, JobsQueryVariables>): Apollo.UseSuspenseQueryResult<JobsQuery | undefined, JobsQueryVariables>;
+export function useJobsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<JobsQuery, JobsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<JobsQuery, JobsQueryVariables>(JobsDocument, options);
+        }
+export type JobsQueryHookResult = ReturnType<typeof useJobsQuery>;
+export type JobsLazyQueryHookResult = ReturnType<typeof useJobsLazyQuery>;
+export type JobsSuspenseQueryHookResult = ReturnType<typeof useJobsSuspenseQuery>;
+export type JobsQueryResult = Apollo.QueryResult<JobsQuery, JobsQueryVariables>;
+export const JobDocument = gql`
+    query Job($id: ID!) {
+  job(id: $id) {
+    ...JobFields
+  }
+}
+    ${JobFieldsFragmentDoc}`;
+
+/**
+ * __useJobQuery__
+ *
+ * To run a query within a React component, call `useJobQuery` and pass it any options that fit your needs.
+ * When your component renders, `useJobQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useJobQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useJobQuery(baseOptions: Apollo.QueryHookOptions<JobQuery, JobQueryVariables> & ({ variables: JobQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<JobQuery, JobQueryVariables>(JobDocument, options);
+      }
+export function useJobLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<JobQuery, JobQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<JobQuery, JobQueryVariables>(JobDocument, options);
+        }
+// @ts-ignore
+export function useJobSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<JobQuery, JobQueryVariables>): Apollo.UseSuspenseQueryResult<JobQuery, JobQueryVariables>;
+export function useJobSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<JobQuery, JobQueryVariables>): Apollo.UseSuspenseQueryResult<JobQuery | undefined, JobQueryVariables>;
+export function useJobSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<JobQuery, JobQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<JobQuery, JobQueryVariables>(JobDocument, options);
+        }
+export type JobQueryHookResult = ReturnType<typeof useJobQuery>;
+export type JobLazyQueryHookResult = ReturnType<typeof useJobLazyQuery>;
+export type JobSuspenseQueryHookResult = ReturnType<typeof useJobSuspenseQuery>;
+export type JobQueryResult = Apollo.QueryResult<JobQuery, JobQueryVariables>;

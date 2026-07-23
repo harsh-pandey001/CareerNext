@@ -48,13 +48,18 @@ export class AuthResolver {
   }
 
   @Mutation(() => Boolean)
-  @UseGuards(GqlAuthGuard)
-  async logout(
-    @CurrentUser() user: PrismaUser,
-    @Context() context: GqlContext,
-  ): Promise<boolean> {
-    const rawRefreshToken = context.req.cookies?.[REFRESH_TOKEN_COOKIE] as string | undefined;
-    const result = await this.authService.logout(user.id, rawRefreshToken);
+  @UseGuards(GqlRefreshGuard)
+  async logout(@Context() context: GqlContext): Promise<boolean> {
+    // Gated on the refresh cookie (7d), not the access token (15m) like most
+    // other guarded mutations — logout ends the refresh session, so it must
+    // still work once the short-lived access token has quietly expired.
+    // Using GqlAuthGuard here was the actual bug: if it expired while the
+    // user was idle on a page, logout would 401 before ever reaching the
+    // resolver, the cookie would never get cleared, and the client's
+    // post-logout redirect to /login would just get bounced straight back
+    // by middleware, which still saw a (still valid) session cookie.
+    const payload = context.req.user as unknown as RefreshTokenPayload;
+    const result = await this.authService.logout(payload.sub, payload.rawToken);
     this.clearRefreshCookie(context.res);
     return result;
   }

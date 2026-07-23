@@ -2,6 +2,18 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+enum ApplicationStatus {
+  ACCEPTED
+  APPLIED
+  HR_ROUND
+  INTERVIEW_ROUND_1
+  INTERVIEW_ROUND_2
+  OA_SCHEDULED
+  OFFER_RECEIVED
+  REJECTED
+  SAVED
+}
+
 type AuthPayload {
   accessToken: String!
   user: User!
@@ -16,23 +28,71 @@ input ForgotPasswordInput {
   email: String!
 }
 
+type Job {
+  applicationStatus: ApplicationStatus
+  company: String!
+  createdAt: DateTime!
+  description: String!
+  externalUrl: String
+  id: ID!
+  location: String
+  salaryMax: Int
+  salaryMin: Int
+  skills: [String!]!
+  title: String!
+  type: JobType!
+  workMode: WorkMode!
+}
+
+input JobFilterInput {
+  location: String
+  query: String
+  type: JobType
+  workMode: WorkMode
+}
+
+enum JobType {
+  CONTRACT
+  FULL_TIME
+  INTERNSHIP
+  PART_TIME
+}
+
 input LoginInput {
   email: String!
   password: String!
 }
 
 type Mutation {
+  applyToJob(jobId: ID!): Job!
   forgotPassword(input: ForgotPasswordInput!): Boolean!
   login(input: LoginInput!): AuthPayload!
   logout: Boolean!
   refreshToken: AuthPayload!
   register(input: RegisterInput!): AuthPayload!
   resetPassword(input: ResetPasswordInput!): Boolean!
+  saveJob(jobId: ID!): Job!
+  unsaveJob(jobId: ID!): Job!
+}
+
+type PaginatedJobs {
+  items: [Job!]!
+  page: Int!
+  pageSize: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+input PaginationInput {
+  page: Int! = 1
+  pageSize: Int! = 10
 }
 
 type Query {
   """Liveness probe for the CareerNext API."""
   health: String!
+  job(id: ID!): Job!
+  jobs(filter: JobFilterInput, pagination: PaginationInput! = {page: 1, pageSize: 10}): PaginatedJobs!
   me: User!
 }
 
@@ -61,4 +121,10 @@ type User {
 enum UserRole {
   ADMIN
   USER
+}
+
+enum WorkMode {
+  HYBRID
+  ONSITE
+  REMOTE
 }

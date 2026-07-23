@@ -10,6 +10,8 @@ import { AppResolver } from './app.resolver';
 import type { GqlContext } from './graphql/gql-context';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { JobsModule } from './modules/jobs/jobs.module';
+import { ApplicationsModule } from './modules/applications/applications.module';
 
 /**
  * Root application module.
@@ -45,9 +47,9 @@ import { UsersModule } from './modules/users/users.module';
     // ---- Feature modules (added incrementally per the version roadmap) ----
     AuthModule,
     UsersModule,
+    JobsModule,
+    ApplicationsModule,
     // ProfileModule,
-    // JobsModule,
-    // ApplicationsModule,
     // DocumentsModule,
     // InterviewsModule,     // V2
     // NotificationsModule,  // V2
