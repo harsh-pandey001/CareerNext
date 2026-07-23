@@ -64,6 +64,28 @@ export type WorkMode =
   | 'ONSITE'
   | 'REMOTE';
 
+export type ApplicationFieldsFragment = { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
+
+export type UpdateApplicationStatusMutationVariables = Exact<{
+  applicationId: string | number;
+  status: ApplicationStatus;
+}>;
+
+
+export type UpdateApplicationStatusMutation = { updateApplicationStatus: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } };
+
+export type RemoveApplicationMutationVariables = Exact<{
+  applicationId: string | number;
+}>;
+
+
+export type RemoveApplicationMutation = { removeApplication: boolean };
+
+export type MyApplicationsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyApplicationsQuery = { myApplications: Array<{ id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } }> };
+
 export type AuthUserFieldsFragment = { id: string, email: string, firstName: string, lastName: string, role: UserRole, isEmailVerified: boolean, createdAt: string };
 
 export type RegisterMutationVariables = Exact<{
@@ -147,17 +169,6 @@ export type JobQueryVariables = Exact<{
 
 export type JobQuery = { job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
 
-export const AuthUserFieldsFragmentDoc = gql`
-    fragment AuthUserFields on User {
-  id
-  email
-  firstName
-  lastName
-  role
-  isEmailVerified
-  createdAt
-}
-    `;
 export const JobFieldsFragmentDoc = gql`
     fragment JobFields on Job {
   id
@@ -175,6 +186,137 @@ export const JobFieldsFragmentDoc = gql`
   createdAt
 }
     `;
+export const ApplicationFieldsFragmentDoc = gql`
+    fragment ApplicationFields on Application {
+  id
+  status
+  notes
+  appliedAt
+  createdAt
+  updatedAt
+  job {
+    ...JobFields
+  }
+}
+    ${JobFieldsFragmentDoc}`;
+export const AuthUserFieldsFragmentDoc = gql`
+    fragment AuthUserFields on User {
+  id
+  email
+  firstName
+  lastName
+  role
+  isEmailVerified
+  createdAt
+}
+    `;
+export const UpdateApplicationStatusDocument = gql`
+    mutation UpdateApplicationStatus($applicationId: ID!, $status: ApplicationStatus!) {
+  updateApplicationStatus(applicationId: $applicationId, status: $status) {
+    ...ApplicationFields
+  }
+}
+    ${ApplicationFieldsFragmentDoc}`;
+export type UpdateApplicationStatusMutationFn = Apollo.MutationFunction<UpdateApplicationStatusMutation, UpdateApplicationStatusMutationVariables>;
+
+/**
+ * __useUpdateApplicationStatusMutation__
+ *
+ * To run a mutation, you first call `useUpdateApplicationStatusMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateApplicationStatusMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateApplicationStatusMutation, { data, loading, error }] = useUpdateApplicationStatusMutation({
+ *   variables: {
+ *      applicationId: // value for 'applicationId'
+ *      status: // value for 'status'
+ *   },
+ * });
+ */
+export function useUpdateApplicationStatusMutation(baseOptions?: Apollo.MutationHookOptions<UpdateApplicationStatusMutation, UpdateApplicationStatusMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateApplicationStatusMutation, UpdateApplicationStatusMutationVariables>(UpdateApplicationStatusDocument, options);
+      }
+export type UpdateApplicationStatusMutationHookResult = ReturnType<typeof useUpdateApplicationStatusMutation>;
+export type UpdateApplicationStatusMutationResult = Apollo.MutationResult<UpdateApplicationStatusMutation>;
+export type UpdateApplicationStatusMutationOptions = Apollo.BaseMutationOptions<UpdateApplicationStatusMutation, UpdateApplicationStatusMutationVariables>;
+export const RemoveApplicationDocument = gql`
+    mutation RemoveApplication($applicationId: ID!) {
+  removeApplication(applicationId: $applicationId)
+}
+    `;
+export type RemoveApplicationMutationFn = Apollo.MutationFunction<RemoveApplicationMutation, RemoveApplicationMutationVariables>;
+
+/**
+ * __useRemoveApplicationMutation__
+ *
+ * To run a mutation, you first call `useRemoveApplicationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveApplicationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeApplicationMutation, { data, loading, error }] = useRemoveApplicationMutation({
+ *   variables: {
+ *      applicationId: // value for 'applicationId'
+ *   },
+ * });
+ */
+export function useRemoveApplicationMutation(baseOptions?: Apollo.MutationHookOptions<RemoveApplicationMutation, RemoveApplicationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RemoveApplicationMutation, RemoveApplicationMutationVariables>(RemoveApplicationDocument, options);
+      }
+export type RemoveApplicationMutationHookResult = ReturnType<typeof useRemoveApplicationMutation>;
+export type RemoveApplicationMutationResult = Apollo.MutationResult<RemoveApplicationMutation>;
+export type RemoveApplicationMutationOptions = Apollo.BaseMutationOptions<RemoveApplicationMutation, RemoveApplicationMutationVariables>;
+export const MyApplicationsDocument = gql`
+    query MyApplications {
+  myApplications {
+    ...ApplicationFields
+  }
+}
+    ${ApplicationFieldsFragmentDoc}`;
+
+/**
+ * __useMyApplicationsQuery__
+ *
+ * To run a query within a React component, call `useMyApplicationsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyApplicationsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyApplicationsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyApplicationsQuery(baseOptions?: Apollo.QueryHookOptions<MyApplicationsQuery, MyApplicationsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyApplicationsQuery, MyApplicationsQueryVariables>(MyApplicationsDocument, options);
+      }
+export function useMyApplicationsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyApplicationsQuery, MyApplicationsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyApplicationsQuery, MyApplicationsQueryVariables>(MyApplicationsDocument, options);
+        }
+// @ts-ignore
+export function useMyApplicationsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MyApplicationsQuery, MyApplicationsQueryVariables>): Apollo.UseSuspenseQueryResult<MyApplicationsQuery, MyApplicationsQueryVariables>;
+export function useMyApplicationsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyApplicationsQuery, MyApplicationsQueryVariables>): Apollo.UseSuspenseQueryResult<MyApplicationsQuery | undefined, MyApplicationsQueryVariables>;
+export function useMyApplicationsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyApplicationsQuery, MyApplicationsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyApplicationsQuery, MyApplicationsQueryVariables>(MyApplicationsDocument, options);
+        }
+export type MyApplicationsQueryHookResult = ReturnType<typeof useMyApplicationsQuery>;
+export type MyApplicationsLazyQueryHookResult = ReturnType<typeof useMyApplicationsLazyQuery>;
+export type MyApplicationsSuspenseQueryHookResult = ReturnType<typeof useMyApplicationsSuspenseQuery>;
+export type MyApplicationsQueryResult = Apollo.QueryResult<MyApplicationsQuery, MyApplicationsQueryVariables>;
 export const RegisterDocument = gql`
     mutation Register($input: RegisterInput!) {
   register(input: $input) {

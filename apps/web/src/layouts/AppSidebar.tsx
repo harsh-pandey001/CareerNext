@@ -27,7 +27,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: ROUTES.DASHBOARD, icon: SpaceDashboardRoundedIcon },
   { label: 'Jobs', href: ROUTES.JOBS, icon: WorkOutlineRoundedIcon },
-  { label: 'Applications', href: ROUTES.APPLICATIONS, icon: AssignmentOutlinedIcon, comingSoon: true },
+  { label: 'Applications', href: ROUTES.APPLICATIONS, icon: AssignmentOutlinedIcon },
   { label: 'Resume', href: ROUTES.RESUME, icon: DescriptionOutlinedIcon, comingSoon: true },
   { label: 'Documents', href: ROUTES.DOCUMENTS, icon: FolderOpenOutlinedIcon, comingSoon: true },
   { label: 'Profile', href: ROUTES.PROFILE, icon: PersonOutlineRoundedIcon, comingSoon: true },

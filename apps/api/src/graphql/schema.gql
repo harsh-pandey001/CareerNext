@@ -2,6 +2,16 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Application {
+  appliedAt: DateTime
+  createdAt: DateTime!
+  id: ID!
+  job: Job!
+  notes: String
+  status: ApplicationStatus!
+  updatedAt: DateTime!
+}
+
 enum ApplicationStatus {
   ACCEPTED
   APPLIED
@@ -70,9 +80,11 @@ type Mutation {
   logout: Boolean!
   refreshToken: AuthPayload!
   register(input: RegisterInput!): AuthPayload!
+  removeApplication(applicationId: ID!): Boolean!
   resetPassword(input: ResetPasswordInput!): Boolean!
   saveJob(jobId: ID!): Job!
   unsaveJob(jobId: ID!): Job!
+  updateApplicationStatus(applicationId: ID!, status: ApplicationStatus!): Application!
 }
 
 type PaginatedJobs {
@@ -94,6 +106,7 @@ type Query {
   job(id: ID!): Job!
   jobs(filter: JobFilterInput, pagination: PaginationInput! = {page: 1, pageSize: 10}): PaginatedJobs!
   me: User!
+  myApplications: [Application!]!
 }
 
 input RegisterInput {

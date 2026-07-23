@@ -1,0 +1,129 @@
+'use client';
+
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import { alpha, type Theme } from '@mui/material/styles';
+import { useApplications } from '@/hooks/applications/useApplications';
+import { useApplicationActions } from '@/hooks/applications/useApplicationActions';
+import { ApplicationCard } from './ApplicationCard';
+import type { ColumnTone } from './constants';
+
+function toneColor(theme: Theme, tone: ColumnTone) {
+  if (tone === 'neutral') return theme.palette.text.secondary;
+  return theme.palette[tone].main;
+}
+
+export function ApplicationsBoard() {
+  const { columns, total, loading, error } = useApplications();
+  const { updateStatus, removeApplication, pendingId, error: actionError } = useApplicationActions();
+
+  return (
+    <Stack spacing={3} sx={{ height: '100%' }}>
+      <Stack spacing={0.5}>
+        <Typography variant="h4" fontWeight={700} letterSpacing="-0.02em">
+          Applications
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Track every job you&apos;ve saved or applied to, in one board.
+        </Typography>
+      </Stack>
+
+      {actionError && (
+        <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
+          {actionError}
+        </Alert>
+      )}
+      {error && (
+        <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
+          Couldn&apos;t load your applications right now. Please try again in a moment.
+        </Alert>
+      )}
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+          <CircularProgress size={28} />
+        </Box>
+      ) : total === 0 && !error ? (
+        <Stack spacing={0.5} alignItems="center" sx={{ py: 10 }}>
+          <Typography variant="body1" fontWeight={600}>
+            Nothing here yet
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Save or apply to a job from the Jobs page and it&apos;ll show up here.
+          </Typography>
+        </Stack>
+      ) : (
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2.5,
+            overflowX: 'auto',
+            pb: 1,
+            flex: 1,
+          }}
+        >
+          {columns.map((column) => (
+            <Box
+              key={column.status}
+              sx={{
+                width: 280,
+                flexShrink: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1.5,
+              }}
+            >
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    bgcolor: (theme) => toneColor(theme, column.tone),
+                    flexShrink: 0,
+                  }}
+                />
+                <Typography variant="subtitle2" fontWeight={700}>
+                  {column.label}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {column.applications.length}
+                </Typography>
+              </Stack>
+
+              <Stack
+                spacing={1.5}
+                sx={{
+                  p: 1.5,
+                  borderRadius: '16px',
+                  bgcolor: (theme) => alpha(toneColor(theme, column.tone), theme.palette.mode === 'dark' ? 0.08 : 0.05),
+                  minHeight: 120,
+                  flex: 1,
+                }}
+              >
+                {column.applications.length === 0 ? (
+                  <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                    Nothing here
+                  </Typography>
+                ) : (
+                  column.applications.map((application) => (
+                    <ApplicationCard
+                      key={application.id}
+                      application={application}
+                      pending={pendingId === application.id}
+                      onMove={updateStatus}
+                      onRemove={removeApplication}
+                    />
+                  ))
+                )}
+              </Stack>
+            </Box>
+          ))}
+        </Box>
+      )}
+    </Stack>
+  );
+}

@@ -1,17 +1,74 @@
-import { Injectable } from '@nestjs/common';
-import { ApplicationStatus as PrismaApplicationStatus } from '@prisma/client';
+import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  ApplicationStatus as PrismaApplicationStatus,
+  type Application as PrismaApplication,
+  type Job as PrismaJob,
+} from '@prisma/client';
 import type { ApplicationStatus } from '@careernext/shared-types';
 import { PrismaService } from '../../database/prisma.service';
 
+export type ApplicationWithJob = PrismaApplication & { job: PrismaJob };
+
 /**
- * V1 scope: Jobs' Save/Apply actions are the only way an Application record
- * gets created or moves between states (SAVED <-> APPLIED). The full
- * Applications feature (its own queries/mutations, the V2 interview-stage
- * flow) lands in a later chunk — this service only backs Jobs for now.
+ * V1 lets a user manually move their own applications between these four
+ * statuses (self-reported — there's no employer-facing portal). The V2
+ * interview-stage flow (OA_SCHEDULED, INTERVIEW_ROUND_1, ...) exists on the
+ * enum already so no future schema break is needed, but isn't reachable
+ * through this API yet.
  */
+const V1_SETTABLE_STATUSES: ReadonlySet<PrismaApplicationStatus> = new Set([
+  PrismaApplicationStatus.SAVED,
+  PrismaApplicationStatus.APPLIED,
+  PrismaApplicationStatus.ACCEPTED,
+  PrismaApplicationStatus.REJECTED,
+]);
+
 @Injectable()
 export class ApplicationsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /** All of a user's applications, each with its Job — unpaginated (V1 dummy-data scale). */
+  async findAllForUser(userId: string): Promise<ApplicationWithJob[]> {
+    return this.prisma.application.findMany({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+      include: { job: true },
+    });
+  }
+
+  async updateStatus(userId: string, applicationId: string, status: ApplicationStatus): Promise<ApplicationWithJob> {
+    const prismaStatus = status as unknown as PrismaApplicationStatus;
+    if (!V1_SETTABLE_STATUSES.has(prismaStatus)) {
+      throw new BadRequestException('That status is not available yet.');
+    }
+
+    await this.ensureOwnership(userId, applicationId);
+
+    return this.prisma.application.update({
+      where: { id: applicationId },
+      data: { status: prismaStatus },
+      include: { job: true },
+    });
+  }
+
+  async remove(userId: string, applicationId: string): Promise<boolean> {
+    await this.ensureOwnership(userId, applicationId);
+    await this.prisma.application.delete({ where: { id: applicationId } });
+    return true;
+  }
+
+  private async ensureOwnership(userId: string, applicationId: string): Promise<void> {
+    const application = await this.prisma.application.findUnique({
+      where: { id: applicationId },
+      select: { userId: true },
+    });
+    if (!application) {
+      throw new NotFoundException('Application not found.');
+    }
+    if (application.userId !== userId) {
+      throw new ForbiddenException('You do not have access to this application.');
+    }
+  }
 
   /** Batch lookup to avoid N+1 queries when resolving a list of jobs. */
   async findStatusesForUser(userId: string, jobIds: string[]): Promise<Map<string, ApplicationStatus>> {
