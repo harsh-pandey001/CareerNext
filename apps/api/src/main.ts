@@ -1,3 +1,4 @@
+import { json, urlencoded } from 'express';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -10,6 +11,11 @@ async function bootstrap(): Promise<void> {
 
   // Required to read the httpOnly refresh-token cookie (auth module).
   app.use(cookieParser());
+
+  // Default body-parser limit (100kb) is far too small for a base64-encoded
+  // resume upload (documents module) sent as a normal GraphQL string arg.
+  app.use(json({ limit: '8mb' }));
+  app.use(urlencoded({ limit: '8mb', extended: true }));
 
   // Global DTO validation (Clean Architecture: transport-layer guard).
   app.useGlobalPipes(

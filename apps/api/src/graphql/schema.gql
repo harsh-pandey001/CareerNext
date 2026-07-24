@@ -34,6 +34,23 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type Document {
+  createdAt: DateTime!
+  fileName: String!
+  fileSize: Int!
+  fileUrl: String!
+  id: ID!
+  mimeType: String!
+  type: DocumentType!
+}
+
+enum DocumentType {
+  CERTIFICATE
+  EXPERIENCE_LETTER
+  OFFER_LETTER
+  RESUME
+}
+
 input ForgotPasswordInput {
   email: String!
 }
@@ -75,6 +92,7 @@ input LoginInput {
 
 type Mutation {
   applyToJob(jobId: ID!): Job!
+  deleteResumeVersion(resumeVersionId: ID!): Boolean!
   forgotPassword(input: ForgotPasswordInput!): Boolean!
   login(input: LoginInput!): AuthPayload!
   logout: Boolean!
@@ -83,8 +101,10 @@ type Mutation {
   removeApplication(applicationId: ID!): Boolean!
   resetPassword(input: ResetPasswordInput!): Boolean!
   saveJob(jobId: ID!): Job!
+  setActiveResume(resumeVersionId: ID!): ResumeVersion!
   unsaveJob(jobId: ID!): Job!
   updateApplicationStatus(applicationId: ID!, status: ApplicationStatus!): Application!
+  uploadResume(content: String!, fileName: String!, mimeType: String!): ResumeVersion!
 }
 
 type PaginatedJobs {
@@ -107,6 +127,8 @@ type Query {
   jobs(filter: JobFilterInput, pagination: PaginationInput! = {page: 1, pageSize: 10}): PaginatedJobs!
   me: User!
   myApplications: [Application!]!
+  myResumeVersions: [ResumeVersion!]!
+  resumeVersion(id: ID!): ResumeVersion!
 }
 
 input RegisterInput {
@@ -119,6 +141,14 @@ input RegisterInput {
 input ResetPasswordInput {
   newPassword: String!
   token: String!
+}
+
+type ResumeVersion {
+  createdAt: DateTime!
+  document: Document!
+  id: ID!
+  isActive: Boolean!
+  version: Int!
 }
 
 type User {

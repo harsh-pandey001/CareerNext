@@ -12,6 +12,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
+import { DocumentsModule } from './modules/documents/documents.module';
 
 /**
  * Root application module.
@@ -49,8 +50,8 @@ import { ApplicationsModule } from './modules/applications/applications.module';
     UsersModule,
     JobsModule,
     ApplicationsModule,
+    DocumentsModule,
     // ProfileModule,
-    // DocumentsModule,
     // InterviewsModule,     // V2
     // NotificationsModule,  // V2
     // AnalyticsModule,      // V2

@@ -61,6 +61,7 @@ model User {
   profile             Profile?
   applications        Application[]
   documents           Document[]
+  resumeVersions      ResumeVersion[]
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
 
@@ -166,14 +167,38 @@ model Document {
   userId   String
   type     DocumentType
   fileName String
-  fileUrl  String
+  // Raw file bytes, stored directly in Postgres — V3 brings AWS S3 (see
+  // CLAUDE.md's roadmap); this column becomes a `fileUrl` pointing at S3
+  // then, without changing the GraphQL contract (DocumentModel.fileUrl is
+  // already a lazily-resolved field, computed as a data: URL for now).
+  fileData Bytes
   fileSize Int
   mimeType String
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumeVersion ResumeVersion?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("documents")
+}
+
+// A resume upload is a Document (type = RESUME) plus this versioning
+// envelope — keeps "which resume is currently active" and version numbering
+// as Resume-specific concerns, separate from the generic Documents vault.
+model ResumeVersion {
+  id         String  @id @default(uuid())
+  documentId String  @unique
+  userId     String
+  version    Int
+  isActive   Boolean @default(false)
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("resume_versions")
 }

@@ -169,6 +169,45 @@ export type JobQueryVariables = Exact<{
 
 export type JobQuery = { job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
 
+export type ResumeVersionFieldsFragment = { id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string } };
+
+export type ResumeVersionWithContentFieldsFragment = { id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string, fileUrl: string } };
+
+export type UploadResumeMutationVariables = Exact<{
+  fileName: string;
+  mimeType: string;
+  content: string;
+}>;
+
+
+export type UploadResumeMutation = { uploadResume: { id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string } } };
+
+export type SetActiveResumeMutationVariables = Exact<{
+  resumeVersionId: string | number;
+}>;
+
+
+export type SetActiveResumeMutation = { setActiveResume: { id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string } } };
+
+export type DeleteResumeVersionMutationVariables = Exact<{
+  resumeVersionId: string | number;
+}>;
+
+
+export type DeleteResumeVersionMutation = { deleteResumeVersion: boolean };
+
+export type MyResumeVersionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyResumeVersionsQuery = { myResumeVersions: Array<{ id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string } }> };
+
+export type ResumeVersionQueryVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type ResumeVersionQuery = { resumeVersion: { id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string, fileUrl: string } } };
+
 export const JobFieldsFragmentDoc = gql`
     fragment JobFields on Job {
   id
@@ -210,6 +249,32 @@ export const AuthUserFieldsFragmentDoc = gql`
   createdAt
 }
     `;
+export const ResumeVersionFieldsFragmentDoc = gql`
+    fragment ResumeVersionFields on ResumeVersion {
+  id
+  version
+  isActive
+  createdAt
+  document {
+    id
+    fileName
+    fileSize
+    mimeType
+  }
+}
+    `;
+export const ResumeVersionWithContentFieldsFragmentDoc = gql`
+    fragment ResumeVersionWithContentFields on ResumeVersion {
+  ...ResumeVersionFields
+  document {
+    id
+    fileName
+    fileSize
+    mimeType
+    fileUrl
+  }
+}
+    ${ResumeVersionFieldsFragmentDoc}`;
 export const UpdateApplicationStatusDocument = gql`
     mutation UpdateApplicationStatus($applicationId: ID!, $status: ApplicationStatus!) {
   updateApplicationStatus(applicationId: $applicationId, status: $status) {
@@ -750,3 +815,187 @@ export type JobQueryHookResult = ReturnType<typeof useJobQuery>;
 export type JobLazyQueryHookResult = ReturnType<typeof useJobLazyQuery>;
 export type JobSuspenseQueryHookResult = ReturnType<typeof useJobSuspenseQuery>;
 export type JobQueryResult = Apollo.QueryResult<JobQuery, JobQueryVariables>;
+export const UploadResumeDocument = gql`
+    mutation UploadResume($fileName: String!, $mimeType: String!, $content: String!) {
+  uploadResume(fileName: $fileName, mimeType: $mimeType, content: $content) {
+    ...ResumeVersionFields
+  }
+}
+    ${ResumeVersionFieldsFragmentDoc}`;
+export type UploadResumeMutationFn = Apollo.MutationFunction<UploadResumeMutation, UploadResumeMutationVariables>;
+
+/**
+ * __useUploadResumeMutation__
+ *
+ * To run a mutation, you first call `useUploadResumeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUploadResumeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [uploadResumeMutation, { data, loading, error }] = useUploadResumeMutation({
+ *   variables: {
+ *      fileName: // value for 'fileName'
+ *      mimeType: // value for 'mimeType'
+ *      content: // value for 'content'
+ *   },
+ * });
+ */
+export function useUploadResumeMutation(baseOptions?: Apollo.MutationHookOptions<UploadResumeMutation, UploadResumeMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UploadResumeMutation, UploadResumeMutationVariables>(UploadResumeDocument, options);
+      }
+export type UploadResumeMutationHookResult = ReturnType<typeof useUploadResumeMutation>;
+export type UploadResumeMutationResult = Apollo.MutationResult<UploadResumeMutation>;
+export type UploadResumeMutationOptions = Apollo.BaseMutationOptions<UploadResumeMutation, UploadResumeMutationVariables>;
+export const SetActiveResumeDocument = gql`
+    mutation SetActiveResume($resumeVersionId: ID!) {
+  setActiveResume(resumeVersionId: $resumeVersionId) {
+    ...ResumeVersionFields
+  }
+}
+    ${ResumeVersionFieldsFragmentDoc}`;
+export type SetActiveResumeMutationFn = Apollo.MutationFunction<SetActiveResumeMutation, SetActiveResumeMutationVariables>;
+
+/**
+ * __useSetActiveResumeMutation__
+ *
+ * To run a mutation, you first call `useSetActiveResumeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSetActiveResumeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [setActiveResumeMutation, { data, loading, error }] = useSetActiveResumeMutation({
+ *   variables: {
+ *      resumeVersionId: // value for 'resumeVersionId'
+ *   },
+ * });
+ */
+export function useSetActiveResumeMutation(baseOptions?: Apollo.MutationHookOptions<SetActiveResumeMutation, SetActiveResumeMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SetActiveResumeMutation, SetActiveResumeMutationVariables>(SetActiveResumeDocument, options);
+      }
+export type SetActiveResumeMutationHookResult = ReturnType<typeof useSetActiveResumeMutation>;
+export type SetActiveResumeMutationResult = Apollo.MutationResult<SetActiveResumeMutation>;
+export type SetActiveResumeMutationOptions = Apollo.BaseMutationOptions<SetActiveResumeMutation, SetActiveResumeMutationVariables>;
+export const DeleteResumeVersionDocument = gql`
+    mutation DeleteResumeVersion($resumeVersionId: ID!) {
+  deleteResumeVersion(resumeVersionId: $resumeVersionId)
+}
+    `;
+export type DeleteResumeVersionMutationFn = Apollo.MutationFunction<DeleteResumeVersionMutation, DeleteResumeVersionMutationVariables>;
+
+/**
+ * __useDeleteResumeVersionMutation__
+ *
+ * To run a mutation, you first call `useDeleteResumeVersionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteResumeVersionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteResumeVersionMutation, { data, loading, error }] = useDeleteResumeVersionMutation({
+ *   variables: {
+ *      resumeVersionId: // value for 'resumeVersionId'
+ *   },
+ * });
+ */
+export function useDeleteResumeVersionMutation(baseOptions?: Apollo.MutationHookOptions<DeleteResumeVersionMutation, DeleteResumeVersionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteResumeVersionMutation, DeleteResumeVersionMutationVariables>(DeleteResumeVersionDocument, options);
+      }
+export type DeleteResumeVersionMutationHookResult = ReturnType<typeof useDeleteResumeVersionMutation>;
+export type DeleteResumeVersionMutationResult = Apollo.MutationResult<DeleteResumeVersionMutation>;
+export type DeleteResumeVersionMutationOptions = Apollo.BaseMutationOptions<DeleteResumeVersionMutation, DeleteResumeVersionMutationVariables>;
+export const MyResumeVersionsDocument = gql`
+    query MyResumeVersions {
+  myResumeVersions {
+    ...ResumeVersionFields
+  }
+}
+    ${ResumeVersionFieldsFragmentDoc}`;
+
+/**
+ * __useMyResumeVersionsQuery__
+ *
+ * To run a query within a React component, call `useMyResumeVersionsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyResumeVersionsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyResumeVersionsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyResumeVersionsQuery(baseOptions?: Apollo.QueryHookOptions<MyResumeVersionsQuery, MyResumeVersionsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyResumeVersionsQuery, MyResumeVersionsQueryVariables>(MyResumeVersionsDocument, options);
+      }
+export function useMyResumeVersionsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyResumeVersionsQuery, MyResumeVersionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyResumeVersionsQuery, MyResumeVersionsQueryVariables>(MyResumeVersionsDocument, options);
+        }
+// @ts-ignore
+export function useMyResumeVersionsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MyResumeVersionsQuery, MyResumeVersionsQueryVariables>): Apollo.UseSuspenseQueryResult<MyResumeVersionsQuery, MyResumeVersionsQueryVariables>;
+export function useMyResumeVersionsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyResumeVersionsQuery, MyResumeVersionsQueryVariables>): Apollo.UseSuspenseQueryResult<MyResumeVersionsQuery | undefined, MyResumeVersionsQueryVariables>;
+export function useMyResumeVersionsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyResumeVersionsQuery, MyResumeVersionsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyResumeVersionsQuery, MyResumeVersionsQueryVariables>(MyResumeVersionsDocument, options);
+        }
+export type MyResumeVersionsQueryHookResult = ReturnType<typeof useMyResumeVersionsQuery>;
+export type MyResumeVersionsLazyQueryHookResult = ReturnType<typeof useMyResumeVersionsLazyQuery>;
+export type MyResumeVersionsSuspenseQueryHookResult = ReturnType<typeof useMyResumeVersionsSuspenseQuery>;
+export type MyResumeVersionsQueryResult = Apollo.QueryResult<MyResumeVersionsQuery, MyResumeVersionsQueryVariables>;
+export const ResumeVersionDocument = gql`
+    query ResumeVersion($id: ID!) {
+  resumeVersion(id: $id) {
+    ...ResumeVersionWithContentFields
+  }
+}
+    ${ResumeVersionWithContentFieldsFragmentDoc}`;
+
+/**
+ * __useResumeVersionQuery__
+ *
+ * To run a query within a React component, call `useResumeVersionQuery` and pass it any options that fit your needs.
+ * When your component renders, `useResumeVersionQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useResumeVersionQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useResumeVersionQuery(baseOptions: Apollo.QueryHookOptions<ResumeVersionQuery, ResumeVersionQueryVariables> & ({ variables: ResumeVersionQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ResumeVersionQuery, ResumeVersionQueryVariables>(ResumeVersionDocument, options);
+      }
+export function useResumeVersionLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ResumeVersionQuery, ResumeVersionQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ResumeVersionQuery, ResumeVersionQueryVariables>(ResumeVersionDocument, options);
+        }
+// @ts-ignore
+export function useResumeVersionSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<ResumeVersionQuery, ResumeVersionQueryVariables>): Apollo.UseSuspenseQueryResult<ResumeVersionQuery, ResumeVersionQueryVariables>;
+export function useResumeVersionSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ResumeVersionQuery, ResumeVersionQueryVariables>): Apollo.UseSuspenseQueryResult<ResumeVersionQuery | undefined, ResumeVersionQueryVariables>;
+export function useResumeVersionSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ResumeVersionQuery, ResumeVersionQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ResumeVersionQuery, ResumeVersionQueryVariables>(ResumeVersionDocument, options);
+        }
+export type ResumeVersionQueryHookResult = ReturnType<typeof useResumeVersionQuery>;
+export type ResumeVersionLazyQueryHookResult = ReturnType<typeof useResumeVersionLazyQuery>;
+export type ResumeVersionSuspenseQueryHookResult = ReturnType<typeof useResumeVersionSuspenseQuery>;
+export type ResumeVersionQueryResult = Apollo.QueryResult<ResumeVersionQuery, ResumeVersionQueryVariables>;
