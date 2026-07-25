@@ -19,6 +19,9 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
       jwtFromRequest: extractRefreshTokenFromCookie,
       ignoreExpiration: false,
       secretOrKey: config.get<string>('jwt.refreshSecret'),
+      // Pin the algorithm we sign with — never accept whatever `alg` the
+      // token header claims.
+      algorithms: ['HS256'],
       passReqToCallback: true,
     });
   }

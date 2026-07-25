@@ -270,6 +270,7 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([userId])
   @@map("documents")
 }
 
@@ -288,6 +289,10 @@ model ResumeVersion {
 
   createdAt DateTime @default(now())
 
+  // Version numbers are computed (max + 1) inside the upload transaction —
+  // this constraint turns a concurrent-upload race into a clean error
+  // instead of silently persisting two identical version numbers.
+  @@unique([userId, version])
   @@index([userId])
   @@map("resume_versions")
 }

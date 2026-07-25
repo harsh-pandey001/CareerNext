@@ -29,7 +29,9 @@ export function useApplicationActions() {
     } catch (err) {
       setError(getApolloErrorMessage(err));
     } finally {
-      setPendingId(null);
+      // Only clear our own pending marker — a slow first action resolving
+      // must not re-enable buttons for a second action still in flight.
+      setPendingId((current) => (current === id ? null : current));
     }
   }, []);
 

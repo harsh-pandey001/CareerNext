@@ -4,19 +4,7 @@ import { useCallback, useState } from 'react';
 import { useDeleteResumeVersionMutation, useSetActiveResumeMutation, useUploadResumeMutation } from '@careernext/graphql-types';
 import { MY_RESUME_VERSIONS_QUERY } from '@/graphql/resume/queries';
 import { ACCEPTED_RESUME_MIME_TYPES, MAX_RESUME_FILE_SIZE_BYTES } from '@/components/resume/constants';
-import { getApolloErrorMessage } from '@/utils';
-
-function readFileAsBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.slice(result.indexOf(',') + 1));
-    };
-    reader.onerror = () => reject(reader.error ?? new Error('Could not read the selected file.'));
-    reader.readAsDataURL(file);
-  });
-}
+import { getApolloErrorMessage, readFileAsBase64 } from '@/utils';
 
 // Every mutation here changes `isActive`/existence on more than the entity it
 // returns (uploading or activating one version deactivates another; deleting
@@ -39,7 +27,9 @@ export function useResumeActions() {
     } catch (err) {
       setError(getApolloErrorMessage(err));
     } finally {
-      setPendingId(null);
+      // Only clear our own pending marker — a slow first action resolving
+      // must not re-enable buttons for a second action still in flight.
+      setPendingId((current) => (current === id ? null : current));
     }
   }, []);
 

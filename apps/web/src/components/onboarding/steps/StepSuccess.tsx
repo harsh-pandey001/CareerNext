@@ -4,9 +4,11 @@ import { useRouter } from 'next/navigation';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import { useMyProfileQuery } from '@careernext/graphql-types';
 import { ProfileCompletionCard } from '@careernext/shared-ui';
 import { SubmitButton } from '@/components/auth/SubmitButton';
 import { ROUTES } from '@/constants';
+import { useOnboardingStore } from '../store';
 
 const NEXT_STEPS = [
   'Add Skills',
@@ -19,6 +21,18 @@ const NEXT_STEPS = [
 
 export function StepSuccess() {
   const router = useRouter();
+  const reset = useOnboardingStore((s) => s.reset);
+  // Real, server-computed completion — the wizard just persisted headline/
+  // location/resume, so this reflects what actually landed, not a made-up
+  // number the Profile page would immediately contradict.
+  const { data } = useMyProfileQuery();
+
+  const handleContinue = () => {
+    // Fresh wizard next time /register is visited — without this, the
+    // previous account's success screen replays after logout.
+    reset();
+    router.push(ROUTES.DASHBOARD);
+  };
 
   return (
     <Stack spacing={4} alignItems="center" textAlign="center">
@@ -31,7 +45,7 @@ export function StepSuccess() {
         </Typography>
       </Stack>
 
-      <ProfileCompletionCard value={85} />
+      <ProfileCompletionCard value={data?.myProfile.completionPercentage ?? 0} />
 
       <Stack spacing={1.5} sx={{ width: '100%', maxWidth: 360 }}>
         <Typography variant="body2" fontWeight={600}>
@@ -45,7 +59,7 @@ export function StepSuccess() {
         ))}
       </Stack>
 
-      <SubmitButton onClick={() => router.push(ROUTES.DASHBOARD)} type="button" sx={{ maxWidth: 320 }}>
+      <SubmitButton onClick={handleContinue} type="button" sx={{ maxWidth: 320 }}>
         Continue To Dashboard
       </SubmitButton>
     </Stack>

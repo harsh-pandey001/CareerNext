@@ -41,16 +41,14 @@ export class ProfileService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getOrCreateProfile(userId: string): Promise<ProfileAggregate> {
-    let profile = await this.prisma.profile.findUnique({
+    // Upsert, not find-then-create: two concurrent first-time myProfile
+    // calls would otherwise race to a raw unique-constraint error.
+    let profile = await this.prisma.profile.upsert({
       where: { userId },
+      create: { userId },
+      update: {},
       include: PROFILE_LIST_INCLUDE,
     });
-    if (!profile) {
-      profile = await this.prisma.profile.create({
-        data: { userId },
-        include: PROFILE_LIST_INCLUDE,
-      });
-    }
 
     const skills = await this.prisma.skill.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } });
     const completionPercentage = computeCompletion(profile, {
@@ -249,7 +247,7 @@ export class ProfileService {
   }
 }
 
-const URL_FIELDS = ['githubUrl', 'linkedinUrl', 'portfolioUrl'] as const;
+const CLEARABLE_FIELDS = ['headline', 'bio', 'location', 'githubUrl', 'linkedinUrl', 'portfolioUrl'] as const;
 
 /**
  * A blank string means "clear this field" — store null, not "", so
@@ -262,7 +260,7 @@ const URL_FIELDS = ['githubUrl', 'linkedinUrl', 'portfolioUrl'] as const;
  */
 function normalizeProfileInput(input: UpdateProfileInput): Record<string, string | null | undefined> {
   const normalized: Record<string, string | null | undefined> = { ...input };
-  for (const field of URL_FIELDS) {
+  for (const field of CLEARABLE_FIELDS) {
     if (field in input) {
       normalized[field] = input[field] || null;
     }

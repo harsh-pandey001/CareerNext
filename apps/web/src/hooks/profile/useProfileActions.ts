@@ -59,7 +59,9 @@ export function useProfileActions() {
       setError(getApolloErrorMessage(err));
       return false;
     } finally {
-      setPendingId(null);
+      // Only clear our own pending marker — a slow first action resolving
+      // must not re-enable buttons for a second action still in flight.
+      setPendingId((current) => (current === id ? null : current));
     }
   }, []);
 

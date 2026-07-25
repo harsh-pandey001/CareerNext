@@ -14,9 +14,18 @@ interface UseLoginResult {
   error: string | null;
 }
 
-/** Only follow same-origin, path-relative redirects — never an absolute/protocol-relative URL. */
+/**
+ * Only follow same-origin, path-relative redirects — never an absolute or
+ * protocol-relative URL. Backslashes are rejected too: URL parsers normalize
+ * `\` to `/` in http(s) URLs, so `/\evil.com` would resolve as `//evil.com`.
+ */
 function resolveRedirectTarget(redirectTo?: string): string {
-  if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')) {
+  if (
+    redirectTo &&
+    redirectTo.startsWith('/') &&
+    !redirectTo.startsWith('//') &&
+    !redirectTo.includes('\\')
+  ) {
     return redirectTo;
   }
   return ROUTES.DASHBOARD;

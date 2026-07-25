@@ -4,19 +4,7 @@ import { useCallback, useState } from 'react';
 import { useDeleteDocumentMutation, useUploadDocumentMutation, type DocumentType } from '@careernext/graphql-types';
 import { MY_DOCUMENTS_QUERY } from '@/graphql/documents/queries';
 import { ACCEPTED_DOCUMENT_MIME_TYPES, MAX_DOCUMENT_FILE_SIZE_BYTES } from '@/components/documents/constants';
-import { getApolloErrorMessage } from '@/utils';
-
-function readFileAsBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.slice(result.indexOf(',') + 1));
-    };
-    reader.onerror = () => reject(reader.error ?? new Error('Could not read the selected file.'));
-    reader.readAsDataURL(file);
-  });
-}
+import { getApolloErrorMessage, readFileAsBase64 } from '@/utils';
 
 // Upload creates a new item the cache has never seen, and delete removes one
 // outright — neither is "update an existing normalized entity", so both
@@ -38,7 +26,9 @@ export function useDocumentActions() {
     } catch (err) {
       setError(getApolloErrorMessage(err));
     } finally {
-      setPendingId(null);
+      // Only clear our own pending marker — a slow first action resolving
+      // must not re-enable buttons for a second action still in flight.
+      setPendingId((current) => (current === id ? null : current));
     }
   }, []);
 

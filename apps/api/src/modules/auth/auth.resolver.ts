@@ -1,9 +1,11 @@
 import { UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Throttle } from '@nestjs/throttler';
 import type { CookieOptions, Response } from 'express';
 
 import type { GqlContext } from '../../graphql/gql-context';
+import { GqlThrottlerGuard } from '../../common/guards/gql-throttler.guard';
 import { AuthService, type IssuedSession, type RefreshTokenPayload } from './auth.service';
 import { REFRESH_TOKEN_COOKIE } from './auth.constants';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -27,7 +29,13 @@ export class AuthResolver {
     private readonly configService: ConfigService,
   ) {}
 
+  // The four public (unauthenticated) mutations are rate limited per IP —
+  // login/register are bcrypt-backed (CPU-heavy) and forgot/reset write
+  // token rows, so none of them may be callable at wire speed.
+
   @Mutation(() => AuthPayloadModel)
+  @UseGuards(GqlThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   async register(
     @Args('input') input: RegisterInput,
     @Context() context: GqlContext,
@@ -38,6 +46,8 @@ export class AuthResolver {
   }
 
   @Mutation(() => AuthPayloadModel)
+  @UseGuards(GqlThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   async login(
     @Args('input') input: LoginInput,
     @Context() context: GqlContext,
@@ -74,11 +84,15 @@ export class AuthResolver {
   }
 
   @Mutation(() => Boolean)
+  @UseGuards(GqlThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   forgotPassword(@Args('input') input: ForgotPasswordInput): Promise<boolean> {
     return this.authService.forgotPassword(input.email);
   }
 
   @Mutation(() => Boolean)
+  @UseGuards(GqlThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   resetPassword(@Args('input') input: ResetPasswordInput): Promise<boolean> {
     return this.authService.resetPassword(input);
   }

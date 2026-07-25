@@ -33,24 +33,25 @@ export function PasswordField({
       type={visible ? 'text' : 'password'}
       error={!!error}
       helperText={error ?? helperText}
-      InputProps={{
-        endAdornment: (
-          <InputAdornment position="end">
-            <IconButton
-              aria-label={visible ? 'Hide password' : 'Show password'}
-              onClick={() => setVisible((v) => !v)}
-              edge="end"
-              size="small"
-              tabIndex={-1}
-            >
-              {visible ? (
-                <VisibilityOffRoundedIcon fontSize="small" />
-              ) : (
-                <VisibilityRoundedIcon fontSize="small" />
-              )}
-            </IconButton>
-          </InputAdornment>
-        ),
+      slotProps={{
+        input: {
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                aria-label={visible ? 'Hide password' : 'Show password'}
+                onClick={() => setVisible((v) => !v)}
+                edge="end"
+                size="small"
+              >
+                {visible ? (
+                  <VisibilityOffRoundedIcon fontSize="small" />
+                ) : (
+                  <VisibilityRoundedIcon fontSize="small" />
+                )}
+              </IconButton>
+            </InputAdornment>
+          ),
+        },
       }}
     />
   );

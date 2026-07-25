@@ -3,3 +3,4 @@
  * `@careernext/utils` — do NOT duplicate them here.
  */
 export * from './apollo-error';
+export * from './file';

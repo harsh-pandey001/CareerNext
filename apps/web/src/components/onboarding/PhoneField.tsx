@@ -38,7 +38,7 @@ export function PhoneField({ control, error }: PhoneFieldProps) {
             label="Phone Number"
             type="tel"
             autoComplete="tel-national"
-            inputProps={{ inputMode: 'numeric', maxLength: 14 }}
+            slotProps={{ htmlInput: { inputMode: 'numeric', maxLength: 14 } }}
             onChange={(event) => field.onChange(event.target.value.replace(/\D/g, ''))}
             error={!!error}
             helperText={error}

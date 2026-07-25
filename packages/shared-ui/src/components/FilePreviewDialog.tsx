@@ -36,9 +36,11 @@ export function FilePreviewDialog({ open, onClose, file, loading, errorMessage }
   const isImage = file?.mimeType.startsWith('image/');
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" PaperProps={{ sx: { borderRadius: '20px', height: '85vh' } }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" slotProps={{ paper: { sx: { borderRadius: '20px', height: '85vh' } } }}>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pr: 7 }}>
-        <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ flex: 1 }}>
+        {/* component="span": DialogTitle already renders an <h2>; nesting
+            another heading element inside it is invalid markup. */}
+        <Typography component="span" variant="subtitle1" fontWeight={700} noWrap sx={{ flex: 1 }}>
           {file?.fileName ?? 'Preview'}
         </Typography>
         <IconButton onClick={onClose} aria-label="Close preview" sx={{ position: 'absolute', right: 12, top: 12 }}>

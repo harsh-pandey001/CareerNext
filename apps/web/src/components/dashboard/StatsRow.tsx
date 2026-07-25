@@ -1,11 +1,16 @@
 import Box from '@mui/material/Box';
 import WorkOutlineRoundedIcon from '@mui/icons-material/WorkOutlineRounded';
-import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
+import BookmarkBorderRoundedIcon from '@mui/icons-material/BookmarkBorderRounded';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
-import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import PsychologyOutlinedIcon from '@mui/icons-material/PsychologyOutlined';
 import { StatCard } from './StatCard';
+import type { DashboardStats } from '@/hooks/dashboard/useDashboardData';
 
-export function StatsRow() {
+interface StatsRowProps {
+  stats: DashboardStats;
+}
+
+export function StatsRow({ stats }: StatsRowProps) {
   return (
     <Box
       sx={{
@@ -14,10 +19,10 @@ export function StatsRow() {
         gap: 2.5,
       }}
     >
-      <StatCard icon={WorkOutlineRoundedIcon} label="Applications Sent" value={46} trend={{ value: 12, direction: 'up' }} />
-      <StatCard icon={EventAvailableRoundedIcon} label="Interviews Scheduled" value={3} trend={{ value: 8, direction: 'up' }} />
-      <StatCard icon={CheckCircleOutlineRoundedIcon} label="Offers Received" value={1} />
-      <StatCard icon={BoltRoundedIcon} label="Profile Views" value={128} trend={{ value: 4, direction: 'down' }} />
+      <StatCard icon={WorkOutlineRoundedIcon} label="Applications Sent" value={stats.applied} />
+      <StatCard icon={BookmarkBorderRoundedIcon} label="Jobs Saved" value={stats.saved} />
+      <StatCard icon={CheckCircleOutlineRoundedIcon} label="Offers Accepted" value={stats.accepted} />
+      <StatCard icon={PsychologyOutlinedIcon} label="Skills Added" value={stats.skills} />
     </Box>
   );
 }

@@ -5,6 +5,7 @@ export type ThemeMode = 'light' | 'dark';
 
 interface UIState {
   themeMode: ThemeMode;
+  /** Mobile-only nav drawer visibility (the md+ sidebar is always shown). */
   sidebarOpen: boolean;
   toggleTheme: () => void;
   setThemeMode: (mode: ThemeMode) => void;
@@ -19,12 +20,17 @@ export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
       themeMode: 'light',
-      sidebarOpen: true,
+      sidebarOpen: false,
       toggleTheme: () =>
         set((state) => ({ themeMode: state.themeMode === 'light' ? 'dark' : 'light' })),
       setThemeMode: (mode) => set({ themeMode: mode }),
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
     }),
-    { name: 'careernext-ui' },
+    {
+      name: 'careernext-ui',
+      // Persist the theme choice only — a drawer that re-opens itself on the
+      // next visit (or was left `true` by an older stored state) is a bug.
+      partialize: (state) => ({ themeMode: state.themeMode }),
+    },
   ),
 );

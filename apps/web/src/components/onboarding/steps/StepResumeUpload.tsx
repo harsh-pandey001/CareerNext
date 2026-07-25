@@ -9,7 +9,7 @@ import { useOnboardingStore } from '../store';
 
 export function StepResumeUpload() {
   const resumeFileName = useOnboardingStore((s) => s.resumeFileName);
-  const setResumeFileName = useOnboardingStore((s) => s.setResumeFileName);
+  const setResume = useOnboardingStore((s) => s.setResume);
   const nextStep = useOnboardingStore((s) => s.nextStep);
 
   return (
@@ -23,7 +23,7 @@ export function StepResumeUpload() {
         </Typography>
       </Stack>
 
-      <ResumeDropzone fileName={resumeFileName} onFileSelected={setResumeFileName} />
+      <ResumeDropzone fileName={resumeFileName} onFileSelected={setResume} />
 
       <Stack direction="row" spacing={2} justifyContent="flex-end">
         <Button

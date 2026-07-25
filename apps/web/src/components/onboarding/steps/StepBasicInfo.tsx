@@ -31,7 +31,10 @@ export function StepBasicInfo() {
     defaultValues: {
       firstName: basicInfo.firstName ?? '',
       lastName: basicInfo.lastName ?? '',
-      email: basicInfo.email ?? credentials?.email ?? '',
+      // credentials.email wins: it's the address that actually registers.
+      // Preferring the basicInfo copy would show a stale value if the user
+      // went back to Step 1 and changed their email.
+      email: credentials?.email ?? basicInfo.email ?? '',
       countryCode: basicInfo.countryCode ?? '+91',
       phone: basicInfo.phone ?? '',
       location: basicInfo.location ?? '',

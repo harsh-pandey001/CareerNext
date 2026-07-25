@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -24,6 +24,11 @@ import type { ResetPasswordInput } from './dto/reset-password.input';
 
 const BCRYPT_ROUNDS = 12;
 
+/** Emails are stored and matched lowercase — `Foo@x.com` and `foo@x.com` are one account. */
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 export interface IssuedSession {
   accessToken: string;
   refreshToken: string;
@@ -48,14 +53,15 @@ export class AuthService {
   ) {}
 
   async register(input: RegisterInput): Promise<IssuedSession> {
-    const existing = await this.usersService.findByEmail(input.email);
+    const email = normalizeEmail(input.email);
+    const existing = await this.usersService.findByEmail(email);
     if (existing) {
       throw new ConflictException('An account with this email already exists.');
     }
 
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
     const user = await this.usersService.create({
-      email: input.email,
+      email,
       passwordHash,
       firstName: input.firstName,
       lastName: input.lastName,
@@ -65,7 +71,7 @@ export class AuthService {
   }
 
   async login(input: LoginInput): Promise<IssuedSession> {
-    const user = await this.usersService.findByEmail(input.email);
+    const user = await this.usersService.findByEmail(normalizeEmail(input.email));
     if (!user || !(await bcrypt.compare(input.password, user.passwordHash))) {
       throw new UnauthorizedException('Invalid email or password.');
     }
@@ -110,18 +116,38 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token.');
     }
 
+    // Atomically claim the token BEFORE issuing a replacement. Two concurrent
+    // requests presenting the same token (victim + attacker replay) both pass
+    // the read above under READ COMMITTED — but only one can win this
+    // conditional update. The loser gets count 0 and is treated as reuse,
+    // which also revokes the whole session family. Claiming first also means
+    // a crash mid-rotation leaves zero live tokens (re-login), never two.
+    const claimed = await this.prisma.refreshToken.updateMany({
+      where: { id: stored.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    if (claimed.count === 0) {
+      await this.prisma.refreshToken.updateMany({
+        where: { userId: stored.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      throw new UnauthorizedException('Session revoked. Please log in again.');
+    }
+
     const session = await this.issueSession(user);
 
+    // Audit link only — the old token is already revoked by the claim above.
     await this.prisma.refreshToken.update({
       where: { id: stored.id },
-      data: { revokedAt: new Date(), replacedByTokenHash: this.hashToken(session.refreshToken) },
+      data: { replacedByTokenHash: this.hashToken(session.refreshToken) },
     });
 
     return session;
   }
 
   /** Always returns true — never reveals whether the email exists (anti-enumeration). */
-  async forgotPassword(email: string): Promise<boolean> {
+  async forgotPassword(rawEmail: string): Promise<boolean> {
+    const email = normalizeEmail(rawEmail);
     const user = await this.usersService.findByEmail(email);
 
     if (user) {
@@ -137,10 +163,9 @@ export class AuthService {
       });
 
       // V1: no email service yet (that's V4/BullMQ). Surface the token in
-      // dev logs only so the reset UI can be exercised end to end.
-      // (Nest's default logger excludes 'debug' level, so this uses 'log'
-      // to actually be visible without extra logger config.)
-      if (this.configService.get<string>('env') !== 'production') {
+      // LOCAL DEV logs only so the reset UI can be exercised end to end —
+      // staging/production logs must never carry live reset tokens.
+      if (this.configService.get<string>('env') === 'development') {
         this.logger.log(`Password reset token for ${email}: ${rawToken}`);
       }
     }
@@ -183,10 +208,18 @@ export class AuthService {
       expiresIn: this.configService.get<string>('jwt.accessExpiresIn'),
     });
 
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('jwt.refreshSecret'),
-      expiresIn: this.configService.get<string>('jwt.refreshExpiresIn'),
-    });
+    // jti makes every refresh token unique. Without it, two sessions issued
+    // for the same user within the same second (double-click login, or
+    // register immediately followed by login) sign byte-identical JWTs —
+    // same payload, same second-precision iat/exp — and the second
+    // `refreshToken.create` dies on the unique tokenHash constraint.
+    const refreshToken = await this.jwtService.signAsync(
+      { ...payload, jti: randomUUID() },
+      {
+        secret: this.configService.get<string>('jwt.refreshSecret'),
+        expiresIn: this.configService.get<string>('jwt.refreshExpiresIn'),
+      },
+    );
 
     const { exp } = this.jwtService.decode(refreshToken) as { exp: number };
     const refreshTokenExpiresAt = new Date(exp * 1000);

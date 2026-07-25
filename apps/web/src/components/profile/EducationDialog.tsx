@@ -72,7 +72,7 @@ export function EducationDialog({ open, onClose, onSubmit, education, submitting
   });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '20px' } }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" slotProps={{ paper: { sx: { borderRadius: '20px' } } }}>
       <DialogTitle sx={{ pr: 7 }}>
         {education ? 'Edit Education' : 'Add Education'}
         <IconButton onClick={onClose} aria-label="Close" sx={{ position: 'absolute', right: 12, top: 12 }}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState, type DragEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type DragEvent } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -15,27 +15,40 @@ const ANALYSIS_STEPS = ['Skills Found', 'Experience Found', 'Education Found'];
 
 interface ResumeDropzoneProps {
   fileName: string | null;
-  onFileSelected: (fileName: string | null) => void;
+  /** Receives the real File — the wizard uploads it after registration succeeds. */
+  onFileSelected: (file: File | null) => void;
 }
 
 export function ResumeDropzone({ fileName, onFileSelected }: ResumeDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [foundCount, setFoundCount] = useState(0);
 
+  useEffect(
+    () => () => {
+      timersRef.current.forEach(clearTimeout);
+    },
+    [],
+  );
+
   const runMockAnalysis = useCallback(() => {
     setAnalyzing(true);
     setFoundCount(0);
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
     ANALYSIS_STEPS.forEach((_, index) => {
-      setTimeout(
-        () => {
-          setFoundCount(index + 1);
-          if (index === ANALYSIS_STEPS.length - 1) {
-            setTimeout(() => setAnalyzing(false), 400);
-          }
-        },
-        (index + 1) * 500,
+      timersRef.current.push(
+        setTimeout(
+          () => {
+            setFoundCount(index + 1);
+            if (index === ANALYSIS_STEPS.length - 1) {
+              timersRef.current.push(setTimeout(() => setAnalyzing(false), 400));
+            }
+          },
+          (index + 1) * 500,
+        ),
       );
     });
   }, []);
@@ -43,7 +56,10 @@ export function ResumeDropzone({ fileName, onFileSelected }: ResumeDropzoneProps
   const handleFile = useCallback(
     (file: File | undefined) => {
       if (!file) return;
-      onFileSelected(file.name);
+      // Drag-and-drop bypasses the <input accept> filter — enforce it here.
+      const extension = `.${file.name.split('.').pop()?.toLowerCase() ?? ''}`;
+      if (!ACCEPTED_EXTENSIONS.includes(extension)) return;
+      onFileSelected(file);
       runMockAnalysis();
     },
     [onFileSelected, runMockAnalysis],

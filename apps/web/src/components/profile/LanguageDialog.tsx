@@ -49,7 +49,7 @@ export function LanguageDialog({ open, onClose, onSubmit, language, submitting, 
   });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs" PaperProps={{ sx: { borderRadius: '20px' } }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs" slotProps={{ paper: { sx: { borderRadius: '20px' } } }}>
       <DialogTitle sx={{ pr: 7 }}>
         {language ? 'Edit Language' : 'Add Language'}
         <IconButton onClick={onClose} aria-label="Close" sx={{ position: 'absolute', right: 12, top: 12 }}>

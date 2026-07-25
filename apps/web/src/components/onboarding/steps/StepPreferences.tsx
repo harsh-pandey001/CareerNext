@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Stack from '@mui/material/Stack';
@@ -12,9 +13,11 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import FormHelperText from '@mui/material/FormHelperText';
 import Alert from '@mui/material/Alert';
+import { useUpdateProfileMutation, useUploadResumeMutation } from '@careernext/graphql-types';
 import { FormTextField } from '@/components/auth/fields/FormTextField';
 import { SubmitButton } from '@/components/auth/SubmitButton';
 import { useRegister } from '@/hooks/auth/useRegister';
+import { readFileAsBase64 } from '@/utils';
 import { BackButton } from '../BackButton';
 import { preferencesSchema, type PreferencesFormValues } from '../schemas';
 import { NOTICE_PERIOD_OPTIONS, WORK_PREFERENCE_OPTIONS, PREFERRED_ROLE_SUGGESTIONS } from '../constants';
@@ -37,10 +40,44 @@ export function StepPreferences() {
   const credentials = useOnboardingStore((s) => s.credentials);
   const basicInfo = useOnboardingStore((s) => s.basicInfo);
   const preferences = useOnboardingStore((s) => s.preferences);
+  const resumeFile = useOnboardingStore((s) => s.resumeFile);
   const savePreferences = useOnboardingStore((s) => s.savePreferences);
+  const clearCredentials = useOnboardingStore((s) => s.clearCredentials);
   const prevStep = useOnboardingStore((s) => s.prevStep);
   const nextStep = useOnboardingStore((s) => s.nextStep);
   const { registerUser, loading, error } = useRegister();
+  const [updateProfileMutation] = useUpdateProfileMutation();
+  const [uploadResumeMutation] = useUploadResumeMutation();
+  const [wizardError, setWizardError] = useState<string | null>(null);
+
+  /**
+   * Best-effort enrichment AFTER the account exists: persist the wizard
+   * answers that map to V1 Profile fields (currentRole -> headline,
+   * location) and upload the Step-2 resume. A failure here must never block
+   * onboarding — the account is already created; everything below is
+   * editable later from the Profile/Resume pages. (Phone, experience band,
+   * and the Step-4 preferences have no V1 backend fields yet — they get
+   * persisted when their V2 schema lands.)
+   */
+  const enrichProfile = async () => {
+    try {
+      const headline = basicInfo.currentRole;
+      const location = basicInfo.location;
+      if (headline || location) {
+        await updateProfileMutation({
+          variables: { input: { ...(headline ? { headline } : {}), ...(location ? { location } : {}) } },
+        });
+      }
+      if (resumeFile) {
+        const content = await readFileAsBase64(resumeFile);
+        await uploadResumeMutation({
+          variables: { fileName: resumeFile.name, mimeType: resumeFile.type, content },
+        });
+      }
+    } catch {
+      // Swallowed by design — see docblock above.
+    }
+  };
 
   const {
     register,
@@ -59,8 +96,13 @@ export function StepPreferences() {
   });
 
   const onSubmit = async (data: PreferencesFormValues) => {
+    setWizardError(null);
     savePreferences(data);
-    if (!credentials || !basicInfo.firstName || !basicInfo.lastName) return;
+    if (!credentials || !basicInfo.firstName || !basicInfo.lastName) {
+      // Should be unreachable via normal step flow — but never fail silently.
+      setWizardError('Some earlier steps are missing. Please go back and complete them.');
+      return;
+    }
 
     const success = await registerUser({
       email: credentials.email,
@@ -68,7 +110,12 @@ export function StepPreferences() {
       firstName: basicInfo.firstName,
       lastName: basicInfo.lastName,
     });
-    if (success) nextStep();
+    if (success) {
+      // The raw password has served its one purpose — drop it immediately.
+      clearCredentials();
+      await enrichProfile();
+      nextStep();
+    }
   };
 
   return (
@@ -77,9 +124,9 @@ export function StepPreferences() {
         Your Career Goals
       </Typography>
 
-      {error && (
+      {(error ?? wizardError) && (
         <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
-          {error}
+          {error ?? wizardError}
         </Alert>
       )}
 

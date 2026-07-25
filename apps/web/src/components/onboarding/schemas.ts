@@ -12,8 +12,8 @@ export const credentialsSchema = z.object({
 export type CredentialsFormValues = z.infer<typeof credentialsSchema>;
 
 export const basicInfoSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  firstName: z.string().min(1, 'First name is required').max(100, 'Keep it under 100 characters'),
+  lastName: z.string().min(1, 'Last name is required').max(100, 'Keep it under 100 characters'),
   email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
   countryCode: z.string().min(1, 'Select a country code'),
   phone: z

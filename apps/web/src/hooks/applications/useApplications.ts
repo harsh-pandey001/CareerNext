@@ -14,7 +14,10 @@ export function useApplications() {
       grouped.set(column.status, []);
     }
     for (const application of applications) {
-      grouped.get(application.status)?.push(application);
+      // Statuses without their own column (the V2 interview stages) surface
+      // under Applied rather than silently disappearing from the board.
+      const column = grouped.has(application.status) ? application.status : 'APPLIED';
+      grouped.get(column)?.push(application);
     }
     return APPLICATION_COLUMNS.map((column) => ({
       ...column,

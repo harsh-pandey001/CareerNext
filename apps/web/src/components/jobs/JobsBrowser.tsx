@@ -34,7 +34,7 @@ export function JobsBrowser() {
       <JobFilters filter={filter} onChange={updateFilter} onReset={resetFilter} />
 
       {actionError && (
-        <Alert severity="error" variant="outlined" onClose={() => undefined} sx={{ borderRadius: 2 }}>
+        <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
           {actionError}
         </Alert>
       )}

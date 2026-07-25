@@ -31,6 +31,10 @@ async function bootstrap(): Promise<void> {
     credentials: true,
   });
 
+  // Docker-first: SIGTERM from `docker stop` must run onModuleDestroy hooks
+  // (PrismaService disconnect) instead of killing in-flight transactions.
+  app.enableShutdownHooks();
+
   const port = config.get<number>('port') ?? 4000;
   await app.listen(port);
 

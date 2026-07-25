@@ -25,7 +25,7 @@ const COLORS: Record<NotificationItem['type'], 'success' | 'info' | 'warning'> =
 
 export function NotificationsPanel() {
   return (
-    <SectionCard title="Notifications" subtitle="Recent activity on your account">
+    <SectionCard title="Notifications" subtitle="Sample preview — Notifications arrive in V2">
       <Stack spacing={2}>
         {NOTIFICATIONS.map((notification) => {
           const Icon = ICONS[notification.type];

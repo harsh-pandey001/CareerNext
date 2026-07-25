@@ -21,13 +21,27 @@ export interface AppConfig {
   };
 }
 
+const env = (): string => process.env.NODE_ENV ?? 'development';
+
+/**
+ * Dev gets a convenience fallback; everywhere else a missing secret is a
+ * hard boot failure — silently signing tokens with a known default string
+ * would let anyone forge a session.
+ */
+function requiredSecret(name: string, devFallback: string): string {
+  const value = process.env[name];
+  if (value) return value;
+  if (env() === 'development') return devFallback;
+  throw new Error(`${name} must be set when NODE_ENV is not "development".`);
+}
+
 export default (): AppConfig => ({
-  env: process.env.NODE_ENV ?? 'development',
+  env: env(),
   port: parseInt(process.env.PORT ?? '4000', 10),
   jwt: {
-    accessSecret: process.env.JWT_ACCESS_SECRET ?? 'change-me-access-secret',
+    accessSecret: requiredSecret('JWT_ACCESS_SECRET', 'change-me-access-secret'),
     accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '15m',
-    refreshSecret: process.env.JWT_REFRESH_SECRET ?? 'change-me-refresh-secret',
+    refreshSecret: requiredSecret('JWT_REFRESH_SECRET', 'change-me-refresh-secret'),
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d',
   },
   graphql: {

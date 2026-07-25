@@ -4,8 +4,10 @@ const prisma = new PrismaClient();
 
 /**
  * V1 ships with dummy job listings (CLAUDE.md's own roadmap: "Dummy Jobs") —
- * there's no live job-board integration until V4 ("Job APIs"). Re-running
- * this is safe: it clears and re-seeds the `jobs` table only.
+ * there's no live job-board integration until V4 ("Job APIs"). Jobs are
+ * upserted on a stable per-listing key (company + title), NEVER deleted:
+ * `Application.job` cascades on delete, so a `deleteMany` re-seed would
+ * silently wipe every user's saved/applied history along with the jobs.
  */
 const JOBS: Array<{
   title: string;
@@ -217,10 +219,19 @@ const JOBS: Array<{
 ];
 
 async function main() {
-  await prisma.job.deleteMany();
-  await prisma.job.createMany({ data: JOBS });
+  for (const job of JOBS) {
+    const existing = await prisma.job.findFirst({
+      where: { company: job.company, title: job.title },
+      select: { id: true },
+    });
+    if (existing) {
+      await prisma.job.update({ where: { id: existing.id }, data: job });
+    } else {
+      await prisma.job.create({ data: job });
+    }
+  }
   // eslint-disable-next-line no-console
-  console.log(`Seeded ${JOBS.length} jobs.`);
+  console.log(`Seeded ${JOBS.length} jobs (upserted — existing applications untouched).`);
 }
 
 main()

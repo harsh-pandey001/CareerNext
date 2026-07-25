@@ -89,8 +89,8 @@ export class DocumentsResolver {
   }
 
   @ResolveField(() => String)
-  async fileUrl(@Parent() document: DocumentModel): Promise<string> {
-    const file = await this.documentsService.getFileData(document.id);
+  async fileUrl(@CurrentUser() user: PrismaUser, @Parent() document: DocumentModel): Promise<string> {
+    const file = await this.documentsService.getFileData(user.id, document.id);
     if (!file) return '';
     return `data:${file.mimeType};base64,${file.data.toString('base64')}`;
   }

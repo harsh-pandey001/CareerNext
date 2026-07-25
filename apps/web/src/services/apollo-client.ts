@@ -73,6 +73,16 @@ const errorLink = onError(({ graphQLErrors, operation, forward }) => {
     return;
   }
 
+  // Retry at most once per operation. Without this marker, an operation
+  // that keeps 401ing while refreshToken keeps succeeding (revoked user,
+  // clock skew, guard mismatch) would loop refresh -> retry -> 401 forever.
+  const context = operation.getContext() as { refreshRetried?: boolean };
+  if (context.refreshRetried) {
+    useAuthStore.getState().clearAuth();
+    return;
+  }
+  operation.setContext({ ...context, refreshRetried: true });
+
   refreshPromise ??= refreshAccessToken().finally(() => {
     refreshPromise = null;
   });
@@ -84,6 +94,7 @@ const errorLink = onError(({ graphQLErrors, operation, forward }) => {
         if (typeof window !== 'undefined') {
           window.location.href = ROUTES.LOGIN;
         }
+        throw new Error('Your session has expired. Please sign in again.');
       }
       // On success, authLink re-reads the (now updated) store token when
       // `forward` re-enters the chain below — no need to touch headers here.

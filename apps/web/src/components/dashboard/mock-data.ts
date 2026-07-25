@@ -1,25 +1,9 @@
 /**
- * Dashboard placeholder data. Applications/Interviews/Skills/Notifications
- * don't have backend modules yet (V1 roadmap builds them next) — this
- * mirrors CLAUDE.md's own "Dummy Jobs" approach for V1: real UI, mock data,
- * swapped for live GraphQL queries once those modules land.
+ * Sample data for the two dashboard widgets whose backing features ship in
+ * V2 (Interview Tracker, Notifications). Both widgets label themselves as
+ * previews in the UI. Everything else on the dashboard is live data via
+ * `useDashboardData` — do not add new mock datasets here.
  */
-
-export const APPLICATION_STATUS_BREAKDOWN = [
-  { status: 'Saved', count: 12 },
-  { status: 'Applied', count: 24 },
-  { status: 'Accepted', count: 3 },
-  { status: 'Rejected', count: 7 },
-] as const;
-
-export const MONTHLY_APPLICATIONS_TREND = [
-  { month: 'Feb', applications: 6 },
-  { month: 'Mar', applications: 9 },
-  { month: 'Apr', applications: 14 },
-  { month: 'May', applications: 11 },
-  { month: 'Jun', applications: 18 },
-  { month: 'Jul', applications: 22 },
-] as const;
 
 export interface UpcomingInterview {
   id: string;
@@ -37,19 +21,6 @@ export const UPCOMING_INTERVIEWS: UpcomingInterview[] = [
   { id: '3', company: 'Vertex Analytics', role: 'Software Engineer', round: 'HR Round', date: 'Jul 29', time: '11:00 AM', mode: 'Onsite' },
 ];
 
-export interface SkillOverviewItem {
-  name: string;
-  level: number;
-}
-
-export const SKILLS_OVERVIEW: SkillOverviewItem[] = [
-  { name: 'TypeScript', level: 88 },
-  { name: 'React', level: 92 },
-  { name: 'Node.js', level: 76 },
-  { name: 'GraphQL', level: 64 },
-  { name: 'System Design', level: 55 },
-];
-
 export interface NotificationItem {
   id: string;
   message: string;
@@ -63,5 +34,3 @@ export const NOTIFICATIONS: NotificationItem[] = [
   { id: '3', message: 'Your resume hasn’t been updated in 30 days.', time: '1d ago', type: 'warning' },
   { id: '4', message: 'Vertex Analytics viewed your application.', time: '2d ago', type: 'info' },
 ];
-
-export const PROFILE_COMPLETION = 72;

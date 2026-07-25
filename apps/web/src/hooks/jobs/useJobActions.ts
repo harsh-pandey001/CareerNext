@@ -24,7 +24,9 @@ export function useJobActions() {
     } catch (err) {
       setError(getApolloErrorMessage(err));
     } finally {
-      setPendingJobId(null);
+      // Only clear our own pending marker — a slow first action resolving
+      // must not re-enable buttons for a second action still in flight.
+      setPendingJobId((current) => (current === jobId ? null : current));
     }
   }, []);
 

@@ -3,15 +3,19 @@
 import { LineChart } from '@mui/x-charts/LineChart';
 import { useTheme } from '@mui/material/styles';
 import { SectionCard } from './SectionCard';
-import { MONTHLY_APPLICATIONS_TREND } from './mock-data';
+import type { MonthlyTrendPoint } from '@/hooks/dashboard/useDashboardData';
 
-export function ActivityTrendChart() {
+interface ActivityTrendChartProps {
+  data: MonthlyTrendPoint[];
+}
+
+export function ActivityTrendChart({ data }: ActivityTrendChartProps) {
   const theme = useTheme();
 
   return (
     <SectionCard title="Career Activity" subtitle="Applications submitted over the last 6 months">
       <LineChart
-        dataset={[...MONTHLY_APPLICATIONS_TREND]}
+        dataset={data.map((point) => ({ ...point }))}
         xAxis={[{ scaleType: 'point', dataKey: 'month', disableLine: true, disableTicks: true }]}
         yAxis={[{ disableLine: true, disableTicks: true }]}
         series={[

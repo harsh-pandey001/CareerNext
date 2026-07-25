@@ -1,6 +1,6 @@
 import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-import type { Document as PrismaDocument } from '@prisma/client';
 import { DocumentType } from '@careernext/shared-types';
+import type { DocumentMeta } from '../documents.service';
 
 registerEnumType(DocumentType, { name: 'DocumentType' });
 
@@ -32,7 +32,7 @@ export class DocumentModel {
   fileUrl!: string;
 }
 
-export function toDocumentModel(document: PrismaDocument): DocumentModel {
+export function toDocumentModel(document: DocumentMeta): DocumentModel {
   const model = new DocumentModel();
   model.id = document.id;
   model.type = document.type as unknown as DocumentType;

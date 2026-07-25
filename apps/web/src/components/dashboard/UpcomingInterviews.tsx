@@ -21,7 +21,7 @@ function getInitials(name: string) {
 
 export function UpcomingInterviews() {
   return (
-    <SectionCard title="Upcoming Interviews" subtitle={`${UPCOMING_INTERVIEWS.length} scheduled`}>
+    <SectionCard title="Upcoming Interviews" subtitle="Sample preview — Interview Tracker arrives in V2">
       <Stack divider={<Divider sx={{ borderColor: 'divider' }} />} spacing={2}>
         {UPCOMING_INTERVIEWS.map((interview) => (
           <Stack key={interview.id} direction="row" spacing={1.5} alignItems="center">

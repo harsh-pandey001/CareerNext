@@ -33,7 +33,12 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Profile', href: ROUTES.PROFILE, icon: PersonOutlineRoundedIcon },
 ];
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  /** Mobile drawer usage: close the drawer when a destination is picked. */
+  onNavigate?: () => void;
+}
+
+export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
   const pathname = usePathname();
 
   return (
@@ -105,6 +110,7 @@ export function AppSidebar() {
               key={item.href}
               component={NextLink}
               href={item.href}
+              onClick={onNavigate}
               sx={{
                 ...itemSx,
                 color: isActive ? 'primary.main' : 'text.primary',

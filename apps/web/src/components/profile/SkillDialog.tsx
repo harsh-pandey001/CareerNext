@@ -63,7 +63,7 @@ export function SkillDialog({ open, onClose, onSubmit, skill, submitting, error 
   });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs" PaperProps={{ sx: { borderRadius: '20px' } }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs" slotProps={{ paper: { sx: { borderRadius: '20px' } } }}>
       <DialogTitle sx={{ pr: 7 }}>
         {skill ? 'Edit Skill' : 'Add Skill'}
         <IconButton onClick={onClose} aria-label="Close" sx={{ position: 'absolute', right: 12, top: 12 }}>

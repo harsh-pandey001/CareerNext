@@ -47,10 +47,14 @@ export function PersonalDetailsDialog({ open, onClose, onSubmit, profile, submit
   }, [open, profile, reset]);
 
   const submit = handleSubmit(async (data) => {
+    // Every field is sent, empty string included — the API treats '' as
+    // "clear this field" and only an OMITTED key as "no change". Sending
+    // `undefined` here would make cleared fields silently keep their old
+    // values after a successful save.
     const success = await onSubmit({
-      headline: data.headline || undefined,
-      bio: data.bio || undefined,
-      location: data.location || undefined,
+      headline: data.headline ?? '',
+      bio: data.bio ?? '',
+      location: data.location ?? '',
       githubUrl: data.githubUrl ?? '',
       linkedinUrl: data.linkedinUrl ?? '',
       portfolioUrl: data.portfolioUrl ?? '',
@@ -59,7 +63,7 @@ export function PersonalDetailsDialog({ open, onClose, onSubmit, profile, submit
   });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '20px' } }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" slotProps={{ paper: { sx: { borderRadius: '20px' } } }}>
       <DialogTitle sx={{ pr: 7 }}>
         Edit Personal Details
         <IconButton onClick={onClose} aria-label="Close" sx={{ position: 'absolute', right: 12, top: 12 }}>

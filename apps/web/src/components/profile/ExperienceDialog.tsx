@@ -81,7 +81,7 @@ export function ExperienceDialog({ open, onClose, onSubmit, experience, submitti
   });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '20px' } }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" slotProps={{ paper: { sx: { borderRadius: '20px' } } }}>
       <DialogTitle sx={{ pr: 7 }}>
         {experience ? 'Edit Experience' : 'Add Experience'}
         <IconButton onClick={onClose} aria-label="Close" sx={{ position: 'absolute', right: 12, top: 12 }}>

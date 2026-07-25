@@ -107,15 +107,28 @@ export class ApplicationsService {
   }
 
   /**
-   * Marks a job as applied. V1's only reachable states via this service are
-   * SAVED/APPLIED, so always setting APPLIED here is safe — V2's interview
-   * stages will need this to stop short of regressing a further-along status.
+   * Marks a job as applied. Only a SAVED bookmark may be advanced — a record
+   * that has already moved past APPLIED (via updateApplicationStatus, or
+   * V2's interview stages later) must never be regressed back to APPLIED,
+   * and re-applying must not overwrite the original appliedAt date.
    */
   async applyToJob(userId: string, jobId: string): Promise<void> {
-    await this.prisma.application.upsert({
+    const existing = await this.prisma.application.findUnique({
       where: { userId_jobId: { userId, jobId } },
-      create: { userId, jobId, status: PrismaApplicationStatus.APPLIED, appliedAt: new Date() },
-      update: { status: PrismaApplicationStatus.APPLIED, appliedAt: new Date() },
+      select: { status: true },
+    });
+
+    if (!existing) {
+      await this.prisma.application.create({
+        data: { userId, jobId, status: PrismaApplicationStatus.APPLIED, appliedAt: new Date() },
+      });
+      return;
+    }
+
+    // Conditional on status so a concurrent status change can't be clobbered.
+    await this.prisma.application.updateMany({
+      where: { userId, jobId, status: PrismaApplicationStatus.SAVED },
+      data: { status: PrismaApplicationStatus.APPLIED, appliedAt: new Date() },
     });
   }
 }

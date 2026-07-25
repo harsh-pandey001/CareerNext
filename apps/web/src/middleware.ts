@@ -19,7 +19,10 @@ const GUARDED_ROUTES = [
   ROUTES.DOCUMENTS,
 ];
 
-const GUEST_ONLY_ROUTES = [ROUTES.LOGIN, ROUTES.REGISTER, ROUTES.FORGOT_PASSWORD, ROUTES.RESET_PASSWORD];
+// RESET_PASSWORD is deliberately NOT guest-only: a logged-in user clicking
+// an emailed reset link must still be able to complete the reset — bouncing
+// them to /dashboard would make the link unusable.
+const GUEST_ONLY_ROUTES = [ROUTES.LOGIN, ROUTES.REGISTER, ROUTES.FORGOT_PASSWORD];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
