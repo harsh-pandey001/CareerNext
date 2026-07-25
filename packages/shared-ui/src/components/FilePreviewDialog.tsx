@@ -14,33 +14,32 @@ import Alert from '@mui/material/Alert';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import InsertDriveFileRoundedIcon from '@mui/icons-material/InsertDriveFileRounded';
-import type { ResumeVersionWithContentFieldsFragment } from '@careernext/graphql-types';
-import { formatDate, formatFileSize } from '@careernext/utils';
-import { getApolloErrorMessage } from '@/utils';
 
-interface ResumePreviewDialogProps {
-  open: boolean;
-  onClose: () => void;
-  version: ResumeVersionWithContentFieldsFragment | null;
-  loading: boolean;
-  error: unknown;
+export interface PreviewableFile {
+  fileName: string;
+  mimeType: string;
+  fileUrl: string;
+  sizeLabel: string;
+  dateLabel: string;
 }
 
-export function ResumePreviewDialog({ open, onClose, version, loading, error }: ResumePreviewDialogProps) {
-  const document = version?.document;
-  const isPdf = document?.mimeType === 'application/pdf';
+interface FilePreviewDialogProps {
+  open: boolean;
+  onClose: () => void;
+  file: PreviewableFile | null;
+  loading: boolean;
+  errorMessage?: string | null;
+}
+
+export function FilePreviewDialog({ open, onClose, file, loading, errorMessage }: FilePreviewDialogProps) {
+  const isPdf = file?.mimeType === 'application/pdf';
+  const isImage = file?.mimeType.startsWith('image/');
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth
-      maxWidth="md"
-      PaperProps={{ sx: { borderRadius: '20px', height: '85vh' } }}
-    >
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" PaperProps={{ sx: { borderRadius: '20px', height: '85vh' } }}>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pr: 7 }}>
         <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ flex: 1 }}>
-          {document?.fileName ?? 'Resume Preview'}
+          {file?.fileName ?? 'Preview'}
         </Typography>
         <IconButton onClick={onClose} aria-label="Close preview" sx={{ position: 'absolute', right: 12, top: 12 }}>
           <CloseRoundedIcon />
@@ -52,25 +51,31 @@ export function ResumePreviewDialog({ open, onClose, version, loading, error }: 
           <Box sx={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <CircularProgress size={28} />
           </Box>
-        ) : error ? (
+        ) : errorMessage ? (
           <Box sx={{ p: 3 }}>
             <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
-              {getApolloErrorMessage(error, 'Could not load this resume.')}
+              {errorMessage}
             </Alert>
           </Box>
-        ) : document && isPdf ? (
+        ) : file && isPdf ? (
+          <Box component="embed" src={file.fileUrl} type="application/pdf" sx={{ flex: 1, width: '100%', border: 'none' }} />
+        ) : file && isImage ? (
           <Box
-            component="embed"
-            src={document.fileUrl}
-            type="application/pdf"
-            sx={{ flex: 1, width: '100%', border: 'none' }}
-          />
-        ) : document ? (
+            sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'action.hover', p: 2 }}
+          >
+            <Box
+              component="img"
+              src={file.fileUrl}
+              alt={file.fileName}
+              sx={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '8px', objectFit: 'contain' }}
+            />
+          </Box>
+        ) : file ? (
           <Stack spacing={1.5} alignItems="center" justifyContent="center" sx={{ flex: 1, p: 4, textAlign: 'center' }}>
             <InsertDriveFileRoundedIcon sx={{ fontSize: 48, color: 'text.disabled' }} />
-            <Typography fontWeight={600}>{document.fileName}</Typography>
+            <Typography fontWeight={600}>{file.fileName}</Typography>
             <Typography variant="body2" color="text.secondary">
-              {formatFileSize(document.fileSize)} · Uploaded {version && formatDate(version.createdAt)}
+              {file.sizeLabel} · Uploaded {file.dateLabel}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 360 }}>
               Preview isn&apos;t available for this file type. Download it to view the full document.
@@ -83,11 +88,11 @@ export function ResumePreviewDialog({ open, onClose, version, loading, error }: 
         <Button onClick={onClose} sx={{ textTransform: 'none', fontWeight: 600 }}>
           Close
         </Button>
-        {document && (
+        {file && (
           <Button
             component="a"
-            href={document.fileUrl}
-            download={document.fileName}
+            href={file.fileUrl}
+            download={file.fileName}
             variant="contained"
             disableElevation
             startIcon={<DownloadRoundedIcon fontSize="small" />}

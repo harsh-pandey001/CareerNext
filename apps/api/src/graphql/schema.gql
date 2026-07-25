@@ -51,6 +51,48 @@ enum DocumentType {
   RESUME
 }
 
+type Education {
+  createdAt: DateTime!
+  degree: String!
+  endDate: DateTime
+  fieldOfStudy: String
+  grade: String
+  id: ID!
+  institution: String!
+  startDate: DateTime!
+}
+
+input EducationInput {
+  degree: String!
+  endDate: DateTime
+  fieldOfStudy: String
+  grade: String
+  institution: String!
+  startDate: DateTime!
+}
+
+type Experience {
+  company: String!
+  createdAt: DateTime!
+  description: String
+  endDate: DateTime
+  id: ID!
+  isCurrent: Boolean!
+  location: String
+  startDate: DateTime!
+  title: String!
+}
+
+input ExperienceInput {
+  company: String!
+  description: String
+  endDate: DateTime
+  isCurrent: Boolean! = false
+  location: String
+  startDate: DateTime!
+  title: String!
+}
+
 input ForgotPasswordInput {
   email: String!
 }
@@ -85,13 +127,36 @@ enum JobType {
   PART_TIME
 }
 
+type Language {
+  id: ID!
+  name: String!
+  proficiency: LanguageProficiency!
+}
+
+input LanguageInput {
+  name: String!
+  proficiency: LanguageProficiency!
+}
+
+enum LanguageProficiency {
+  BASIC
+  CONVERSATIONAL
+  FLUENT
+  NATIVE
+}
+
 input LoginInput {
   email: String!
   password: String!
 }
 
 type Mutation {
+  addEducation(input: EducationInput!): Education!
+  addExperience(input: ExperienceInput!): Experience!
+  addLanguage(input: LanguageInput!): Language!
+  addSkill(input: SkillInput!): Skill!
   applyToJob(jobId: ID!): Job!
+  deleteDocument(documentId: ID!): Boolean!
   deleteResumeVersion(resumeVersionId: ID!): Boolean!
   forgotPassword(input: ForgotPasswordInput!): Boolean!
   login(input: LoginInput!): AuthPayload!
@@ -99,11 +164,21 @@ type Mutation {
   refreshToken: AuthPayload!
   register(input: RegisterInput!): AuthPayload!
   removeApplication(applicationId: ID!): Boolean!
+  removeEducation(educationId: ID!): Boolean!
+  removeExperience(experienceId: ID!): Boolean!
+  removeLanguage(languageId: ID!): Boolean!
+  removeSkill(skillId: ID!): Boolean!
   resetPassword(input: ResetPasswordInput!): Boolean!
   saveJob(jobId: ID!): Job!
   setActiveResume(resumeVersionId: ID!): ResumeVersion!
   unsaveJob(jobId: ID!): Job!
   updateApplicationStatus(applicationId: ID!, status: ApplicationStatus!): Application!
+  updateEducation(educationId: ID!, input: EducationInput!): Education!
+  updateExperience(experienceId: ID!, input: ExperienceInput!): Experience!
+  updateLanguage(input: LanguageInput!, languageId: ID!): Language!
+  updateProfile(input: UpdateProfileInput!): Profile!
+  updateSkill(input: SkillInput!, skillId: ID!): Skill!
+  uploadDocument(content: String!, fileName: String!, mimeType: String!, type: DocumentType!): Document!
   uploadResume(content: String!, fileName: String!, mimeType: String!): ResumeVersion!
 }
 
@@ -120,13 +195,33 @@ input PaginationInput {
   pageSize: Int! = 10
 }
 
+type Profile {
+  bio: String
+  completionPercentage: Int!
+  educations: [Education!]!
+  experiences: [Experience!]!
+  githubUrl: String
+  headline: String
+  id: ID!
+  languages: [Language!]!
+  linkedinUrl: String
+  location: String
+  portfolioUrl: String
+  skills: [Skill!]!
+  updatedAt: DateTime!
+}
+
 type Query {
+  document(id: ID!): Document!
+
   """Liveness probe for the CareerNext API."""
   health: String!
   job(id: ID!): Job!
   jobs(filter: JobFilterInput, pagination: PaginationInput! = {page: 1, pageSize: 10}): PaginatedJobs!
   me: User!
   myApplications: [Application!]!
+  myDocuments(type: DocumentType): [Document!]!
+  myProfile: Profile!
   myResumeVersions: [ResumeVersion!]!
   resumeVersion(id: ID!): ResumeVersion!
 }
@@ -149,6 +244,35 @@ type ResumeVersion {
   id: ID!
   isActive: Boolean!
   version: Int!
+}
+
+type Skill {
+  id: ID!
+  level: SkillLevel!
+  name: String!
+  yearsOfExperience: Int
+}
+
+input SkillInput {
+  level: SkillLevel!
+  name: String!
+  yearsOfExperience: Int
+}
+
+enum SkillLevel {
+  ADVANCED
+  BEGINNER
+  EXPERT
+  INTERMEDIATE
+}
+
+input UpdateProfileInput {
+  bio: String
+  githubUrl: String
+  headline: String
+  linkedinUrl: String
+  location: String
+  portfolioUrl: String
 }
 
 type User {

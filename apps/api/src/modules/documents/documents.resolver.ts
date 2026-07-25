@@ -1,10 +1,11 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import type { User as PrismaUser } from '@prisma/client';
+import { DocumentType } from '@careernext/shared-types';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { DocumentsService } from './documents.service';
-import { DocumentModel } from './models/document.model';
+import { DocumentModel, toDocumentModel } from './models/document.model';
 import { ResumeVersionModel, toResumeVersionModel } from './models/resume-version.model';
 
 @Resolver(() => DocumentModel)
@@ -53,6 +54,38 @@ export class DocumentsResolver {
     @Args('resumeVersionId', { type: () => ID }) resumeVersionId: string,
   ): Promise<boolean> {
     return this.documentsService.deleteResumeVersion(user.id, resumeVersionId);
+  }
+
+  @Query(() => [DocumentModel])
+  async myDocuments(
+    @CurrentUser() user: PrismaUser,
+    @Args('type', { type: () => DocumentType, nullable: true }) type?: DocumentType,
+  ): Promise<DocumentModel[]> {
+    const documents = await this.documentsService.listDocuments(user.id, type);
+    return documents.map(toDocumentModel);
+  }
+
+  @Query(() => DocumentModel)
+  async document(@CurrentUser() user: PrismaUser, @Args('id', { type: () => ID }) id: string): Promise<DocumentModel> {
+    const document = await this.documentsService.findDocument(user.id, id);
+    return toDocumentModel(document);
+  }
+
+  @Mutation(() => DocumentModel)
+  async uploadDocument(
+    @CurrentUser() user: PrismaUser,
+    @Args('type', { type: () => DocumentType }) type: DocumentType,
+    @Args('fileName') fileName: string,
+    @Args('mimeType') mimeType: string,
+    @Args('content') content: string,
+  ): Promise<DocumentModel> {
+    const document = await this.documentsService.uploadDocument(user.id, type, fileName, mimeType, content);
+    return toDocumentModel(document);
+  }
+
+  @Mutation(() => Boolean)
+  deleteDocument(@CurrentUser() user: PrismaUser, @Args('documentId', { type: () => ID }) documentId: string): Promise<boolean> {
+    return this.documentsService.deleteDocument(user.id, documentId);
   }
 
   @ResolveField(() => String)

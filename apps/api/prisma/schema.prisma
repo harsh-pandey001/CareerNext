@@ -49,6 +49,20 @@ enum WorkMode {
   HYBRID
 }
 
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum LanguageProficiency {
+  BASIC
+  CONVERSATIONAL
+  FLUENT
+  NATIVE
+}
+
 model User {
   id              String   @id @default(uuid())
   email           String   @unique
@@ -62,6 +76,7 @@ model User {
   applications        Application[]
   documents           Document[]
   resumeVersions      ResumeVersion[]
+  skills              Skill[]
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
 
@@ -113,12 +128,86 @@ model Profile {
   portfolioUrl         String?
   completionPercentage Int     @default(0)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  educations  Education[]
+  experiences Experience[]
+  languages   Language[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("profiles")
+}
+
+model Education {
+  id           String    @id @default(uuid())
+  profileId    String
+  institution  String
+  degree       String
+  fieldOfStudy String?
+  startDate    DateTime
+  endDate      DateTime?
+  grade        String?
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+  @@map("educations")
+}
+
+model Experience {
+  id          String    @id @default(uuid())
+  profileId   String
+  company     String
+  title       String
+  location    String?
+  startDate   DateTime
+  endDate     DateTime?
+  isCurrent   Boolean   @default(false)
+  description String?
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+  @@map("experiences")
+}
+
+model Language {
+  id          String              @id @default(uuid())
+  profileId   String
+  name        String
+  proficiency LanguageProficiency
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+  @@map("languages")
+}
+
+model Skill {
+  id                String     @id @default(uuid())
+  userId            String
+  name              String
+  level             SkillLevel
+  yearsOfExperience Int?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("skills")
 }
 
 model Job {

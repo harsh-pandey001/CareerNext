@@ -4,6 +4,7 @@ import {
   type Document as PrismaDocument,
   type ResumeVersion as PrismaResumeVersion,
 } from '@prisma/client';
+import type { DocumentType } from '@careernext/shared-types';
 import { PrismaService } from '../../database/prisma.service';
 
 export type ResumeVersionWithDocument = PrismaResumeVersion & { document: PrismaDocument };
@@ -13,6 +14,14 @@ const ACCEPTED_RESUME_MIME_TYPES = new Set([
   'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+]);
+
+// The vault (Certificates/Offer Letters/Experience Letters) also accepts
+// scanned/photographed images — unlike resumes, these are frequently JPG/PNG.
+const ACCEPTED_VAULT_MIME_TYPES = new Set([
+  ...ACCEPTED_RESUME_MIME_TYPES,
+  'image/jpeg',
+  'image/png',
 ]);
 
 @Injectable()
@@ -109,6 +118,56 @@ export class DocumentsService {
     return true;
   }
 
+  // ---- Documents vault (Certificates / Offer Letters / Experience Letters) ----
+  // Resumes are also `Document` rows, but always go through the uploadResume/
+  // deleteResumeVersion flow above so their `ResumeVersion` envelope stays in
+  // sync — every method below deliberately excludes/rejects RESUME so the two
+  // features can't step on each other's invariants.
+
+  async listDocuments(userId: string, type?: DocumentType): Promise<PrismaDocument[]> {
+    const prismaType = type as unknown as PrismaDocumentType | undefined;
+    if (prismaType === PrismaDocumentType.RESUME) {
+      throw new BadRequestException('Resumes are managed from the Resume page.');
+    }
+    return this.prisma.document.findMany({
+      where: { userId, type: prismaType ?? { not: PrismaDocumentType.RESUME } },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findDocument(userId: string, documentId: string): Promise<PrismaDocument> {
+    const document = await this.ensureDocumentOwnership(userId, documentId);
+    if (document.type === PrismaDocumentType.RESUME) {
+      throw new NotFoundException('Document not found.');
+    }
+    return document;
+  }
+
+  async uploadDocument(
+    userId: string,
+    type: DocumentType,
+    fileName: string,
+    mimeType: string,
+    base64Content: string,
+  ): Promise<PrismaDocument> {
+    const prismaType = type as unknown as PrismaDocumentType;
+    if (prismaType === PrismaDocumentType.RESUME) {
+      throw new BadRequestException('Use the resume upload flow for resumes.');
+    }
+    this.validateFile(mimeType, base64Content, ACCEPTED_VAULT_MIME_TYPES);
+    const buffer = Buffer.from(base64Content, 'base64');
+
+    return this.prisma.document.create({
+      data: { userId, type: prismaType, fileName, fileData: buffer, fileSize: buffer.length, mimeType },
+    });
+  }
+
+  async deleteDocument(userId: string, documentId: string): Promise<boolean> {
+    const document = await this.findDocument(userId, documentId);
+    await this.prisma.document.delete({ where: { id: document.id } });
+    return true;
+  }
+
   async getFileData(documentId: string): Promise<{ data: Buffer; mimeType: string } | null> {
     const document = await this.prisma.document.findUnique({
       where: { id: documentId },
@@ -128,9 +187,29 @@ export class DocumentsService {
     return resumeVersion;
   }
 
+  private async ensureDocumentOwnership(userId: string, documentId: string): Promise<PrismaDocument> {
+    const document = await this.prisma.document.findUnique({ where: { id: documentId } });
+    if (!document) {
+      throw new NotFoundException('Document not found.');
+    }
+    if (document.userId !== userId) {
+      throw new ForbiddenException('You do not have access to this document.');
+    }
+    return document;
+  }
+
   private validateResumeFile(mimeType: string, base64Content: string): void {
-    if (!ACCEPTED_RESUME_MIME_TYPES.has(mimeType)) {
-      throw new BadRequestException('Please upload a PDF, DOC, or DOCX file.');
+    this.validateFile(mimeType, base64Content, ACCEPTED_RESUME_MIME_TYPES, 'Please upload a PDF, DOC, or DOCX file.');
+  }
+
+  private validateFile(
+    mimeType: string,
+    base64Content: string,
+    acceptedMimeTypes: ReadonlySet<string>,
+    message = 'Please upload a PDF, DOC, DOCX, JPG, or PNG file.',
+  ): void {
+    if (!acceptedMimeTypes.has(mimeType)) {
+      throw new BadRequestException(message);
     }
     const approxSizeBytes = (base64Content.length * 3) / 4;
     if (approxSizeBytes > MAX_FILE_SIZE_BYTES) {

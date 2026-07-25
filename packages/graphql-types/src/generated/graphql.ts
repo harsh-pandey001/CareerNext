@@ -16,6 +16,31 @@ export type ApplicationStatus =
   | 'REJECTED'
   | 'SAVED';
 
+export type DocumentType =
+  | 'CERTIFICATE'
+  | 'EXPERIENCE_LETTER'
+  | 'OFFER_LETTER'
+  | 'RESUME';
+
+export type EducationInput = {
+  degree: string;
+  endDate?: string | null | undefined;
+  fieldOfStudy?: string | null | undefined;
+  grade?: string | null | undefined;
+  institution: string;
+  startDate: string;
+};
+
+export type ExperienceInput = {
+  company: string;
+  description?: string | null | undefined;
+  endDate?: string | null | undefined;
+  isCurrent?: boolean;
+  location?: string | null | undefined;
+  startDate: string;
+  title: string;
+};
+
 export type ForgotPasswordInput = {
   email: string;
 };
@@ -32,6 +57,17 @@ export type JobType =
   | 'FULL_TIME'
   | 'INTERNSHIP'
   | 'PART_TIME';
+
+export type LanguageInput = {
+  name: string;
+  proficiency: LanguageProficiency;
+};
+
+export type LanguageProficiency =
+  | 'BASIC'
+  | 'CONVERSATIONAL'
+  | 'FLUENT'
+  | 'NATIVE';
 
 export type LoginInput = {
   email: string;
@@ -53,6 +89,27 @@ export type RegisterInput = {
 export type ResetPasswordInput = {
   newPassword: string;
   token: string;
+};
+
+export type SkillInput = {
+  level: SkillLevel;
+  name: string;
+  yearsOfExperience?: number | null | undefined;
+};
+
+export type SkillLevel =
+  | 'ADVANCED'
+  | 'BEGINNER'
+  | 'EXPERT'
+  | 'INTERMEDIATE';
+
+export type UpdateProfileInput = {
+  bio?: string | null | undefined;
+  githubUrl?: string | null | undefined;
+  headline?: string | null | undefined;
+  linkedinUrl?: string | null | undefined;
+  location?: string | null | undefined;
+  portfolioUrl?: string | null | undefined;
 };
 
 export type UserRole =
@@ -131,6 +188,39 @@ export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type MeQuery = { me: { id: string, email: string, firstName: string, lastName: string, role: UserRole, isEmailVerified: boolean, createdAt: string } };
 
+export type DocumentFieldsFragment = { id: string, type: DocumentType, fileName: string, fileSize: number, mimeType: string, createdAt: string };
+
+export type DocumentWithContentFieldsFragment = { fileUrl: string, id: string, type: DocumentType, fileName: string, fileSize: number, mimeType: string, createdAt: string };
+
+export type UploadDocumentMutationVariables = Exact<{
+  type: DocumentType;
+  fileName: string;
+  mimeType: string;
+  content: string;
+}>;
+
+
+export type UploadDocumentMutation = { uploadDocument: { id: string, type: DocumentType, fileName: string, fileSize: number, mimeType: string, createdAt: string } };
+
+export type DeleteDocumentMutationVariables = Exact<{
+  documentId: string | number;
+}>;
+
+
+export type DeleteDocumentMutation = { deleteDocument: boolean };
+
+export type MyDocumentsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyDocumentsQuery = { myDocuments: Array<{ id: string, type: DocumentType, fileName: string, fileSize: number, mimeType: string, createdAt: string }> };
+
+export type DocumentQueryVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type DocumentQuery = { document: { fileUrl: string, id: string, type: DocumentType, fileName: string, fileSize: number, mimeType: string, createdAt: string } };
+
 export type JobFieldsFragment = { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string };
 
 export type SaveJobMutationVariables = Exact<{
@@ -168,6 +258,116 @@ export type JobQueryVariables = Exact<{
 
 
 export type JobQuery = { job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
+
+export type EducationFieldsFragment = { id: string, institution: string, degree: string, fieldOfStudy: string | null, startDate: string, endDate: string | null, grade: string | null };
+
+export type ExperienceFieldsFragment = { id: string, company: string, title: string, location: string | null, startDate: string, endDate: string | null, isCurrent: boolean, description: string | null };
+
+export type LanguageFieldsFragment = { id: string, name: string, proficiency: LanguageProficiency };
+
+export type SkillFieldsFragment = { id: string, name: string, level: SkillLevel, yearsOfExperience: number | null };
+
+export type ProfileFieldsFragment = { id: string, headline: string | null, bio: string | null, location: string | null, githubUrl: string | null, linkedinUrl: string | null, portfolioUrl: string | null, completionPercentage: number, educations: Array<{ id: string, institution: string, degree: string, fieldOfStudy: string | null, startDate: string, endDate: string | null, grade: string | null }>, experiences: Array<{ id: string, company: string, title: string, location: string | null, startDate: string, endDate: string | null, isCurrent: boolean, description: string | null }>, languages: Array<{ id: string, name: string, proficiency: LanguageProficiency }>, skills: Array<{ id: string, name: string, level: SkillLevel, yearsOfExperience: number | null }> };
+
+export type UpdateProfileMutationVariables = Exact<{
+  input: UpdateProfileInput;
+}>;
+
+
+export type UpdateProfileMutation = { updateProfile: { id: string, headline: string | null, bio: string | null, location: string | null, githubUrl: string | null, linkedinUrl: string | null, portfolioUrl: string | null, completionPercentage: number, educations: Array<{ id: string, institution: string, degree: string, fieldOfStudy: string | null, startDate: string, endDate: string | null, grade: string | null }>, experiences: Array<{ id: string, company: string, title: string, location: string | null, startDate: string, endDate: string | null, isCurrent: boolean, description: string | null }>, languages: Array<{ id: string, name: string, proficiency: LanguageProficiency }>, skills: Array<{ id: string, name: string, level: SkillLevel, yearsOfExperience: number | null }> } };
+
+export type AddEducationMutationVariables = Exact<{
+  input: EducationInput;
+}>;
+
+
+export type AddEducationMutation = { addEducation: { id: string, institution: string, degree: string, fieldOfStudy: string | null, startDate: string, endDate: string | null, grade: string | null } };
+
+export type UpdateEducationMutationVariables = Exact<{
+  educationId: string | number;
+  input: EducationInput;
+}>;
+
+
+export type UpdateEducationMutation = { updateEducation: { id: string, institution: string, degree: string, fieldOfStudy: string | null, startDate: string, endDate: string | null, grade: string | null } };
+
+export type RemoveEducationMutationVariables = Exact<{
+  educationId: string | number;
+}>;
+
+
+export type RemoveEducationMutation = { removeEducation: boolean };
+
+export type AddExperienceMutationVariables = Exact<{
+  input: ExperienceInput;
+}>;
+
+
+export type AddExperienceMutation = { addExperience: { id: string, company: string, title: string, location: string | null, startDate: string, endDate: string | null, isCurrent: boolean, description: string | null } };
+
+export type UpdateExperienceMutationVariables = Exact<{
+  experienceId: string | number;
+  input: ExperienceInput;
+}>;
+
+
+export type UpdateExperienceMutation = { updateExperience: { id: string, company: string, title: string, location: string | null, startDate: string, endDate: string | null, isCurrent: boolean, description: string | null } };
+
+export type RemoveExperienceMutationVariables = Exact<{
+  experienceId: string | number;
+}>;
+
+
+export type RemoveExperienceMutation = { removeExperience: boolean };
+
+export type AddLanguageMutationVariables = Exact<{
+  input: LanguageInput;
+}>;
+
+
+export type AddLanguageMutation = { addLanguage: { id: string, name: string, proficiency: LanguageProficiency } };
+
+export type UpdateLanguageMutationVariables = Exact<{
+  languageId: string | number;
+  input: LanguageInput;
+}>;
+
+
+export type UpdateLanguageMutation = { updateLanguage: { id: string, name: string, proficiency: LanguageProficiency } };
+
+export type RemoveLanguageMutationVariables = Exact<{
+  languageId: string | number;
+}>;
+
+
+export type RemoveLanguageMutation = { removeLanguage: boolean };
+
+export type AddSkillMutationVariables = Exact<{
+  input: SkillInput;
+}>;
+
+
+export type AddSkillMutation = { addSkill: { id: string, name: string, level: SkillLevel, yearsOfExperience: number | null } };
+
+export type UpdateSkillMutationVariables = Exact<{
+  skillId: string | number;
+  input: SkillInput;
+}>;
+
+
+export type UpdateSkillMutation = { updateSkill: { id: string, name: string, level: SkillLevel, yearsOfExperience: number | null } };
+
+export type RemoveSkillMutationVariables = Exact<{
+  skillId: string | number;
+}>;
+
+
+export type RemoveSkillMutation = { removeSkill: boolean };
+
+export type MyProfileQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyProfileQuery = { myProfile: { id: string, headline: string | null, bio: string | null, location: string | null, githubUrl: string | null, linkedinUrl: string | null, portfolioUrl: string | null, completionPercentage: number, educations: Array<{ id: string, institution: string, degree: string, fieldOfStudy: string | null, startDate: string, endDate: string | null, grade: string | null }>, experiences: Array<{ id: string, company: string, title: string, location: string | null, startDate: string, endDate: string | null, isCurrent: boolean, description: string | null }>, languages: Array<{ id: string, name: string, proficiency: LanguageProficiency }>, skills: Array<{ id: string, name: string, level: SkillLevel, yearsOfExperience: number | null }> } };
 
 export type ResumeVersionFieldsFragment = { id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string } };
 
@@ -249,6 +449,87 @@ export const AuthUserFieldsFragmentDoc = gql`
   createdAt
 }
     `;
+export const DocumentFieldsFragmentDoc = gql`
+    fragment DocumentFields on Document {
+  id
+  type
+  fileName
+  fileSize
+  mimeType
+  createdAt
+}
+    `;
+export const DocumentWithContentFieldsFragmentDoc = gql`
+    fragment DocumentWithContentFields on Document {
+  ...DocumentFields
+  fileUrl
+}
+    ${DocumentFieldsFragmentDoc}`;
+export const EducationFieldsFragmentDoc = gql`
+    fragment EducationFields on Education {
+  id
+  institution
+  degree
+  fieldOfStudy
+  startDate
+  endDate
+  grade
+}
+    `;
+export const ExperienceFieldsFragmentDoc = gql`
+    fragment ExperienceFields on Experience {
+  id
+  company
+  title
+  location
+  startDate
+  endDate
+  isCurrent
+  description
+}
+    `;
+export const LanguageFieldsFragmentDoc = gql`
+    fragment LanguageFields on Language {
+  id
+  name
+  proficiency
+}
+    `;
+export const SkillFieldsFragmentDoc = gql`
+    fragment SkillFields on Skill {
+  id
+  name
+  level
+  yearsOfExperience
+}
+    `;
+export const ProfileFieldsFragmentDoc = gql`
+    fragment ProfileFields on Profile {
+  id
+  headline
+  bio
+  location
+  githubUrl
+  linkedinUrl
+  portfolioUrl
+  completionPercentage
+  educations {
+    ...EducationFields
+  }
+  experiences {
+    ...ExperienceFields
+  }
+  languages {
+    ...LanguageFields
+  }
+  skills {
+    ...SkillFields
+  }
+}
+    ${EducationFieldsFragmentDoc}
+${ExperienceFieldsFragmentDoc}
+${LanguageFieldsFragmentDoc}
+${SkillFieldsFragmentDoc}`;
 export const ResumeVersionFieldsFragmentDoc = gql`
     fragment ResumeVersionFields on ResumeVersion {
   id
@@ -623,6 +904,163 @@ export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeSuspenseQueryHookResult = ReturnType<typeof useMeSuspenseQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
+export const UploadDocumentDocument = gql`
+    mutation UploadDocument($type: DocumentType!, $fileName: String!, $mimeType: String!, $content: String!) {
+  uploadDocument(
+    type: $type
+    fileName: $fileName
+    mimeType: $mimeType
+    content: $content
+  ) {
+    ...DocumentFields
+  }
+}
+    ${DocumentFieldsFragmentDoc}`;
+export type UploadDocumentMutationFn = Apollo.MutationFunction<UploadDocumentMutation, UploadDocumentMutationVariables>;
+
+/**
+ * __useUploadDocumentMutation__
+ *
+ * To run a mutation, you first call `useUploadDocumentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUploadDocumentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [uploadDocumentMutation, { data, loading, error }] = useUploadDocumentMutation({
+ *   variables: {
+ *      type: // value for 'type'
+ *      fileName: // value for 'fileName'
+ *      mimeType: // value for 'mimeType'
+ *      content: // value for 'content'
+ *   },
+ * });
+ */
+export function useUploadDocumentMutation(baseOptions?: Apollo.MutationHookOptions<UploadDocumentMutation, UploadDocumentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UploadDocumentMutation, UploadDocumentMutationVariables>(UploadDocumentDocument, options);
+      }
+export type UploadDocumentMutationHookResult = ReturnType<typeof useUploadDocumentMutation>;
+export type UploadDocumentMutationResult = Apollo.MutationResult<UploadDocumentMutation>;
+export type UploadDocumentMutationOptions = Apollo.BaseMutationOptions<UploadDocumentMutation, UploadDocumentMutationVariables>;
+export const DeleteDocumentDocument = gql`
+    mutation DeleteDocument($documentId: ID!) {
+  deleteDocument(documentId: $documentId)
+}
+    `;
+export type DeleteDocumentMutationFn = Apollo.MutationFunction<DeleteDocumentMutation, DeleteDocumentMutationVariables>;
+
+/**
+ * __useDeleteDocumentMutation__
+ *
+ * To run a mutation, you first call `useDeleteDocumentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteDocumentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteDocumentMutation, { data, loading, error }] = useDeleteDocumentMutation({
+ *   variables: {
+ *      documentId: // value for 'documentId'
+ *   },
+ * });
+ */
+export function useDeleteDocumentMutation(baseOptions?: Apollo.MutationHookOptions<DeleteDocumentMutation, DeleteDocumentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteDocumentMutation, DeleteDocumentMutationVariables>(DeleteDocumentDocument, options);
+      }
+export type DeleteDocumentMutationHookResult = ReturnType<typeof useDeleteDocumentMutation>;
+export type DeleteDocumentMutationResult = Apollo.MutationResult<DeleteDocumentMutation>;
+export type DeleteDocumentMutationOptions = Apollo.BaseMutationOptions<DeleteDocumentMutation, DeleteDocumentMutationVariables>;
+export const MyDocumentsDocument = gql`
+    query MyDocuments {
+  myDocuments {
+    ...DocumentFields
+  }
+}
+    ${DocumentFieldsFragmentDoc}`;
+
+/**
+ * __useMyDocumentsQuery__
+ *
+ * To run a query within a React component, call `useMyDocumentsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyDocumentsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyDocumentsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyDocumentsQuery(baseOptions?: Apollo.QueryHookOptions<MyDocumentsQuery, MyDocumentsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyDocumentsQuery, MyDocumentsQueryVariables>(MyDocumentsDocument, options);
+      }
+export function useMyDocumentsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyDocumentsQuery, MyDocumentsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyDocumentsQuery, MyDocumentsQueryVariables>(MyDocumentsDocument, options);
+        }
+// @ts-ignore
+export function useMyDocumentsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MyDocumentsQuery, MyDocumentsQueryVariables>): Apollo.UseSuspenseQueryResult<MyDocumentsQuery, MyDocumentsQueryVariables>;
+export function useMyDocumentsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyDocumentsQuery, MyDocumentsQueryVariables>): Apollo.UseSuspenseQueryResult<MyDocumentsQuery | undefined, MyDocumentsQueryVariables>;
+export function useMyDocumentsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyDocumentsQuery, MyDocumentsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyDocumentsQuery, MyDocumentsQueryVariables>(MyDocumentsDocument, options);
+        }
+export type MyDocumentsQueryHookResult = ReturnType<typeof useMyDocumentsQuery>;
+export type MyDocumentsLazyQueryHookResult = ReturnType<typeof useMyDocumentsLazyQuery>;
+export type MyDocumentsSuspenseQueryHookResult = ReturnType<typeof useMyDocumentsSuspenseQuery>;
+export type MyDocumentsQueryResult = Apollo.QueryResult<MyDocumentsQuery, MyDocumentsQueryVariables>;
+export const DocumentDocument = gql`
+    query Document($id: ID!) {
+  document(id: $id) {
+    ...DocumentWithContentFields
+  }
+}
+    ${DocumentWithContentFieldsFragmentDoc}`;
+
+/**
+ * __useDocumentQuery__
+ *
+ * To run a query within a React component, call `useDocumentQuery` and pass it any options that fit your needs.
+ * When your component renders, `useDocumentQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useDocumentQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDocumentQuery(baseOptions: Apollo.QueryHookOptions<DocumentQuery, DocumentQueryVariables> & ({ variables: DocumentQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<DocumentQuery, DocumentQueryVariables>(DocumentDocument, options);
+      }
+export function useDocumentLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<DocumentQuery, DocumentQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<DocumentQuery, DocumentQueryVariables>(DocumentDocument, options);
+        }
+// @ts-ignore
+export function useDocumentSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<DocumentQuery, DocumentQueryVariables>): Apollo.UseSuspenseQueryResult<DocumentQuery, DocumentQueryVariables>;
+export function useDocumentSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<DocumentQuery, DocumentQueryVariables>): Apollo.UseSuspenseQueryResult<DocumentQuery | undefined, DocumentQueryVariables>;
+export function useDocumentSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<DocumentQuery, DocumentQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<DocumentQuery, DocumentQueryVariables>(DocumentDocument, options);
+        }
+export type DocumentQueryHookResult = ReturnType<typeof useDocumentQuery>;
+export type DocumentLazyQueryHookResult = ReturnType<typeof useDocumentLazyQuery>;
+export type DocumentSuspenseQueryHookResult = ReturnType<typeof useDocumentSuspenseQuery>;
+export type DocumentQueryResult = Apollo.QueryResult<DocumentQuery, DocumentQueryVariables>;
 export const SaveJobDocument = gql`
     mutation SaveJob($jobId: ID!) {
   saveJob(jobId: $jobId) {
@@ -815,6 +1253,473 @@ export type JobQueryHookResult = ReturnType<typeof useJobQuery>;
 export type JobLazyQueryHookResult = ReturnType<typeof useJobLazyQuery>;
 export type JobSuspenseQueryHookResult = ReturnType<typeof useJobSuspenseQuery>;
 export type JobQueryResult = Apollo.QueryResult<JobQuery, JobQueryVariables>;
+export const UpdateProfileDocument = gql`
+    mutation UpdateProfile($input: UpdateProfileInput!) {
+  updateProfile(input: $input) {
+    ...ProfileFields
+  }
+}
+    ${ProfileFieldsFragmentDoc}`;
+export type UpdateProfileMutationFn = Apollo.MutationFunction<UpdateProfileMutation, UpdateProfileMutationVariables>;
+
+/**
+ * __useUpdateProfileMutation__
+ *
+ * To run a mutation, you first call `useUpdateProfileMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateProfileMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateProfileMutation, { data, loading, error }] = useUpdateProfileMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateProfileMutation(baseOptions?: Apollo.MutationHookOptions<UpdateProfileMutation, UpdateProfileMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateProfileMutation, UpdateProfileMutationVariables>(UpdateProfileDocument, options);
+      }
+export type UpdateProfileMutationHookResult = ReturnType<typeof useUpdateProfileMutation>;
+export type UpdateProfileMutationResult = Apollo.MutationResult<UpdateProfileMutation>;
+export type UpdateProfileMutationOptions = Apollo.BaseMutationOptions<UpdateProfileMutation, UpdateProfileMutationVariables>;
+export const AddEducationDocument = gql`
+    mutation AddEducation($input: EducationInput!) {
+  addEducation(input: $input) {
+    ...EducationFields
+  }
+}
+    ${EducationFieldsFragmentDoc}`;
+export type AddEducationMutationFn = Apollo.MutationFunction<AddEducationMutation, AddEducationMutationVariables>;
+
+/**
+ * __useAddEducationMutation__
+ *
+ * To run a mutation, you first call `useAddEducationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddEducationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addEducationMutation, { data, loading, error }] = useAddEducationMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useAddEducationMutation(baseOptions?: Apollo.MutationHookOptions<AddEducationMutation, AddEducationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddEducationMutation, AddEducationMutationVariables>(AddEducationDocument, options);
+      }
+export type AddEducationMutationHookResult = ReturnType<typeof useAddEducationMutation>;
+export type AddEducationMutationResult = Apollo.MutationResult<AddEducationMutation>;
+export type AddEducationMutationOptions = Apollo.BaseMutationOptions<AddEducationMutation, AddEducationMutationVariables>;
+export const UpdateEducationDocument = gql`
+    mutation UpdateEducation($educationId: ID!, $input: EducationInput!) {
+  updateEducation(educationId: $educationId, input: $input) {
+    ...EducationFields
+  }
+}
+    ${EducationFieldsFragmentDoc}`;
+export type UpdateEducationMutationFn = Apollo.MutationFunction<UpdateEducationMutation, UpdateEducationMutationVariables>;
+
+/**
+ * __useUpdateEducationMutation__
+ *
+ * To run a mutation, you first call `useUpdateEducationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateEducationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateEducationMutation, { data, loading, error }] = useUpdateEducationMutation({
+ *   variables: {
+ *      educationId: // value for 'educationId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateEducationMutation(baseOptions?: Apollo.MutationHookOptions<UpdateEducationMutation, UpdateEducationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateEducationMutation, UpdateEducationMutationVariables>(UpdateEducationDocument, options);
+      }
+export type UpdateEducationMutationHookResult = ReturnType<typeof useUpdateEducationMutation>;
+export type UpdateEducationMutationResult = Apollo.MutationResult<UpdateEducationMutation>;
+export type UpdateEducationMutationOptions = Apollo.BaseMutationOptions<UpdateEducationMutation, UpdateEducationMutationVariables>;
+export const RemoveEducationDocument = gql`
+    mutation RemoveEducation($educationId: ID!) {
+  removeEducation(educationId: $educationId)
+}
+    `;
+export type RemoveEducationMutationFn = Apollo.MutationFunction<RemoveEducationMutation, RemoveEducationMutationVariables>;
+
+/**
+ * __useRemoveEducationMutation__
+ *
+ * To run a mutation, you first call `useRemoveEducationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveEducationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeEducationMutation, { data, loading, error }] = useRemoveEducationMutation({
+ *   variables: {
+ *      educationId: // value for 'educationId'
+ *   },
+ * });
+ */
+export function useRemoveEducationMutation(baseOptions?: Apollo.MutationHookOptions<RemoveEducationMutation, RemoveEducationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RemoveEducationMutation, RemoveEducationMutationVariables>(RemoveEducationDocument, options);
+      }
+export type RemoveEducationMutationHookResult = ReturnType<typeof useRemoveEducationMutation>;
+export type RemoveEducationMutationResult = Apollo.MutationResult<RemoveEducationMutation>;
+export type RemoveEducationMutationOptions = Apollo.BaseMutationOptions<RemoveEducationMutation, RemoveEducationMutationVariables>;
+export const AddExperienceDocument = gql`
+    mutation AddExperience($input: ExperienceInput!) {
+  addExperience(input: $input) {
+    ...ExperienceFields
+  }
+}
+    ${ExperienceFieldsFragmentDoc}`;
+export type AddExperienceMutationFn = Apollo.MutationFunction<AddExperienceMutation, AddExperienceMutationVariables>;
+
+/**
+ * __useAddExperienceMutation__
+ *
+ * To run a mutation, you first call `useAddExperienceMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddExperienceMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addExperienceMutation, { data, loading, error }] = useAddExperienceMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useAddExperienceMutation(baseOptions?: Apollo.MutationHookOptions<AddExperienceMutation, AddExperienceMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddExperienceMutation, AddExperienceMutationVariables>(AddExperienceDocument, options);
+      }
+export type AddExperienceMutationHookResult = ReturnType<typeof useAddExperienceMutation>;
+export type AddExperienceMutationResult = Apollo.MutationResult<AddExperienceMutation>;
+export type AddExperienceMutationOptions = Apollo.BaseMutationOptions<AddExperienceMutation, AddExperienceMutationVariables>;
+export const UpdateExperienceDocument = gql`
+    mutation UpdateExperience($experienceId: ID!, $input: ExperienceInput!) {
+  updateExperience(experienceId: $experienceId, input: $input) {
+    ...ExperienceFields
+  }
+}
+    ${ExperienceFieldsFragmentDoc}`;
+export type UpdateExperienceMutationFn = Apollo.MutationFunction<UpdateExperienceMutation, UpdateExperienceMutationVariables>;
+
+/**
+ * __useUpdateExperienceMutation__
+ *
+ * To run a mutation, you first call `useUpdateExperienceMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateExperienceMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateExperienceMutation, { data, loading, error }] = useUpdateExperienceMutation({
+ *   variables: {
+ *      experienceId: // value for 'experienceId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateExperienceMutation(baseOptions?: Apollo.MutationHookOptions<UpdateExperienceMutation, UpdateExperienceMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateExperienceMutation, UpdateExperienceMutationVariables>(UpdateExperienceDocument, options);
+      }
+export type UpdateExperienceMutationHookResult = ReturnType<typeof useUpdateExperienceMutation>;
+export type UpdateExperienceMutationResult = Apollo.MutationResult<UpdateExperienceMutation>;
+export type UpdateExperienceMutationOptions = Apollo.BaseMutationOptions<UpdateExperienceMutation, UpdateExperienceMutationVariables>;
+export const RemoveExperienceDocument = gql`
+    mutation RemoveExperience($experienceId: ID!) {
+  removeExperience(experienceId: $experienceId)
+}
+    `;
+export type RemoveExperienceMutationFn = Apollo.MutationFunction<RemoveExperienceMutation, RemoveExperienceMutationVariables>;
+
+/**
+ * __useRemoveExperienceMutation__
+ *
+ * To run a mutation, you first call `useRemoveExperienceMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveExperienceMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeExperienceMutation, { data, loading, error }] = useRemoveExperienceMutation({
+ *   variables: {
+ *      experienceId: // value for 'experienceId'
+ *   },
+ * });
+ */
+export function useRemoveExperienceMutation(baseOptions?: Apollo.MutationHookOptions<RemoveExperienceMutation, RemoveExperienceMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RemoveExperienceMutation, RemoveExperienceMutationVariables>(RemoveExperienceDocument, options);
+      }
+export type RemoveExperienceMutationHookResult = ReturnType<typeof useRemoveExperienceMutation>;
+export type RemoveExperienceMutationResult = Apollo.MutationResult<RemoveExperienceMutation>;
+export type RemoveExperienceMutationOptions = Apollo.BaseMutationOptions<RemoveExperienceMutation, RemoveExperienceMutationVariables>;
+export const AddLanguageDocument = gql`
+    mutation AddLanguage($input: LanguageInput!) {
+  addLanguage(input: $input) {
+    ...LanguageFields
+  }
+}
+    ${LanguageFieldsFragmentDoc}`;
+export type AddLanguageMutationFn = Apollo.MutationFunction<AddLanguageMutation, AddLanguageMutationVariables>;
+
+/**
+ * __useAddLanguageMutation__
+ *
+ * To run a mutation, you first call `useAddLanguageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddLanguageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addLanguageMutation, { data, loading, error }] = useAddLanguageMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useAddLanguageMutation(baseOptions?: Apollo.MutationHookOptions<AddLanguageMutation, AddLanguageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddLanguageMutation, AddLanguageMutationVariables>(AddLanguageDocument, options);
+      }
+export type AddLanguageMutationHookResult = ReturnType<typeof useAddLanguageMutation>;
+export type AddLanguageMutationResult = Apollo.MutationResult<AddLanguageMutation>;
+export type AddLanguageMutationOptions = Apollo.BaseMutationOptions<AddLanguageMutation, AddLanguageMutationVariables>;
+export const UpdateLanguageDocument = gql`
+    mutation UpdateLanguage($languageId: ID!, $input: LanguageInput!) {
+  updateLanguage(languageId: $languageId, input: $input) {
+    ...LanguageFields
+  }
+}
+    ${LanguageFieldsFragmentDoc}`;
+export type UpdateLanguageMutationFn = Apollo.MutationFunction<UpdateLanguageMutation, UpdateLanguageMutationVariables>;
+
+/**
+ * __useUpdateLanguageMutation__
+ *
+ * To run a mutation, you first call `useUpdateLanguageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateLanguageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateLanguageMutation, { data, loading, error }] = useUpdateLanguageMutation({
+ *   variables: {
+ *      languageId: // value for 'languageId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateLanguageMutation(baseOptions?: Apollo.MutationHookOptions<UpdateLanguageMutation, UpdateLanguageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateLanguageMutation, UpdateLanguageMutationVariables>(UpdateLanguageDocument, options);
+      }
+export type UpdateLanguageMutationHookResult = ReturnType<typeof useUpdateLanguageMutation>;
+export type UpdateLanguageMutationResult = Apollo.MutationResult<UpdateLanguageMutation>;
+export type UpdateLanguageMutationOptions = Apollo.BaseMutationOptions<UpdateLanguageMutation, UpdateLanguageMutationVariables>;
+export const RemoveLanguageDocument = gql`
+    mutation RemoveLanguage($languageId: ID!) {
+  removeLanguage(languageId: $languageId)
+}
+    `;
+export type RemoveLanguageMutationFn = Apollo.MutationFunction<RemoveLanguageMutation, RemoveLanguageMutationVariables>;
+
+/**
+ * __useRemoveLanguageMutation__
+ *
+ * To run a mutation, you first call `useRemoveLanguageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveLanguageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeLanguageMutation, { data, loading, error }] = useRemoveLanguageMutation({
+ *   variables: {
+ *      languageId: // value for 'languageId'
+ *   },
+ * });
+ */
+export function useRemoveLanguageMutation(baseOptions?: Apollo.MutationHookOptions<RemoveLanguageMutation, RemoveLanguageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RemoveLanguageMutation, RemoveLanguageMutationVariables>(RemoveLanguageDocument, options);
+      }
+export type RemoveLanguageMutationHookResult = ReturnType<typeof useRemoveLanguageMutation>;
+export type RemoveLanguageMutationResult = Apollo.MutationResult<RemoveLanguageMutation>;
+export type RemoveLanguageMutationOptions = Apollo.BaseMutationOptions<RemoveLanguageMutation, RemoveLanguageMutationVariables>;
+export const AddSkillDocument = gql`
+    mutation AddSkill($input: SkillInput!) {
+  addSkill(input: $input) {
+    ...SkillFields
+  }
+}
+    ${SkillFieldsFragmentDoc}`;
+export type AddSkillMutationFn = Apollo.MutationFunction<AddSkillMutation, AddSkillMutationVariables>;
+
+/**
+ * __useAddSkillMutation__
+ *
+ * To run a mutation, you first call `useAddSkillMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddSkillMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addSkillMutation, { data, loading, error }] = useAddSkillMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useAddSkillMutation(baseOptions?: Apollo.MutationHookOptions<AddSkillMutation, AddSkillMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddSkillMutation, AddSkillMutationVariables>(AddSkillDocument, options);
+      }
+export type AddSkillMutationHookResult = ReturnType<typeof useAddSkillMutation>;
+export type AddSkillMutationResult = Apollo.MutationResult<AddSkillMutation>;
+export type AddSkillMutationOptions = Apollo.BaseMutationOptions<AddSkillMutation, AddSkillMutationVariables>;
+export const UpdateSkillDocument = gql`
+    mutation UpdateSkill($skillId: ID!, $input: SkillInput!) {
+  updateSkill(skillId: $skillId, input: $input) {
+    ...SkillFields
+  }
+}
+    ${SkillFieldsFragmentDoc}`;
+export type UpdateSkillMutationFn = Apollo.MutationFunction<UpdateSkillMutation, UpdateSkillMutationVariables>;
+
+/**
+ * __useUpdateSkillMutation__
+ *
+ * To run a mutation, you first call `useUpdateSkillMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateSkillMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateSkillMutation, { data, loading, error }] = useUpdateSkillMutation({
+ *   variables: {
+ *      skillId: // value for 'skillId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateSkillMutation(baseOptions?: Apollo.MutationHookOptions<UpdateSkillMutation, UpdateSkillMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateSkillMutation, UpdateSkillMutationVariables>(UpdateSkillDocument, options);
+      }
+export type UpdateSkillMutationHookResult = ReturnType<typeof useUpdateSkillMutation>;
+export type UpdateSkillMutationResult = Apollo.MutationResult<UpdateSkillMutation>;
+export type UpdateSkillMutationOptions = Apollo.BaseMutationOptions<UpdateSkillMutation, UpdateSkillMutationVariables>;
+export const RemoveSkillDocument = gql`
+    mutation RemoveSkill($skillId: ID!) {
+  removeSkill(skillId: $skillId)
+}
+    `;
+export type RemoveSkillMutationFn = Apollo.MutationFunction<RemoveSkillMutation, RemoveSkillMutationVariables>;
+
+/**
+ * __useRemoveSkillMutation__
+ *
+ * To run a mutation, you first call `useRemoveSkillMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveSkillMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeSkillMutation, { data, loading, error }] = useRemoveSkillMutation({
+ *   variables: {
+ *      skillId: // value for 'skillId'
+ *   },
+ * });
+ */
+export function useRemoveSkillMutation(baseOptions?: Apollo.MutationHookOptions<RemoveSkillMutation, RemoveSkillMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RemoveSkillMutation, RemoveSkillMutationVariables>(RemoveSkillDocument, options);
+      }
+export type RemoveSkillMutationHookResult = ReturnType<typeof useRemoveSkillMutation>;
+export type RemoveSkillMutationResult = Apollo.MutationResult<RemoveSkillMutation>;
+export type RemoveSkillMutationOptions = Apollo.BaseMutationOptions<RemoveSkillMutation, RemoveSkillMutationVariables>;
+export const MyProfileDocument = gql`
+    query MyProfile {
+  myProfile {
+    ...ProfileFields
+  }
+}
+    ${ProfileFieldsFragmentDoc}`;
+
+/**
+ * __useMyProfileQuery__
+ *
+ * To run a query within a React component, call `useMyProfileQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyProfileQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyProfileQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyProfileQuery(baseOptions?: Apollo.QueryHookOptions<MyProfileQuery, MyProfileQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyProfileQuery, MyProfileQueryVariables>(MyProfileDocument, options);
+      }
+export function useMyProfileLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyProfileQuery, MyProfileQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyProfileQuery, MyProfileQueryVariables>(MyProfileDocument, options);
+        }
+// @ts-ignore
+export function useMyProfileSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MyProfileQuery, MyProfileQueryVariables>): Apollo.UseSuspenseQueryResult<MyProfileQuery, MyProfileQueryVariables>;
+export function useMyProfileSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyProfileQuery, MyProfileQueryVariables>): Apollo.UseSuspenseQueryResult<MyProfileQuery | undefined, MyProfileQueryVariables>;
+export function useMyProfileSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyProfileQuery, MyProfileQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyProfileQuery, MyProfileQueryVariables>(MyProfileDocument, options);
+        }
+export type MyProfileQueryHookResult = ReturnType<typeof useMyProfileQuery>;
+export type MyProfileLazyQueryHookResult = ReturnType<typeof useMyProfileLazyQuery>;
+export type MyProfileSuspenseQueryHookResult = ReturnType<typeof useMyProfileSuspenseQuery>;
+export type MyProfileQueryResult = Apollo.QueryResult<MyProfileQuery, MyProfileQueryVariables>;
 export const UploadResumeDocument = gql`
     mutation UploadResume($fileName: String!, $mimeType: String!, $content: String!) {
   uploadResume(fileName: $fileName, mimeType: $mimeType, content: $content) {

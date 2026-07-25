@@ -5,13 +5,15 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import { FilePreviewDialog } from '@careernext/shared-ui';
+import { formatDate, formatFileSize } from '@careernext/utils';
 import { useResumeVersions } from '@/hooks/resume/useResumeVersions';
 import { useResumeActions } from '@/hooks/resume/useResumeActions';
 import { useResumePreview } from '@/hooks/resume/useResumePreview';
+import { getApolloErrorMessage } from '@/utils';
 import { ActiveResumeCard } from './ActiveResumeCard';
 import { ResumeUploadZone } from './ResumeUploadZone';
 import { ResumeVersionItem } from './ResumeVersionItem';
-import { ResumePreviewDialog } from './ResumePreviewDialog';
 
 export function ResumeManager() {
   const { versions, activeVersion, loading, error } = useResumeVersions();
@@ -20,6 +22,15 @@ export function ResumeManager() {
   const preview = useResumePreview();
 
   const hasVersions = versions.length > 0;
+  const previewFile = preview.version
+    ? {
+        fileName: preview.version.document.fileName,
+        mimeType: preview.version.document.mimeType,
+        fileUrl: preview.version.document.fileUrl,
+        sizeLabel: formatFileSize(preview.version.document.fileSize),
+        dateLabel: formatDate(preview.version.createdAt),
+      }
+    : null;
 
   return (
     <Stack spacing={3}>
@@ -75,12 +86,12 @@ export function ResumeManager() {
         </>
       )}
 
-      <ResumePreviewDialog
+      <FilePreviewDialog
         open={preview.isOpen}
         onClose={preview.close}
-        version={preview.version}
+        file={previewFile}
         loading={preview.loading}
-        error={preview.error}
+        errorMessage={preview.error ? getApolloErrorMessage(preview.error, 'Could not load this resume.') : null}
       />
     </Stack>
   );

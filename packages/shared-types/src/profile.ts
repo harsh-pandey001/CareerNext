@@ -1,5 +1,12 @@
 import type { BaseEntity } from './common';
 
+export enum LanguageProficiency {
+  BASIC = 'BASIC',
+  CONVERSATIONAL = 'CONVERSATIONAL',
+  FLUENT = 'FLUENT',
+  NATIVE = 'NATIVE',
+}
+
 export interface Profile extends BaseEntity {
   userId: string;
   headline?: string;
@@ -35,5 +42,5 @@ export interface Experience extends BaseEntity {
 export interface Language extends BaseEntity {
   profileId: string;
   name: string;
-  proficiency: 'BASIC' | 'CONVERSATIONAL' | 'FLUENT' | 'NATIVE';
+  proficiency: LanguageProficiency;
 }

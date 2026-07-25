@@ -29,8 +29,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Jobs', href: ROUTES.JOBS, icon: WorkOutlineRoundedIcon },
   { label: 'Applications', href: ROUTES.APPLICATIONS, icon: AssignmentOutlinedIcon },
   { label: 'Resume', href: ROUTES.RESUME, icon: DescriptionOutlinedIcon },
-  { label: 'Documents', href: ROUTES.DOCUMENTS, icon: FolderOpenOutlinedIcon, comingSoon: true },
-  { label: 'Profile', href: ROUTES.PROFILE, icon: PersonOutlineRoundedIcon, comingSoon: true },
+  { label: 'Documents', href: ROUTES.DOCUMENTS, icon: FolderOpenOutlinedIcon },
+  { label: 'Profile', href: ROUTES.PROFILE, icon: PersonOutlineRoundedIcon },
 ];
 
 export function AppSidebar() {
