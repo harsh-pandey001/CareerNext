@@ -12,3 +12,4 @@
 export * from './components/ProfileCompletionCard';
 export * from './components/FileDropzone';
 export * from './components/FilePreviewDialog';
+export * from './components/ConfirmDialog';

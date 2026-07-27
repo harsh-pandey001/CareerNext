@@ -14,6 +14,7 @@ import { alpha } from '@mui/material/styles';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
+import { ConfirmDialog } from '@careernext/shared-ui';
 import type { ApplicationFieldsFragment, ApplicationStatus } from '@careernext/graphql-types';
 import { APPLICATION_COLUMNS, STATUS_LABELS } from './constants';
 
@@ -36,6 +37,7 @@ function getCompanyInitials(company: string) {
 
 export function ApplicationCard({ application, pending, onMove, onRemove }: ApplicationCardProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const { job } = application;
 
   const handleOpenMenu = (event: MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
@@ -114,7 +116,7 @@ export function ApplicationCard({ application, pending, onMove, onRemove }: Appl
           <MenuItem
             onClick={() => {
               handleCloseMenu();
-              onRemove(application.id);
+              setConfirmOpen(true);
             }}
             sx={{ color: 'error.main' }}
           >
@@ -122,6 +124,15 @@ export function ApplicationCard({ application, pending, onMove, onRemove }: Appl
             Remove
           </MenuItem>
         </Menu>
+
+        <ConfirmDialog
+          open={confirmOpen}
+          onClose={() => setConfirmOpen(false)}
+          onConfirm={() => onRemove(application.id)}
+          title="Remove this application?"
+          message={`${job.title} at ${job.company} will be removed from your board. This can't be undone.`}
+          confirmLabel="Remove"
+        />
       </Stack>
 
       {job.location && (

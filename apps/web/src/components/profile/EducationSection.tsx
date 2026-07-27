@@ -14,6 +14,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { formatDate } from '@careernext/utils';
+import { ConfirmDialog } from '@careernext/shared-ui';
 import type { EducationFieldsFragment, EducationInput } from '@careernext/graphql-types';
 import { EducationDialog } from './EducationDialog';
 
@@ -29,6 +30,7 @@ interface EducationSectionProps {
 export function EducationSection({ educations, pendingId, onAdd, onUpdate, onRemove, error }: EducationSectionProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<EducationFieldsFragment | null>(null);
+  const [removing, setRemoving] = useState<EducationFieldsFragment | null>(null);
 
   const openAdd = () => {
     setEditing(null);
@@ -111,7 +113,7 @@ export function EducationSection({ educations, pendingId, onAdd, onUpdate, onRem
                     <IconButton size="small" onClick={() => openEdit(education)} aria-label="Edit education">
                       <EditOutlinedIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" onClick={() => onRemove(education.id)} aria-label="Remove education">
+                    <IconButton size="small" onClick={() => setRemoving(education)} aria-label="Remove education">
                       <DeleteOutlineRoundedIcon fontSize="small" sx={{ color: 'error.main' }} />
                     </IconButton>
                   </Stack>
@@ -129,6 +131,15 @@ export function EducationSection({ educations, pendingId, onAdd, onUpdate, onRem
         submitting={pendingId === '__add_education__' || pendingId === editing?.id}
         error={error}
         onSubmit={(input) => (editing ? onUpdate(editing.id, input) : onAdd(input))}
+      />
+
+      <ConfirmDialog
+        open={removing !== null}
+        onClose={() => setRemoving(null)}
+        onConfirm={() => removing && onRemove(removing.id)}
+        title="Remove this education entry?"
+        message={removing ? `${removing.degree} at ${removing.institution} will be removed.` : ''}
+        confirmLabel="Remove"
       />
     </Paper>
   );

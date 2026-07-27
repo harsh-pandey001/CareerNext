@@ -24,6 +24,15 @@ import type { ResetPasswordInput } from './dto/reset-password.input';
 
 const BCRYPT_ROUNDS = 12;
 
+/**
+ * A token rotated away THIS recently and presented again is treated as a
+ * benign concurrent refresh (a second browser tab reloading, or React
+ * StrictMode's dev-mode double effect), not as theft — both race the same
+ * cookie before the new one lands. Replays beyond this window still revoke
+ * the whole session family.
+ */
+const REFRESH_REUSE_GRACE_MS = 10_000;
+
 /** Emails are stored and matched lowercase — `Foo@x.com` and `foo@x.com` are one account. */
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -98,13 +107,7 @@ export class AuthService {
     }
 
     if (stored.revokedAt) {
-      // This exact token was already rotated away once — presenting it again
-      // means it was stolen/replayed. Revoke the entire session family.
-      await this.prisma.refreshToken.updateMany({
-        where: { userId: stored.userId, revokedAt: null },
-        data: { revokedAt: new Date() },
-      });
-      throw new UnauthorizedException('Session revoked. Please log in again.');
+      return this.handleRevokedTokenPresented(stored.userId, stored.revokedAt);
     }
 
     if (stored.expiresAt < new Date()) {
@@ -117,21 +120,21 @@ export class AuthService {
     }
 
     // Atomically claim the token BEFORE issuing a replacement. Two concurrent
-    // requests presenting the same token (victim + attacker replay) both pass
-    // the read above under READ COMMITTED — but only one can win this
-    // conditional update. The loser gets count 0 and is treated as reuse,
-    // which also revokes the whole session family. Claiming first also means
-    // a crash mid-rotation leaves zero live tokens (re-login), never two.
+    // requests presenting the same token both pass the read above under READ
+    // COMMITTED — but only one can win this conditional update. The loser is
+    // routed through the same grace-window logic as a late replay. Claiming
+    // first also means a crash mid-rotation leaves zero live tokens
+    // (re-login), never two.
     const claimed = await this.prisma.refreshToken.updateMany({
       where: { id: stored.id, revokedAt: null },
       data: { revokedAt: new Date() },
     });
     if (claimed.count === 0) {
-      await this.prisma.refreshToken.updateMany({
-        where: { userId: stored.userId, revokedAt: null },
-        data: { revokedAt: new Date() },
+      const current = await this.prisma.refreshToken.findUnique({
+        where: { id: stored.id },
+        select: { revokedAt: true },
       });
-      throw new UnauthorizedException('Session revoked. Please log in again.');
+      return this.handleRevokedTokenPresented(stored.userId, current?.revokedAt ?? null);
     }
 
     const session = await this.issueSession(user);
@@ -194,6 +197,29 @@ export class AuthService {
     ]);
 
     return true;
+  }
+
+  /**
+   * A revoked token was presented. Inside the grace window this is a benign
+   * concurrent rotation — issue a fresh session. Outside it, it's reuse of a
+   * stolen/stale token — revoke the whole session family.
+   */
+  private async handleRevokedTokenPresented(userId: string, revokedAt: Date | null): Promise<IssuedSession> {
+    const withinGrace = revokedAt !== null && Date.now() - revokedAt.getTime() < REFRESH_REUSE_GRACE_MS;
+
+    if (withinGrace) {
+      const user = await this.usersService.findById(userId);
+      if (!user) {
+        throw new UnauthorizedException('Invalid refresh token.');
+      }
+      return this.issueSession(user);
+    }
+
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    throw new UnauthorizedException('Session revoked. Please log in again.');
   }
 
   private async issueSession(user: PrismaUser): Promise<IssuedSession> {

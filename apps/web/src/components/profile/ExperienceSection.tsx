@@ -15,6 +15,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { formatDate } from '@careernext/utils';
+import { ConfirmDialog } from '@careernext/shared-ui';
 import type { ExperienceFieldsFragment, ExperienceInput } from '@careernext/graphql-types';
 import { ExperienceDialog } from './ExperienceDialog';
 
@@ -30,6 +31,7 @@ interface ExperienceSectionProps {
 export function ExperienceSection({ experiences, pendingId, onAdd, onUpdate, onRemove, error }: ExperienceSectionProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ExperienceFieldsFragment | null>(null);
+  const [removing, setRemoving] = useState<ExperienceFieldsFragment | null>(null);
 
   const openAdd = () => {
     setEditing(null);
@@ -126,7 +128,7 @@ export function ExperienceSection({ experiences, pendingId, onAdd, onUpdate, onR
                     <IconButton size="small" onClick={() => openEdit(experience)} aria-label="Edit experience">
                       <EditOutlinedIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" onClick={() => onRemove(experience.id)} aria-label="Remove experience">
+                    <IconButton size="small" onClick={() => setRemoving(experience)} aria-label="Remove experience">
                       <DeleteOutlineRoundedIcon fontSize="small" sx={{ color: 'error.main' }} />
                     </IconButton>
                   </Stack>
@@ -144,6 +146,15 @@ export function ExperienceSection({ experiences, pendingId, onAdd, onUpdate, onR
         submitting={pendingId === '__add_experience__' || pendingId === editing?.id}
         error={error}
         onSubmit={(input) => (editing ? onUpdate(editing.id, input) : onAdd(input))}
+      />
+
+      <ConfirmDialog
+        open={removing !== null}
+        onClose={() => setRemoving(null)}
+        onConfirm={() => removing && onRemove(removing.id)}
+        title="Remove this experience entry?"
+        message={removing ? `${removing.title} at ${removing.company} will be removed.` : ''}
+        confirmLabel="Remove"
       />
     </Paper>
   );

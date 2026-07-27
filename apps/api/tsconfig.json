@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "outDir": "./dist",
     "rootDir": "./src",
+    "types": ["node", "jest"],
     "paths": {
       "@/*": ["./src/*"],
       "@modules/*": ["./src/modules/*"],

@@ -10,6 +10,7 @@ import Chip from '@mui/material/Chip';
 import { alpha } from '@mui/material/styles';
 import TranslateRoundedIcon from '@mui/icons-material/TranslateRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import { ConfirmDialog } from '@careernext/shared-ui';
 import type { LanguageFieldsFragment, LanguageInput } from '@careernext/graphql-types';
 import { LanguageDialog } from './LanguageDialog';
 import { LANGUAGE_PROFICIENCY_LABELS } from './constants';
@@ -26,6 +27,7 @@ interface LanguageSectionProps {
 export function LanguageSection({ languages, pendingId, onAdd, onUpdate, onRemove, error }: LanguageSectionProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<LanguageFieldsFragment | null>(null);
+  const [removing, setRemoving] = useState<LanguageFieldsFragment | null>(null);
 
   const openAdd = () => {
     setEditing(null);
@@ -79,7 +81,7 @@ export function LanguageSection({ languages, pendingId, onAdd, onUpdate, onRemov
                 key={language.id}
                 label={`${language.name} · ${LANGUAGE_PROFICIENCY_LABELS[language.proficiency]}`}
                 onClick={() => openEdit(language)}
-                onDelete={() => onRemove(language.id)}
+                onDelete={() => setRemoving(language)}
                 disabled={pendingId === language.id}
                 sx={{ fontWeight: 600, borderRadius: '10px' }}
                 variant="outlined"
@@ -96,6 +98,15 @@ export function LanguageSection({ languages, pendingId, onAdd, onUpdate, onRemov
         submitting={pendingId === '__add_language__' || pendingId === editing?.id}
         error={error}
         onSubmit={(input) => (editing ? onUpdate(editing.id, input) : onAdd(input))}
+      />
+
+      <ConfirmDialog
+        open={removing !== null}
+        onClose={() => setRemoving(null)}
+        onConfirm={() => removing && onRemove(removing.id)}
+        title="Remove this language?"
+        message={removing ? `"${removing.name}" will be removed from your profile.` : ''}
+        confirmLabel="Remove"
       />
     </Paper>
   );

@@ -17,6 +17,7 @@ import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { formatDate, formatFileSize } from '@careernext/utils';
+import { ConfirmDialog } from '@careernext/shared-ui';
 import type { ResumeVersionFieldsFragment } from '@careernext/graphql-types';
 import { MIME_TYPE_LABELS } from './constants';
 
@@ -30,6 +31,7 @@ interface ResumeVersionItemProps {
 
 export function ResumeVersionItem({ version, pending, onPreview, onSetActive, onDelete }: ResumeVersionItemProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const { document } = version;
 
   const handleOpenMenu = (event: MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
@@ -122,7 +124,7 @@ export function ResumeVersionItem({ version, pending, onPreview, onSetActive, on
         <MenuItem
           onClick={() => {
             handleCloseMenu();
-            onDelete(version.id);
+            setConfirmOpen(true);
           }}
           sx={{ color: 'error.main' }}
         >
@@ -130,6 +132,14 @@ export function ResumeVersionItem({ version, pending, onPreview, onSetActive, on
           Delete
         </MenuItem>
       </Menu>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => onDelete(version.id)}
+        title="Delete this resume version?"
+        message={`"${document.fileName}" (v${version.version}) will be permanently deleted. This can't be undone.`}
+      />
     </Paper>
   );
 }

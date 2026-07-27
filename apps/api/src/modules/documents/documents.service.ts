@@ -79,6 +79,7 @@ export class DocumentsService {
     this.validateFileName(fileName);
     this.validateResumeFile(mimeType, base64Content);
     const buffer = decodeUploadContent(base64Content);
+    validateFileSignature(buffer, mimeType);
 
     return this.prisma.$transaction(async (tx) => {
       await tx.resumeVersion.updateMany({ where: { userId, isActive: true }, data: { isActive: false } });
@@ -183,6 +184,7 @@ export class DocumentsService {
     this.validateFileName(fileName);
     this.validateFile(mimeType, base64Content, ACCEPTED_VAULT_MIME_TYPES);
     const buffer = decodeUploadContent(base64Content);
+    validateFileSignature(buffer, mimeType);
 
     return this.prisma.document.create({
       data: { userId, type: prismaType, fileName, fileData: buffer, fileSize: buffer.length, mimeType },
@@ -261,8 +263,9 @@ export class DocumentsService {
  * Buffer.from silently DROPS invalid base64 characters, so garbage input
  * would otherwise be stored as a truncated/empty "file" that passed every
  * check. Reject anything that isn't well-formed base64 or decodes to nothing.
+ * Exported for unit tests only.
  */
-function decodeUploadContent(base64Content: string): Buffer {
+export function decodeUploadContent(base64Content: string): Buffer {
   if (!/^[A-Za-z0-9+/]+={0,2}$/.test(base64Content)) {
     throw new BadRequestException('File content is not valid base64.');
   }
@@ -271,4 +274,33 @@ function decodeUploadContent(base64Content: string): Buffer {
     throw new BadRequestException('File appears to be empty.');
   }
   return buffer;
+}
+
+/**
+ * Leading file signatures ("magic bytes") per accepted mimetype. The claimed
+ * mimetype alone is client-controlled — without this, a renamed executable
+ * uploads as "application/pdf" and is later re-served verbatim via the
+ * data: fileUrl. DOCX is a ZIP container (PK..), legacy DOC is an OLE
+ * compound file.
+ */
+const FILE_SIGNATURES: Record<string, number[][]> = {
+  'application/pdf': [[0x25, 0x50, 0x44, 0x46]], // %PDF
+  'image/png': [[0x89, 0x50, 0x4e, 0x47]],
+  'image/jpeg': [[0xff, 0xd8, 0xff]],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [[0x50, 0x4b, 0x03, 0x04]],
+  'application/msword': [[0xd0, 0xcf, 0x11, 0xe0]],
+};
+
+/** Exported for unit tests only. */
+export function validateFileSignature(buffer: Buffer, mimeType: string): void {
+  const signatures = FILE_SIGNATURES[mimeType];
+  // Unknown mimetype here means the whitelist upstream already rejected it;
+  // this is pure defense in depth, so an unmapped type passes through.
+  if (!signatures) return;
+  const matches = signatures.some(
+    (signature) => buffer.length >= signature.length && signature.every((byte, index) => buffer[index] === byte),
+  );
+  if (!matches) {
+    throw new BadRequestException('File content does not match its file type.');
+  }
 }

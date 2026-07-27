@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import { AppSidebar } from '@/layouts/AppSidebar';
 import { AppTopBar } from '@/layouts/AppTopBar';
 import { MobileNavDrawer } from '@/layouts/MobileNavDrawer';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
@@ -13,7 +14,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <MobileNavDrawer />
       <Box component="main" sx={{ flex: 1, minWidth: 0 }}>
         <AppTopBar />
-        <Box sx={{ px: { xs: 2.5, md: 4 }, py: 4 }}>{children}</Box>
+        <Box sx={{ px: { xs: 2.5, md: 4 }, py: 4 }}>
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </Box>
       </Box>
     </Box>
   );

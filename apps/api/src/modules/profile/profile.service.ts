@@ -20,8 +20,11 @@ const PROFILE_LIST_INCLUDE = {
   languages: { orderBy: { createdAt: 'asc' as const } },
 };
 
-/** Section checklist behind `completionPercentage` — six equally-weighted signals. */
-function computeCompletion(
+/**
+ * Section checklist behind `completionPercentage` — six equally-weighted
+ * signals. Exported for unit tests.
+ */
+export function computeCompletion(
   profile: { headline: string | null; bio: string | null; location: string | null; githubUrl: string | null; linkedinUrl: string | null; portfolioUrl: string | null },
   counts: { educations: number; experiences: number; languages: number; skills: number },
 ): number {

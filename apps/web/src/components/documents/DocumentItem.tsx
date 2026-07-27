@@ -14,6 +14,7 @@ import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { formatDate, formatFileSize } from '@careernext/utils';
+import { ConfirmDialog } from '@careernext/shared-ui';
 import type { DocumentFieldsFragment } from '@careernext/graphql-types';
 import { DEFAULT_DOCUMENT_ICON, MIME_TYPE_LABELS } from './constants';
 
@@ -26,6 +27,7 @@ interface DocumentItemProps {
 
 export function DocumentItem({ document, pending, onPreview, onDelete }: DocumentItemProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const Icon = DEFAULT_DOCUMENT_ICON;
 
   const handleOpenMenu = (event: MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
@@ -98,7 +100,7 @@ export function DocumentItem({ document, pending, onPreview, onDelete }: Documen
         <MenuItem
           onClick={() => {
             handleCloseMenu();
-            onDelete(document.id);
+            setConfirmOpen(true);
           }}
           sx={{ color: 'error.main' }}
         >
@@ -106,6 +108,14 @@ export function DocumentItem({ document, pending, onPreview, onDelete }: Documen
           Delete
         </MenuItem>
       </Menu>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => onDelete(document.id)}
+        title="Delete this document?"
+        message={`"${document.fileName}" will be permanently deleted. This can't be undone.`}
+      />
     </Paper>
   );
 }

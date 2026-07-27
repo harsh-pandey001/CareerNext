@@ -17,6 +17,14 @@ const GUARDED_ROUTES = [
   ROUTES.DOCUMENTS,
 ];
 
+// Single-flight boot refresh, shared across effect invocations. React
+// StrictMode double-fires the mount effect in dev — two refreshToken calls
+// racing the same cookie would trip the server's rotation-reuse detection.
+// Module-level on purpose: it must survive the StrictMode remount, and a
+// full page load (the only time boot should re-run) resets module state
+// anyway.
+let bootRefresh: Promise<unknown> | null = null;
+
 /**
  * Runs once per app load: attempts a silent `refreshToken` call (the httpOnly
  * cookie, if any, is sent automatically) to hydrate `auth.store` before
@@ -37,9 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
 
+    bootRefresh ??= refreshTokenMutation();
+
     void (async () => {
       try {
-        const { data } = await refreshTokenMutation();
+        const { data } = (await bootRefresh) as Awaited<ReturnType<typeof refreshTokenMutation>>;
         if (cancelled) return;
         if (data?.refreshToken) {
           setAuth({ user: data.refreshToken.user, accessToken: data.refreshToken.accessToken });

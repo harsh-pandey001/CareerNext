@@ -10,6 +10,7 @@ import Chip from '@mui/material/Chip';
 import { alpha } from '@mui/material/styles';
 import PsychologyOutlinedIcon from '@mui/icons-material/PsychologyOutlined';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import { ConfirmDialog } from '@careernext/shared-ui';
 import type { SkillFieldsFragment, SkillInput } from '@careernext/graphql-types';
 import { SkillDialog } from './SkillDialog';
 import { SKILL_LEVEL_LABELS } from './constants';
@@ -26,6 +27,7 @@ interface SkillsSectionProps {
 export function SkillsSection({ skills, pendingId, onAdd, onUpdate, onRemove, error }: SkillsSectionProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<SkillFieldsFragment | null>(null);
+  const [removing, setRemoving] = useState<SkillFieldsFragment | null>(null);
 
   const openAdd = () => {
     setEditing(null);
@@ -79,7 +81,7 @@ export function SkillsSection({ skills, pendingId, onAdd, onUpdate, onRemove, er
                 key={skill.id}
                 label={`${skill.name} · ${SKILL_LEVEL_LABELS[skill.level]}${skill.yearsOfExperience ? ` · ${skill.yearsOfExperience}y` : ''}`}
                 onClick={() => openEdit(skill)}
-                onDelete={() => onRemove(skill.id)}
+                onDelete={() => setRemoving(skill)}
                 disabled={pendingId === skill.id}
                 sx={{ fontWeight: 600, borderRadius: '10px' }}
                 variant="outlined"
@@ -96,6 +98,15 @@ export function SkillsSection({ skills, pendingId, onAdd, onUpdate, onRemove, er
         submitting={pendingId === '__add_skill__' || pendingId === editing?.id}
         error={error}
         onSubmit={(input) => (editing ? onUpdate(editing.id, input) : onAdd(input))}
+      />
+
+      <ConfirmDialog
+        open={removing !== null}
+        onClose={() => setRemoving(null)}
+        onConfirm={() => removing && onRemove(removing.id)}
+        title="Remove this skill?"
+        message={removing ? `"${removing.name}" will be removed from your profile.` : ''}
+        confirmLabel="Remove"
       />
     </Paper>
   );
