@@ -36,11 +36,3 @@ export function isoToLocalInput(iso: string | null | undefined): string {
   const offsetMs = date.getTimezoneOffset() * 60_000;
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
 }
-
-/** Human date+time for cards (e.g. "Jul 30, 2026 · 9:30 AM"). */
-export function formatDateTime(iso: string): string {
-  const date = new Date(iso);
-  const day = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  const time = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  return `${day} · ${time}`;
-}

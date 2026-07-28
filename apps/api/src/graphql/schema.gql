@@ -24,6 +24,13 @@ enum ApplicationStatus {
   SAVED
 }
 
+type ApplicationStatusHistory {
+  changedAt: DateTime!
+  fromStatus: ApplicationStatus
+  id: ID!
+  toStatus: ApplicationStatus!
+}
+
 type AuthPayload {
   accessToken: String!
   user: User!
@@ -245,6 +252,7 @@ type Profile {
 }
 
 type Query {
+  applicationStatusHistory(applicationId: ID!): [ApplicationStatusHistory!]!
   document(id: ID!): Document!
 
   """Liveness probe for the CareerNext API."""

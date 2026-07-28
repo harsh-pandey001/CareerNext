@@ -9,20 +9,24 @@ import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import { alpha } from '@mui/material/styles';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
+import TimelineRoundedIcon from '@mui/icons-material/TimelineRounded';
 import { ConfirmDialog } from '@careernext/shared-ui';
 import type { ApplicationFieldsFragment, ApplicationStatus } from '@careernext/graphql-types';
-import { APPLICATION_COLUMNS, STATUS_LABELS } from './constants';
+import { STATUS_LABELS, getValidNextStatuses } from './constants';
+import { PipelineStepper } from './PipelineStepper';
 
 interface ApplicationCardProps {
   application: ApplicationFieldsFragment;
   pending: boolean;
   onMove: (applicationId: string, status: ApplicationStatus) => void;
   onRemove: (applicationId: string) => void;
+  onViewTimeline: (applicationId: string) => void;
 }
 
 function getCompanyInitials(company: string) {
@@ -35,10 +39,11 @@ function getCompanyInitials(company: string) {
     .toUpperCase();
 }
 
-export function ApplicationCard({ application, pending, onMove, onRemove }: ApplicationCardProps) {
+export function ApplicationCard({ application, pending, onMove, onRemove, onViewTimeline }: ApplicationCardProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { job } = application;
+  const nextStatuses = getValidNextStatuses(application.status);
 
   const handleOpenMenu = (event: MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleCloseMenu = () => setAnchorEl(null);
@@ -99,20 +104,36 @@ export function ApplicationCard({ application, pending, onMove, onRemove }: Appl
         )}
 
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
-          <Typography variant="caption" sx={{ px: 2, py: 0.5, color: 'text.secondary', display: 'block' }}>
-            Move to
-          </Typography>
-          {APPLICATION_COLUMNS.filter((column) => column.status !== application.status).map((column) => (
-            <MenuItem
-              key={column.status}
-              onClick={() => {
-                handleCloseMenu();
-                onMove(application.id, column.status);
-              }}
-            >
-              {STATUS_LABELS[column.status]}
-            </MenuItem>
-          ))}
+          <MenuItem
+            onClick={() => {
+              handleCloseMenu();
+              onViewTimeline(application.id);
+            }}
+          >
+            <TimelineRoundedIcon fontSize="small" sx={{ mr: 1 }} />
+            View Timeline
+          </MenuItem>
+          {nextStatuses.length > 0 && (
+            <>
+              <Divider />
+              <Typography variant="caption" sx={{ px: 2, py: 0.5, color: 'text.secondary', display: 'block' }}>
+                Move to
+              </Typography>
+              {nextStatuses.map((status) => (
+                <MenuItem
+                  key={status}
+                  onClick={() => {
+                    handleCloseMenu();
+                    onMove(application.id, status);
+                  }}
+                  sx={status === 'REJECTED' ? { color: 'error.main' } : undefined}
+                >
+                  {STATUS_LABELS[status]}
+                </MenuItem>
+              ))}
+            </>
+          )}
+          <Divider />
           <MenuItem
             onClick={() => {
               handleCloseMenu();
@@ -144,6 +165,8 @@ export function ApplicationCard({ application, pending, onMove, onRemove }: Appl
           sx={{ alignSelf: 'flex-start', fontSize: '0.7rem' }}
         />
       )}
+
+      <PipelineStepper status={application.status} />
     </Paper>
   );
 }

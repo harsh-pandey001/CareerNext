@@ -19,8 +19,9 @@ import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { ConfirmDialog } from '@careernext/shared-ui';
+import { formatDateTime } from '@careernext/utils';
 import type { InterviewFieldsFragment, InterviewOutcome } from '@careernext/graphql-types';
-import { OUTCOME_LABELS, OUTCOME_TONES, ROUND_LABELS, formatDateTime } from './constants';
+import { OUTCOME_LABELS, OUTCOME_TONES, ROUND_LABELS } from './constants';
 
 interface InterviewCardProps {
   interview: InterviewFieldsFragment;

@@ -254,15 +254,33 @@ model Application {
   notes    String?
   appliedAt DateTime?
 
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job        Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  interviews Interview[]
+  user          User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job           Job                        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  interviews    Interview[]
+  statusHistory ApplicationStatusHistory[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([userId, jobId])
   @@map("applications")
+}
+
+// One row per status transition (including the initial SAVED/APPLIED on
+// creation, where fromStatus is null) — the raw material for Sprint 4's
+// funnel/conversion analytics. Written atomically alongside every status
+// change in ApplicationsService, never edited after the fact.
+model ApplicationStatusHistory {
+  id            String            @id @default(uuid())
+  applicationId String
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  changedAt     DateTime          @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@map("application_status_history")
 }
 
 // V2 Interview Tracker. Interviews hang off an Application (the userId is

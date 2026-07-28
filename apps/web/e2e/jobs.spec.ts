@@ -17,7 +17,9 @@ test.describe('jobs → applications flow', () => {
 
     await page.goto('/applications');
     // Fresh account: exactly one card on the board, in the Saved column.
+    // Scoped to the column heading — the card's own pipeline indicator also
+    // renders the word "Saved", so an unscoped match is ambiguous.
     await expect(page.getByRole('button', { name: 'Application actions' })).toHaveCount(1);
-    await expect(page.getByText('Saved', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Saved' })).toBeVisible();
   });
 });

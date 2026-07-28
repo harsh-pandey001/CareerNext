@@ -11,3 +11,11 @@ export function formatDate(iso: string, locale = 'en-US'): string {
 export function isFuture(iso: string): boolean {
   return new Date(iso).getTime() > Date.now();
 }
+
+/** Human date+time (e.g. "Jul 30, 2026 · 9:30 AM"). */
+export function formatDateTime(iso: string, locale = 'en-US'): string {
+  const date = new Date(iso);
+  const day = date.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
+  const time = date.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
+  return `${day} · ${time}`;
+}

@@ -6,6 +6,7 @@ import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { ApplicationsService } from './applications.service';
 import { ApplicationModel, toApplicationModel } from './models/application.model';
 import { ApplicationStatus } from './models/application-status.enum';
+import { ApplicationStatusHistoryModel, toApplicationStatusHistoryModel } from './models/application-status-history.model';
 
 @Resolver(() => ApplicationModel)
 @UseGuards(GqlAuthGuard)
@@ -26,6 +27,15 @@ export class ApplicationsResolver {
   ): Promise<ApplicationModel> {
     const application = await this.applicationsService.updateStatus(user.id, applicationId, status);
     return toApplicationModel(application);
+  }
+
+  @Query(() => [ApplicationStatusHistoryModel])
+  async applicationStatusHistory(
+    @CurrentUser() user: PrismaUser,
+    @Args('applicationId', { type: () => ID }) applicationId: string,
+  ): Promise<ApplicationStatusHistoryModel[]> {
+    const history = await this.applicationsService.getStatusHistory(user.id, applicationId);
+    return history.map(toApplicationStatusHistoryModel);
   }
 
   @Mutation(() => Boolean)

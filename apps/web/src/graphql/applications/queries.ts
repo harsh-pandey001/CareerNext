@@ -9,3 +9,14 @@ export const MY_APPLICATIONS_QUERY = gql`
     }
   }
 `;
+
+export const APPLICATION_STATUS_HISTORY_QUERY = gql`
+  query ApplicationStatusHistory($applicationId: ID!) {
+    applicationStatusHistory(applicationId: $applicationId) {
+      id
+      fromStatus
+      toStatus
+      changedAt
+    }
+  }
+`;

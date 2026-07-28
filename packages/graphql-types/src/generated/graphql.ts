@@ -160,6 +160,13 @@ export type MyApplicationsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type MyApplicationsQuery = { myApplications: Array<{ id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } }> };
 
+export type ApplicationStatusHistoryQueryVariables = Exact<{
+  applicationId: string | number;
+}>;
+
+
+export type ApplicationStatusHistoryQuery = { applicationStatusHistory: Array<{ id: string, fromStatus: ApplicationStatus | null, toStatus: ApplicationStatus, changedAt: string }> };
+
 export type AuthUserFieldsFragment = { id: string, email: string, firstName: string, lastName: string, role: UserRole, isEmailVerified: boolean, createdAt: string };
 
 export type RegisterMutationVariables = Exact<{
@@ -738,6 +745,52 @@ export type MyApplicationsQueryHookResult = ReturnType<typeof useMyApplicationsQ
 export type MyApplicationsLazyQueryHookResult = ReturnType<typeof useMyApplicationsLazyQuery>;
 export type MyApplicationsSuspenseQueryHookResult = ReturnType<typeof useMyApplicationsSuspenseQuery>;
 export type MyApplicationsQueryResult = Apollo.QueryResult<MyApplicationsQuery, MyApplicationsQueryVariables>;
+export const ApplicationStatusHistoryDocument = gql`
+    query ApplicationStatusHistory($applicationId: ID!) {
+  applicationStatusHistory(applicationId: $applicationId) {
+    id
+    fromStatus
+    toStatus
+    changedAt
+  }
+}
+    `;
+
+/**
+ * __useApplicationStatusHistoryQuery__
+ *
+ * To run a query within a React component, call `useApplicationStatusHistoryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useApplicationStatusHistoryQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useApplicationStatusHistoryQuery({
+ *   variables: {
+ *      applicationId: // value for 'applicationId'
+ *   },
+ * });
+ */
+export function useApplicationStatusHistoryQuery(baseOptions: Apollo.QueryHookOptions<ApplicationStatusHistoryQuery, ApplicationStatusHistoryQueryVariables> & ({ variables: ApplicationStatusHistoryQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ApplicationStatusHistoryQuery, ApplicationStatusHistoryQueryVariables>(ApplicationStatusHistoryDocument, options);
+      }
+export function useApplicationStatusHistoryLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ApplicationStatusHistoryQuery, ApplicationStatusHistoryQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ApplicationStatusHistoryQuery, ApplicationStatusHistoryQueryVariables>(ApplicationStatusHistoryDocument, options);
+        }
+// @ts-ignore
+export function useApplicationStatusHistorySuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<ApplicationStatusHistoryQuery, ApplicationStatusHistoryQueryVariables>): Apollo.UseSuspenseQueryResult<ApplicationStatusHistoryQuery, ApplicationStatusHistoryQueryVariables>;
+export function useApplicationStatusHistorySuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ApplicationStatusHistoryQuery, ApplicationStatusHistoryQueryVariables>): Apollo.UseSuspenseQueryResult<ApplicationStatusHistoryQuery | undefined, ApplicationStatusHistoryQueryVariables>;
+export function useApplicationStatusHistorySuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ApplicationStatusHistoryQuery, ApplicationStatusHistoryQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ApplicationStatusHistoryQuery, ApplicationStatusHistoryQueryVariables>(ApplicationStatusHistoryDocument, options);
+        }
+export type ApplicationStatusHistoryQueryHookResult = ReturnType<typeof useApplicationStatusHistoryQuery>;
+export type ApplicationStatusHistoryLazyQueryHookResult = ReturnType<typeof useApplicationStatusHistoryLazyQuery>;
+export type ApplicationStatusHistorySuspenseQueryHookResult = ReturnType<typeof useApplicationStatusHistorySuspenseQuery>;
+export type ApplicationStatusHistoryQueryResult = Apollo.QueryResult<ApplicationStatusHistoryQuery, ApplicationStatusHistoryQueryVariables>;
 export const RegisterDocument = gql`
     mutation Register($input: RegisterInput!) {
   register(input: $input) {

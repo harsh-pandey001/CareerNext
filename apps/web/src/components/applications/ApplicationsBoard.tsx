@@ -8,7 +8,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { alpha, type Theme } from '@mui/material/styles';
 import { useApplications } from '@/hooks/applications/useApplications';
 import { useApplicationActions } from '@/hooks/applications/useApplicationActions';
+import { useApplicationTimeline } from '@/hooks/applications/useApplicationTimeline';
 import { ApplicationCard } from './ApplicationCard';
+import { ApplicationTimelineDialog } from './ApplicationTimelineDialog';
 import type { ColumnTone } from './constants';
 
 function toneColor(theme: Theme, tone: ColumnTone) {
@@ -19,6 +21,10 @@ function toneColor(theme: Theme, tone: ColumnTone) {
 export function ApplicationsBoard() {
   const { columns, total, loading, error } = useApplications();
   const { updateStatus, removeApplication, pendingId, error: actionError } = useApplicationActions();
+  const timeline = useApplicationTimeline();
+  const timelineApplication = columns
+    .flatMap((column) => column.applications)
+    .find((application) => application.id === timeline.openApplicationId);
 
   return (
     <Stack spacing={3} sx={{ height: '100%' }}>
@@ -67,7 +73,7 @@ export function ApplicationsBoard() {
         >
           {columns.map((column) => (
             <Box
-              key={column.status}
+              key={column.key}
               sx={{
                 width: 280,
                 flexShrink: 0,
@@ -116,6 +122,7 @@ export function ApplicationsBoard() {
                       pending={pendingId === application.id}
                       onMove={updateStatus}
                       onRemove={removeApplication}
+                      onViewTimeline={timeline.open}
                     />
                   ))
                 )}
@@ -124,6 +131,16 @@ export function ApplicationsBoard() {
           ))}
         </Box>
       )}
+
+      <ApplicationTimelineDialog
+        open={timeline.isOpen}
+        onClose={timeline.close}
+        jobTitle={timelineApplication?.job.title ?? ''}
+        company={timelineApplication?.job.company ?? ''}
+        history={timeline.history}
+        loading={timeline.loading}
+        error={timeline.error}
+      />
     </Stack>
   );
 }

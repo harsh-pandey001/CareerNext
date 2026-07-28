@@ -9,19 +9,25 @@ export function useApplications() {
 
   const columns = useMemo(() => {
     const applications = data?.myApplications ?? [];
-    const grouped = new Map<ApplicationStatus, ApplicationFieldsFragment[]>();
+    const statusToColumnKey = new Map<ApplicationStatus, string>();
     for (const column of APPLICATION_COLUMNS) {
-      grouped.set(column.status, []);
+      for (const status of column.statuses) {
+        statusToColumnKey.set(status, column.key);
+      }
+    }
+
+    const grouped = new Map<string, ApplicationFieldsFragment[]>();
+    for (const column of APPLICATION_COLUMNS) {
+      grouped.set(column.key, []);
     }
     for (const application of applications) {
-      // Statuses without their own column (the V2 interview stages) surface
-      // under Applied rather than silently disappearing from the board.
-      const column = grouped.has(application.status) ? application.status : 'APPLIED';
-      grouped.get(column)?.push(application);
+      const key = statusToColumnKey.get(application.status) ?? 'APPLIED';
+      grouped.get(key)?.push(application);
     }
+
     return APPLICATION_COLUMNS.map((column) => ({
       ...column,
-      applications: grouped.get(column.status) ?? [],
+      applications: grouped.get(column.key) ?? [],
     }));
   }, [data]);
 

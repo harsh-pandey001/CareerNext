@@ -7,10 +7,11 @@ import Link from '@mui/material/Link';
 import Divider from '@mui/material/Divider';
 import { alpha } from '@mui/material/styles';
 import EventNoteRoundedIcon from '@mui/icons-material/EventNoteRounded';
+import { formatDateTime } from '@careernext/utils';
 import type { InterviewFieldsFragment } from '@careernext/graphql-types';
 import { SectionCard } from './SectionCard';
 import { ROUTES } from '@/constants';
-import { ROUND_LABELS, formatDateTime } from '@/components/interviews/constants';
+import { ROUND_LABELS } from '@/components/interviews/constants';
 
 function getCompanyInitials(company: string) {
   return company
