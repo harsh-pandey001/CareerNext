@@ -1,8 +1,16 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useMyApplicationsQuery, useMyProfileQuery, type SkillLevel } from '@careernext/graphql-types';
+import {
+  useMyApplicationsQuery,
+  useMyProfileQuery,
+  useUpcomingInterviewsQuery,
+  type InterviewFieldsFragment,
+  type SkillLevel,
+} from '@careernext/graphql-types';
 import { SKILL_LEVEL_LABELS } from '@/components/profile/constants';
+
+const UPCOMING_INTERVIEWS_LIMIT = 5;
 
 export interface DashboardStats {
   applied: number;
@@ -39,13 +47,17 @@ const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 const TREND_MONTHS = 6;
 
 /**
- * Single data source for every real-data dashboard widget: one applications
- * query + one profile query, everything else derived in memory. Upcoming
- * Interviews and Notifications stay on sample data until their V2 modules land.
+ * Single data source for every real-data dashboard widget: applications,
+ * profile, and upcoming-interviews queries, everything else derived in
+ * memory. Notifications stays on sample data until its V2 module lands.
  */
 export function useDashboardData() {
   const applicationsResult = useMyApplicationsQuery({ fetchPolicy: 'cache-and-network' });
   const profileResult = useMyProfileQuery({ fetchPolicy: 'cache-and-network' });
+  const interviewsResult = useUpcomingInterviewsQuery({
+    variables: { limit: UPCOMING_INTERVIEWS_LIMIT },
+    fetchPolicy: 'cache-and-network',
+  });
 
   const applications = applicationsResult.data?.myApplications;
   const profile = profileResult.data?.myProfile;
@@ -99,7 +111,11 @@ export function useDashboardData() {
     ...derived,
     totalApplications: applications?.length ?? 0,
     profileCompletion: profile?.completionPercentage ?? 0,
-    loading: (applicationsResult.loading && !applicationsResult.data) || (profileResult.loading && !profileResult.data),
-    error: applicationsResult.error ?? profileResult.error,
+    upcomingInterviews: (interviewsResult.data?.upcomingInterviews ?? []) as InterviewFieldsFragment[],
+    loading:
+      (applicationsResult.loading && !applicationsResult.data) ||
+      (profileResult.loading && !profileResult.data) ||
+      (interviewsResult.loading && !interviewsResult.data),
+    error: applicationsResult.error ?? profileResult.error ?? interviewsResult.error,
   };
 }

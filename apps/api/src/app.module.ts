@@ -16,6 +16,7 @@ import { JobsModule } from './modules/jobs/jobs.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { InterviewsModule } from './modules/interviews/interviews.module';
 
 const gqlLogger = new Logger('GraphQL');
 
@@ -87,7 +88,7 @@ function maskInternalErrors(formattedError: GraphQLFormattedError): GraphQLForma
     ApplicationsModule,
     DocumentsModule,
     ProfileModule,
-    // InterviewsModule,     // V2
+    InterviewsModule,
     // NotificationsModule,  // V2
     // AnalyticsModule,      // V2
   ],

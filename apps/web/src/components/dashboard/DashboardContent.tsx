@@ -15,8 +15,17 @@ import { SkillsOverview } from './SkillsOverview';
 import { NotificationsPanel } from './NotificationsPanel';
 
 export function DashboardContent() {
-  const { stats, statusBreakdown, monthlyTrend, skills, totalApplications, profileCompletion, loading, error } =
-    useDashboardData();
+  const {
+    stats,
+    statusBreakdown,
+    monthlyTrend,
+    skills,
+    upcomingInterviews,
+    totalApplications,
+    profileCompletion,
+    loading,
+    error,
+  } = useDashboardData();
 
   return (
     <Stack spacing={3}>
@@ -51,7 +60,7 @@ export function DashboardContent() {
 
             <Stack spacing={3}>
               <ProfileCompletionCard value={profileCompletion} />
-              <UpcomingInterviews />
+              <UpcomingInterviews interviews={upcomingInterviews} />
               <SkillsOverview skills={skills} />
               <NotificationsPanel />
             </Stack>

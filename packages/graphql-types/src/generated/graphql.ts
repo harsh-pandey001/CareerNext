@@ -45,6 +45,23 @@ export type ForgotPasswordInput = {
   email: string;
 };
 
+export type InterviewInput = {
+  notes?: string | null | undefined;
+  round: InterviewRound;
+  scheduledAt?: string | null | undefined;
+};
+
+export type InterviewOutcome =
+  | 'FAILED'
+  | 'PASSED'
+  | 'PENDING';
+
+export type InterviewRound =
+  | 'HR_ROUND'
+  | 'ONLINE_ASSESSMENT'
+  | 'TECHNICAL_ROUND_1'
+  | 'TECHNICAL_ROUND_2';
+
 export type JobFilterInput = {
   location?: string | null | undefined;
   query?: string | null | undefined;
@@ -220,6 +237,51 @@ export type DocumentQueryVariables = Exact<{
 
 
 export type DocumentQuery = { document: { fileUrl: string, id: string, type: DocumentType, fileName: string, fileSize: number, mimeType: string, createdAt: string } };
+
+export type InterviewFieldsFragment = { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } };
+
+export type ScheduleInterviewMutationVariables = Exact<{
+  applicationId: string | number;
+  input: InterviewInput;
+}>;
+
+
+export type ScheduleInterviewMutation = { scheduleInterview: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
+
+export type UpdateInterviewMutationVariables = Exact<{
+  interviewId: string | number;
+  input: InterviewInput;
+}>;
+
+
+export type UpdateInterviewMutation = { updateInterview: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
+
+export type SetInterviewOutcomeMutationVariables = Exact<{
+  interviewId: string | number;
+  outcome: InterviewOutcome;
+}>;
+
+
+export type SetInterviewOutcomeMutation = { setInterviewOutcome: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
+
+export type DeleteInterviewMutationVariables = Exact<{
+  interviewId: string | number;
+}>;
+
+
+export type DeleteInterviewMutation = { deleteInterview: boolean };
+
+export type MyInterviewsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyInterviewsQuery = { myInterviews: Array<{ id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } }> };
+
+export type UpcomingInterviewsQueryVariables = Exact<{
+  limit?: number | null | undefined;
+}>;
+
+
+export type UpcomingInterviewsQuery = { upcomingInterviews: Array<{ id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } }> };
 
 export type JobFieldsFragment = { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string };
 
@@ -408,6 +470,33 @@ export type ResumeVersionQueryVariables = Exact<{
 
 export type ResumeVersionQuery = { resumeVersion: { id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string, fileUrl: string } } };
 
+export const AuthUserFieldsFragmentDoc = gql`
+    fragment AuthUserFields on User {
+  id
+  email
+  firstName
+  lastName
+  role
+  isEmailVerified
+  createdAt
+}
+    `;
+export const DocumentFieldsFragmentDoc = gql`
+    fragment DocumentFields on Document {
+  id
+  type
+  fileName
+  fileSize
+  mimeType
+  createdAt
+}
+    `;
+export const DocumentWithContentFieldsFragmentDoc = gql`
+    fragment DocumentWithContentFields on Document {
+  ...DocumentFields
+  fileUrl
+}
+    ${DocumentFieldsFragmentDoc}`;
 export const JobFieldsFragmentDoc = gql`
     fragment JobFields on Job {
   id
@@ -438,33 +527,19 @@ export const ApplicationFieldsFragmentDoc = gql`
   }
 }
     ${JobFieldsFragmentDoc}`;
-export const AuthUserFieldsFragmentDoc = gql`
-    fragment AuthUserFields on User {
+export const InterviewFieldsFragmentDoc = gql`
+    fragment InterviewFields on Interview {
   id
-  email
-  firstName
-  lastName
-  role
-  isEmailVerified
+  round
+  scheduledAt
+  outcome
+  notes
   createdAt
+  application {
+    ...ApplicationFields
+  }
 }
-    `;
-export const DocumentFieldsFragmentDoc = gql`
-    fragment DocumentFields on Document {
-  id
-  type
-  fileName
-  fileSize
-  mimeType
-  createdAt
-}
-    `;
-export const DocumentWithContentFieldsFragmentDoc = gql`
-    fragment DocumentWithContentFields on Document {
-  ...DocumentFields
-  fileUrl
-}
-    ${DocumentFieldsFragmentDoc}`;
+    ${ApplicationFieldsFragmentDoc}`;
 export const EducationFieldsFragmentDoc = gql`
     fragment EducationFields on Education {
   id
@@ -1061,6 +1136,224 @@ export type DocumentQueryHookResult = ReturnType<typeof useDocumentQuery>;
 export type DocumentLazyQueryHookResult = ReturnType<typeof useDocumentLazyQuery>;
 export type DocumentSuspenseQueryHookResult = ReturnType<typeof useDocumentSuspenseQuery>;
 export type DocumentQueryResult = Apollo.QueryResult<DocumentQuery, DocumentQueryVariables>;
+export const ScheduleInterviewDocument = gql`
+    mutation ScheduleInterview($applicationId: ID!, $input: InterviewInput!) {
+  scheduleInterview(applicationId: $applicationId, input: $input) {
+    ...InterviewFields
+  }
+}
+    ${InterviewFieldsFragmentDoc}`;
+export type ScheduleInterviewMutationFn = Apollo.MutationFunction<ScheduleInterviewMutation, ScheduleInterviewMutationVariables>;
+
+/**
+ * __useScheduleInterviewMutation__
+ *
+ * To run a mutation, you first call `useScheduleInterviewMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useScheduleInterviewMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [scheduleInterviewMutation, { data, loading, error }] = useScheduleInterviewMutation({
+ *   variables: {
+ *      applicationId: // value for 'applicationId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useScheduleInterviewMutation(baseOptions?: Apollo.MutationHookOptions<ScheduleInterviewMutation, ScheduleInterviewMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ScheduleInterviewMutation, ScheduleInterviewMutationVariables>(ScheduleInterviewDocument, options);
+      }
+export type ScheduleInterviewMutationHookResult = ReturnType<typeof useScheduleInterviewMutation>;
+export type ScheduleInterviewMutationResult = Apollo.MutationResult<ScheduleInterviewMutation>;
+export type ScheduleInterviewMutationOptions = Apollo.BaseMutationOptions<ScheduleInterviewMutation, ScheduleInterviewMutationVariables>;
+export const UpdateInterviewDocument = gql`
+    mutation UpdateInterview($interviewId: ID!, $input: InterviewInput!) {
+  updateInterview(interviewId: $interviewId, input: $input) {
+    ...InterviewFields
+  }
+}
+    ${InterviewFieldsFragmentDoc}`;
+export type UpdateInterviewMutationFn = Apollo.MutationFunction<UpdateInterviewMutation, UpdateInterviewMutationVariables>;
+
+/**
+ * __useUpdateInterviewMutation__
+ *
+ * To run a mutation, you first call `useUpdateInterviewMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateInterviewMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateInterviewMutation, { data, loading, error }] = useUpdateInterviewMutation({
+ *   variables: {
+ *      interviewId: // value for 'interviewId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateInterviewMutation(baseOptions?: Apollo.MutationHookOptions<UpdateInterviewMutation, UpdateInterviewMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateInterviewMutation, UpdateInterviewMutationVariables>(UpdateInterviewDocument, options);
+      }
+export type UpdateInterviewMutationHookResult = ReturnType<typeof useUpdateInterviewMutation>;
+export type UpdateInterviewMutationResult = Apollo.MutationResult<UpdateInterviewMutation>;
+export type UpdateInterviewMutationOptions = Apollo.BaseMutationOptions<UpdateInterviewMutation, UpdateInterviewMutationVariables>;
+export const SetInterviewOutcomeDocument = gql`
+    mutation SetInterviewOutcome($interviewId: ID!, $outcome: InterviewOutcome!) {
+  setInterviewOutcome(interviewId: $interviewId, outcome: $outcome) {
+    ...InterviewFields
+  }
+}
+    ${InterviewFieldsFragmentDoc}`;
+export type SetInterviewOutcomeMutationFn = Apollo.MutationFunction<SetInterviewOutcomeMutation, SetInterviewOutcomeMutationVariables>;
+
+/**
+ * __useSetInterviewOutcomeMutation__
+ *
+ * To run a mutation, you first call `useSetInterviewOutcomeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSetInterviewOutcomeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [setInterviewOutcomeMutation, { data, loading, error }] = useSetInterviewOutcomeMutation({
+ *   variables: {
+ *      interviewId: // value for 'interviewId'
+ *      outcome: // value for 'outcome'
+ *   },
+ * });
+ */
+export function useSetInterviewOutcomeMutation(baseOptions?: Apollo.MutationHookOptions<SetInterviewOutcomeMutation, SetInterviewOutcomeMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SetInterviewOutcomeMutation, SetInterviewOutcomeMutationVariables>(SetInterviewOutcomeDocument, options);
+      }
+export type SetInterviewOutcomeMutationHookResult = ReturnType<typeof useSetInterviewOutcomeMutation>;
+export type SetInterviewOutcomeMutationResult = Apollo.MutationResult<SetInterviewOutcomeMutation>;
+export type SetInterviewOutcomeMutationOptions = Apollo.BaseMutationOptions<SetInterviewOutcomeMutation, SetInterviewOutcomeMutationVariables>;
+export const DeleteInterviewDocument = gql`
+    mutation DeleteInterview($interviewId: ID!) {
+  deleteInterview(interviewId: $interviewId)
+}
+    `;
+export type DeleteInterviewMutationFn = Apollo.MutationFunction<DeleteInterviewMutation, DeleteInterviewMutationVariables>;
+
+/**
+ * __useDeleteInterviewMutation__
+ *
+ * To run a mutation, you first call `useDeleteInterviewMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteInterviewMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteInterviewMutation, { data, loading, error }] = useDeleteInterviewMutation({
+ *   variables: {
+ *      interviewId: // value for 'interviewId'
+ *   },
+ * });
+ */
+export function useDeleteInterviewMutation(baseOptions?: Apollo.MutationHookOptions<DeleteInterviewMutation, DeleteInterviewMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteInterviewMutation, DeleteInterviewMutationVariables>(DeleteInterviewDocument, options);
+      }
+export type DeleteInterviewMutationHookResult = ReturnType<typeof useDeleteInterviewMutation>;
+export type DeleteInterviewMutationResult = Apollo.MutationResult<DeleteInterviewMutation>;
+export type DeleteInterviewMutationOptions = Apollo.BaseMutationOptions<DeleteInterviewMutation, DeleteInterviewMutationVariables>;
+export const MyInterviewsDocument = gql`
+    query MyInterviews {
+  myInterviews {
+    ...InterviewFields
+  }
+}
+    ${InterviewFieldsFragmentDoc}`;
+
+/**
+ * __useMyInterviewsQuery__
+ *
+ * To run a query within a React component, call `useMyInterviewsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyInterviewsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyInterviewsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyInterviewsQuery(baseOptions?: Apollo.QueryHookOptions<MyInterviewsQuery, MyInterviewsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyInterviewsQuery, MyInterviewsQueryVariables>(MyInterviewsDocument, options);
+      }
+export function useMyInterviewsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyInterviewsQuery, MyInterviewsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyInterviewsQuery, MyInterviewsQueryVariables>(MyInterviewsDocument, options);
+        }
+// @ts-ignore
+export function useMyInterviewsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MyInterviewsQuery, MyInterviewsQueryVariables>): Apollo.UseSuspenseQueryResult<MyInterviewsQuery, MyInterviewsQueryVariables>;
+export function useMyInterviewsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyInterviewsQuery, MyInterviewsQueryVariables>): Apollo.UseSuspenseQueryResult<MyInterviewsQuery | undefined, MyInterviewsQueryVariables>;
+export function useMyInterviewsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyInterviewsQuery, MyInterviewsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyInterviewsQuery, MyInterviewsQueryVariables>(MyInterviewsDocument, options);
+        }
+export type MyInterviewsQueryHookResult = ReturnType<typeof useMyInterviewsQuery>;
+export type MyInterviewsLazyQueryHookResult = ReturnType<typeof useMyInterviewsLazyQuery>;
+export type MyInterviewsSuspenseQueryHookResult = ReturnType<typeof useMyInterviewsSuspenseQuery>;
+export type MyInterviewsQueryResult = Apollo.QueryResult<MyInterviewsQuery, MyInterviewsQueryVariables>;
+export const UpcomingInterviewsDocument = gql`
+    query UpcomingInterviews($limit: Int) {
+  upcomingInterviews(limit: $limit) {
+    ...InterviewFields
+  }
+}
+    ${InterviewFieldsFragmentDoc}`;
+
+/**
+ * __useUpcomingInterviewsQuery__
+ *
+ * To run a query within a React component, call `useUpcomingInterviewsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useUpcomingInterviewsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useUpcomingInterviewsQuery({
+ *   variables: {
+ *      limit: // value for 'limit'
+ *   },
+ * });
+ */
+export function useUpcomingInterviewsQuery(baseOptions?: Apollo.QueryHookOptions<UpcomingInterviewsQuery, UpcomingInterviewsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<UpcomingInterviewsQuery, UpcomingInterviewsQueryVariables>(UpcomingInterviewsDocument, options);
+      }
+export function useUpcomingInterviewsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<UpcomingInterviewsQuery, UpcomingInterviewsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<UpcomingInterviewsQuery, UpcomingInterviewsQueryVariables>(UpcomingInterviewsDocument, options);
+        }
+// @ts-ignore
+export function useUpcomingInterviewsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<UpcomingInterviewsQuery, UpcomingInterviewsQueryVariables>): Apollo.UseSuspenseQueryResult<UpcomingInterviewsQuery, UpcomingInterviewsQueryVariables>;
+export function useUpcomingInterviewsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<UpcomingInterviewsQuery, UpcomingInterviewsQueryVariables>): Apollo.UseSuspenseQueryResult<UpcomingInterviewsQuery | undefined, UpcomingInterviewsQueryVariables>;
+export function useUpcomingInterviewsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<UpcomingInterviewsQuery, UpcomingInterviewsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<UpcomingInterviewsQuery, UpcomingInterviewsQueryVariables>(UpcomingInterviewsDocument, options);
+        }
+export type UpcomingInterviewsQueryHookResult = ReturnType<typeof useUpcomingInterviewsQuery>;
+export type UpcomingInterviewsLazyQueryHookResult = ReturnType<typeof useUpcomingInterviewsLazyQuery>;
+export type UpcomingInterviewsSuspenseQueryHookResult = ReturnType<typeof useUpcomingInterviewsSuspenseQuery>;
+export type UpcomingInterviewsQueryResult = Apollo.QueryResult<UpcomingInterviewsQuery, UpcomingInterviewsQueryVariables>;
 export const SaveJobDocument = gql`
     mutation SaveJob($jobId: ID!) {
   saveJob(jobId: $jobId) {

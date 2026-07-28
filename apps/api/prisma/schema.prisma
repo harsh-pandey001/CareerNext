@@ -56,6 +56,19 @@ enum SkillLevel {
   EXPERT
 }
 
+enum InterviewRound {
+  ONLINE_ASSESSMENT
+  TECHNICAL_ROUND_1
+  TECHNICAL_ROUND_2
+  HR_ROUND
+}
+
+enum InterviewOutcome {
+  PENDING
+  PASSED
+  FAILED
+}
+
 enum LanguageProficiency {
   BASIC
   CONVERSATIONAL
@@ -241,14 +254,37 @@ model Application {
   notes    String?
   appliedAt DateTime?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job        Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  interviews Interview[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([userId, jobId])
   @@map("applications")
+}
+
+// V2 Interview Tracker. Interviews hang off an Application (the userId is
+// denormalized for cheap ownership checks + the dashboard's "upcoming"
+// query, which spans all of a user's applications).
+model Interview {
+  id            String           @id @default(uuid())
+  applicationId String
+  userId        String
+  round         InterviewRound
+  scheduledAt   DateTime?
+  outcome       InterviewOutcome @default(PENDING)
+  notes         String?
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([applicationId])
+  @@index([userId, scheduledAt])
+  @@map("interviews")
 }
 
 model Document {

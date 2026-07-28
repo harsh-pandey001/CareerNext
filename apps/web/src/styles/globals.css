@@ -1,0 +1,13 @@
+/*
+ * Prevents a flash of the wrong theme on page load for dark-mode users.
+ * `app/layout.tsx` runs a blocking script (before hydration, before <body>
+ * exists) that sets `data-theme="dark"` on <html> when localStorage says so.
+ * MUI's CssBaseline paints `background-color` on <body> itself once React
+ * hydrates — this static rule covers the gap between the script running and
+ * that hydration completing, using the browser's own CSS engine, no JS
+ * required once the attribute is set. Keep this hex value in sync with
+ * darkTheme.palette.background.default in styles/theme.ts.
+ */
+html[data-theme='dark'] body {
+  background-color: #0f172a;
+}

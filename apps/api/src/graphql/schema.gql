@@ -97,6 +97,35 @@ input ForgotPasswordInput {
   email: String!
 }
 
+type Interview {
+  application: Application!
+  createdAt: DateTime!
+  id: ID!
+  notes: String
+  outcome: InterviewOutcome!
+  round: InterviewRound!
+  scheduledAt: DateTime
+}
+
+input InterviewInput {
+  notes: String
+  round: InterviewRound!
+  scheduledAt: DateTime
+}
+
+enum InterviewOutcome {
+  FAILED
+  PASSED
+  PENDING
+}
+
+enum InterviewRound {
+  HR_ROUND
+  ONLINE_ASSESSMENT
+  TECHNICAL_ROUND_1
+  TECHNICAL_ROUND_2
+}
+
 type Job {
   applicationStatus: ApplicationStatus
   company: String!
@@ -157,6 +186,7 @@ type Mutation {
   addSkill(input: SkillInput!): Skill!
   applyToJob(jobId: ID!): Job!
   deleteDocument(documentId: ID!): Boolean!
+  deleteInterview(interviewId: ID!): Boolean!
   deleteResumeVersion(resumeVersionId: ID!): Boolean!
   forgotPassword(input: ForgotPasswordInput!): Boolean!
   login(input: LoginInput!): AuthPayload!
@@ -170,11 +200,14 @@ type Mutation {
   removeSkill(skillId: ID!): Boolean!
   resetPassword(input: ResetPasswordInput!): Boolean!
   saveJob(jobId: ID!): Job!
+  scheduleInterview(applicationId: ID!, input: InterviewInput!): Interview!
   setActiveResume(resumeVersionId: ID!): ResumeVersion!
+  setInterviewOutcome(interviewId: ID!, outcome: InterviewOutcome!): Interview!
   unsaveJob(jobId: ID!): Job!
   updateApplicationStatus(applicationId: ID!, status: ApplicationStatus!): Application!
   updateEducation(educationId: ID!, input: EducationInput!): Education!
   updateExperience(experienceId: ID!, input: ExperienceInput!): Experience!
+  updateInterview(input: InterviewInput!, interviewId: ID!): Interview!
   updateLanguage(input: LanguageInput!, languageId: ID!): Language!
   updateProfile(input: UpdateProfileInput!): Profile!
   updateSkill(input: SkillInput!, skillId: ID!): Skill!
@@ -221,9 +254,11 @@ type Query {
   me: User!
   myApplications: [Application!]!
   myDocuments(type: DocumentType): [Document!]!
+  myInterviews: [Interview!]!
   myProfile: Profile!
   myResumeVersions: [ResumeVersion!]!
   resumeVersion(id: ID!): ResumeVersion!
+  upcomingInterviews(limit: Int! = 5): [Interview!]!
 }
 
 input RegisterInput {

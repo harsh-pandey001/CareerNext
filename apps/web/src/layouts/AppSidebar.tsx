@@ -10,6 +10,7 @@ import { alpha } from '@mui/material/styles';
 import SpaceDashboardRoundedIcon from '@mui/icons-material/SpaceDashboardRounded';
 import WorkOutlineRoundedIcon from '@mui/icons-material/WorkOutlineRounded';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import EventNoteRoundedIcon from '@mui/icons-material/EventNoteRounded';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
@@ -28,6 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: ROUTES.DASHBOARD, icon: SpaceDashboardRoundedIcon },
   { label: 'Jobs', href: ROUTES.JOBS, icon: WorkOutlineRoundedIcon },
   { label: 'Applications', href: ROUTES.APPLICATIONS, icon: AssignmentOutlinedIcon },
+  { label: 'Interviews', href: ROUTES.INTERVIEWS, icon: EventNoteRoundedIcon },
   { label: 'Resume', href: ROUTES.RESUME, icon: DescriptionOutlinedIcon },
   { label: 'Documents', href: ROUTES.DOCUMENTS, icon: FolderOpenOutlinedIcon },
   { label: 'Profile', href: ROUTES.PROFILE, icon: PersonOutlineRoundedIcon },

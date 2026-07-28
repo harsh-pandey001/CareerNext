@@ -10,6 +10,7 @@ export const ROUTES = {
   PROFILE: '/profile',
   JOBS: '/jobs',
   APPLICATIONS: '/applications',
+  INTERVIEWS: '/interviews',
   RESUME: '/resume',
   DOCUMENTS: '/documents',
 } as const;
