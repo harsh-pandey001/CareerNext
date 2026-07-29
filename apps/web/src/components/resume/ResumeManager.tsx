@@ -17,8 +17,7 @@ import { ResumeVersionItem } from './ResumeVersionItem';
 
 export function ResumeManager() {
   const { versions, activeVersion, loading, error } = useResumeVersions();
-  const { uploadResume, setActiveResume, deleteResumeVersion, pendingId, uploading, error: actionError } =
-    useResumeActions();
+  const { uploadResume, setActiveResume, deleteResumeVersion, pendingId, uploading } = useResumeActions();
   const preview = useResumePreview();
 
   const hasVersions = versions.length > 0;
@@ -43,11 +42,6 @@ export function ResumeManager() {
         </Typography>
       </Stack>
 
-      {actionError && (
-        <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
-          {actionError}
-        </Alert>
-      )}
       {error && (
         <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
           Couldn&apos;t load your resumes right now. Please try again in a moment.

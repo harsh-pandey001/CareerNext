@@ -73,11 +73,6 @@ export function InterviewsManager() {
         </Button>
       </Stack>
 
-      {actionError && !dialogOpen && (
-        <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }} onClose={clearError}>
-          {actionError}
-        </Alert>
-      )}
       {error && (
         <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
           Couldn&apos;t load your interviews right now. Please try again in a moment.

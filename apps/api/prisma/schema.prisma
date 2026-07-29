@@ -69,6 +69,11 @@ enum InterviewOutcome {
   FAILED
 }
 
+enum NotificationType {
+  APPLICATION_STATUS_CHANGED
+  INTERVIEW_REMINDER
+}
+
 enum LanguageProficiency {
   BASIC
   CONVERSATIONAL
@@ -90,6 +95,7 @@ model User {
   documents           Document[]
   resumeVersions      ResumeVersion[]
   skills              Skill[]
+  notifications       Notification[]
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
 
@@ -294,6 +300,10 @@ model Interview {
   scheduledAt   DateTime?
   outcome       InterviewOutcome @default(PENDING)
   notes         String?
+  // Set once the 24h-before reminder notification has been sent for this
+  // interview — the cron job's dedup key, so it never double-notifies on
+  // its next scan even if the interview stays PENDING.
+  reminderSentAt DateTime?
 
   application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
@@ -303,6 +313,27 @@ model Interview {
   @@index([applicationId])
   @@index([userId, scheduledAt])
   @@map("interviews")
+}
+
+// A user-facing feed entry — application status changes and interview
+// reminders today, extensible to more types later. `link` is an in-app
+// path (not a full URL) since this is always consumed by our own frontend.
+model Notification {
+  id      String           @id @default(uuid())
+  userId  String
+  type    NotificationType
+  title   String
+  message String
+  link    String?
+  readAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@map("notifications")
 }
 
 model Document {

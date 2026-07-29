@@ -6,8 +6,10 @@ import {
   type ApplicationStatusHistory as PrismaApplicationStatusHistory,
   type Job as PrismaJob,
 } from '@prisma/client';
-import type { ApplicationStatus } from '@careernext/shared-types';
+import { NotificationType, type ApplicationStatus } from '@careernext/shared-types';
+import { humanizeEnum } from '@careernext/utils';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 export type ApplicationWithJob = PrismaApplication & { job: PrismaJob };
 
@@ -51,7 +53,10 @@ export function isValidTransition(from: PrismaApplicationStatus, to: PrismaAppli
 
 @Injectable()
 export class ApplicationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   /** All of a user's applications, each with its Job — unpaginated (V1 dummy-data scale). */
   async findAllForUser(userId: string): Promise<ApplicationWithJob[]> {
@@ -223,15 +228,21 @@ export class ApplicationsService {
     await this.applyStatusChange(applicationId, application.status, toStatus);
   }
 
-  /** Atomically updates status and appends the transition to history. */
+  /**
+   * Atomically updates status and appends the transition to history, then
+   * (best-effort, outside the transaction) notifies the user. This is the
+   * single choke point every real status transition passes through — manual
+   * moves, the SAVED->APPLIED advance, and the interview-triggered advance —
+   * so it's the one place a notification needs to be wired in.
+   */
   private async applyStatusChange(
     applicationId: string,
     fromStatus: PrismaApplicationStatus,
     toStatus: PrismaApplicationStatus,
     extraData: Prisma.ApplicationUpdateInput = {},
   ): Promise<ApplicationWithJob> {
-    return this.prisma.$transaction(async (tx) => {
-      const application = await tx.application.update({
+    const application = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.application.update({
         where: { id: applicationId },
         data: { status: toStatus, ...extraData },
         include: { job: true },
@@ -239,7 +250,17 @@ export class ApplicationsService {
       await tx.applicationStatusHistory.create({
         data: { applicationId, fromStatus, toStatus },
       });
-      return application;
+      return updated;
     });
+
+    await this.notificationsService.create(
+      application.userId,
+      NotificationType.APPLICATION_STATUS_CHANGED,
+      'Application status updated',
+      `${application.job.title} at ${application.job.company} moved to ${humanizeEnum(toStatus)}.`,
+      '/applications',
+    );
+
+    return application;
   }
 }

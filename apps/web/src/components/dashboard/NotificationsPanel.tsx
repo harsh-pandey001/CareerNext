@@ -1,63 +1,42 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { alpha } from '@mui/material/styles';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
-import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
-import type SvgIcon from '@mui/material/SvgIcon';
+import NotificationsOffRoundedIcon from '@mui/icons-material/NotificationsOffRounded';
+import type { NotificationFieldsFragment } from '@careernext/graphql-types';
+import { NotificationRow } from '@/components/notifications/NotificationRow';
 import { SectionCard } from './SectionCard';
-import { NOTIFICATIONS, type NotificationItem } from './mock-data';
 
-const ICONS: Record<NotificationItem['type'], typeof SvgIcon> = {
-  success: CheckCircleRoundedIcon,
-  info: InfoRoundedIcon,
-  warning: WarningAmberRoundedIcon,
-};
+interface NotificationsPanelProps {
+  notifications: NotificationFieldsFragment[];
+}
 
-const COLORS: Record<NotificationItem['type'], 'success' | 'info' | 'warning'> = {
-  success: 'success',
-  info: 'info',
-  warning: 'warning',
-};
+export function NotificationsPanel({ notifications }: NotificationsPanelProps) {
+  const router = useRouter();
 
-export function NotificationsPanel() {
   return (
-    <SectionCard title="Notifications" subtitle="Sample preview — Notifications arrive in V2">
-      <Stack spacing={2}>
-        {NOTIFICATIONS.map((notification) => {
-          const Icon = ICONS[notification.type];
-          const color = COLORS[notification.type];
-
-          return (
-            <Stack key={notification.id} direction="row" spacing={1.5} alignItems="flex-start">
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: (theme) => alpha(theme.palette[color].main, 0.12),
-                  color: `${color}.main`,
-                  flexShrink: 0,
-                }}
-              >
-                <Icon sx={{ fontSize: 18 }} />
-              </Box>
-              <Stack spacing={0.25} sx={{ minWidth: 0 }}>
-                <Typography variant="body2">{notification.message}</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {notification.time}
-                </Typography>
-              </Stack>
-            </Stack>
-          );
-        })}
-      </Stack>
+    <SectionCard title="Notifications" subtitle="Your most recent updates">
+      {notifications.length === 0 ? (
+        <Stack spacing={1} alignItems="center" sx={{ py: 2 }}>
+          <NotificationsOffRoundedIcon sx={{ fontSize: 28, color: 'text.disabled' }} />
+          <Typography variant="body2" color="text.secondary">
+            You&apos;re all caught up.
+          </Typography>
+        </Stack>
+      ) : (
+        <Stack spacing={0.5}>
+          {notifications.map((notification) => (
+            <NotificationRow
+              key={notification.id}
+              notification={notification}
+              onClick={(clicked) => {
+                if (clicked.link) router.push(clicked.link);
+              }}
+            />
+          ))}
+        </Stack>
+      )}
     </SectionCard>
   );
 }

@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, type ApolloDriverConfig } from '@nestjs/apollo';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import type { GraphQLFormattedError } from 'graphql';
 
 import { configuration } from './config';
@@ -17,6 +18,7 @@ import { ApplicationsModule } from './modules/applications/applications.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { InterviewsModule } from './modules/interviews/interviews.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 const gqlLogger = new Logger('GraphQL');
 
@@ -57,6 +59,8 @@ function maskInternalErrors(formattedError: GraphQLFormattedError): GraphQLForma
       load: [configuration],
       envFilePath: ['.env'],
     }),
+    // Backs @Cron in NotificationsService (interview reminder scan).
+    ScheduleModule.forRoot(),
     GraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
       inject: [ConfigService],
@@ -89,7 +93,7 @@ function maskInternalErrors(formattedError: GraphQLFormattedError): GraphQLForma
     DocumentsModule,
     ProfileModule,
     InterviewsModule,
-    // NotificationsModule,  // V2
+    NotificationsModule,
     // AnalyticsModule,      // V2
   ],
   providers: [AppResolver],

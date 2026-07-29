@@ -43,15 +43,21 @@ export class InterviewsService {
     });
   }
 
-  /** Pending interviews scheduled from now on — the dashboard widget's feed. */
+  /**
+   * Pending interviews the user still needs to show up for — the dashboard
+   * widget's feed. Includes both dated-and-future interviews AND ones with
+   * no date yet (the UI renders those as "Not scheduled yet"); a plain
+   * `scheduledAt: { gte: now }` filter would silently drop the unscheduled
+   * ones, since SQL NULL never satisfies a `gte` comparison.
+   */
   async findUpcomingForUser(userId: string, limit: number): Promise<InterviewWithApplication[]> {
     return this.prisma.interview.findMany({
       where: {
         userId,
         outcome: PrismaInterviewOutcome.PENDING,
-        scheduledAt: { gte: new Date() },
+        OR: [{ scheduledAt: null }, { scheduledAt: { gte: new Date() } }],
       },
-      orderBy: { scheduledAt: 'asc' },
+      orderBy: [{ scheduledAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }],
       take: limit,
       include: WITH_APPLICATION,
     });

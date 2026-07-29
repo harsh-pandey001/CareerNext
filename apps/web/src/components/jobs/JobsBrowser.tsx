@@ -16,7 +16,7 @@ import { JobCard } from './JobCard';
 
 export function JobsBrowser() {
   const { jobs, total, totalPages, page, setPage, loading, error, filter, updateFilter, resetFilter } = useJobsList();
-  const { saveJob, unsaveJob, applyToJob, pendingJobId, error: actionError } = useJobActions();
+  const { saveJob, unsaveJob, applyToJob, pendingJobId } = useJobActions();
 
   const showInitialLoading = loading && jobs.length === 0;
 
@@ -32,12 +32,6 @@ export function JobsBrowser() {
       </Stack>
 
       <JobFilters filter={filter} onChange={updateFilter} onReset={resetFilter} />
-
-      {actionError && (
-        <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
-          {actionError}
-        </Alert>
-      )}
 
       {error && (
         <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>

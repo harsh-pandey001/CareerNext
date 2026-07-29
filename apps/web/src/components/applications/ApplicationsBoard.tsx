@@ -20,7 +20,7 @@ function toneColor(theme: Theme, tone: ColumnTone) {
 
 export function ApplicationsBoard() {
   const { columns, total, loading, error } = useApplications();
-  const { updateStatus, removeApplication, pendingId, error: actionError } = useApplicationActions();
+  const { updateStatus, removeApplication, pendingId } = useApplicationActions();
   const timeline = useApplicationTimeline();
   const timelineApplication = columns
     .flatMap((column) => column.applications)
@@ -37,11 +37,6 @@ export function ApplicationsBoard() {
         </Typography>
       </Stack>
 
-      {actionError && (
-        <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
-          {actionError}
-        </Alert>
-      )}
       {error && (
         <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
           Couldn&apos;t load your applications right now. Please try again in a moment.

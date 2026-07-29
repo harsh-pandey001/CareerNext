@@ -22,6 +22,7 @@ import {
   type UpdateProfileInput,
 } from '@careernext/graphql-types';
 import { MY_PROFILE_QUERY } from '@/graphql/profile/queries';
+import { useToast } from '@/hooks/useToast';
 import { getApolloErrorMessage } from '@/utils';
 
 // Every mutation here touches the profile's completion percentage and/or a
@@ -34,6 +35,7 @@ const REFETCH_MY_PROFILE = { refetchQueries: [{ query: MY_PROFILE_QUERY }] };
 export function useProfileActions() {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   const [updateProfileMutation] = useUpdateProfileMutation(REFETCH_MY_PROFILE);
   const [addEducationMutation] = useAddEducationMutation(REFETCH_MY_PROFILE);
@@ -49,21 +51,29 @@ export function useProfileActions() {
   const [updateSkillMutation] = useUpdateSkillMutation(REFETCH_MY_PROFILE);
   const [removeSkillMutation] = useRemoveSkillMutation(REFETCH_MY_PROFILE);
 
-  const run = useCallback(async (id: string, action: () => Promise<unknown>) => {
-    setError(null);
-    setPendingId(id);
-    try {
-      await action();
-      return true;
-    } catch (err) {
-      setError(getApolloErrorMessage(err));
-      return false;
-    } finally {
-      // Only clear our own pending marker — a slow first action resolving
-      // must not re-enable buttons for a second action still in flight.
-      setPendingId((current) => (current === id ? null : current));
-    }
-  }, []);
+  // Add/update go through a dialog, which shows `error` inline — toasting
+  // those too would double-signal the same failure. Removals have no dialog
+  // (just a confirm prompt), so a toast is their only surface.
+  const run = useCallback(
+    async (id: string, action: () => Promise<unknown>, { toastOnError = false } = {}) => {
+      setError(null);
+      setPendingId(id);
+      try {
+        await action();
+        return true;
+      } catch (err) {
+        const message = getApolloErrorMessage(err);
+        setError(message);
+        if (toastOnError) toast.error(message);
+        return false;
+      } finally {
+        // Only clear our own pending marker — a slow first action resolving
+        // must not re-enable buttons for a second action still in flight.
+        setPendingId((current) => (current === id ? null : current));
+      }
+    },
+    [toast],
+  );
 
   const updateProfile = useCallback(
     (input: UpdateProfileInput) => run('__profile__', () => updateProfileMutation({ variables: { input } })),
@@ -80,7 +90,8 @@ export function useProfileActions() {
     [run, updateEducationMutation],
   );
   const removeEducation = useCallback(
-    (educationId: string) => run(educationId, () => removeEducationMutation({ variables: { educationId } })),
+    (educationId: string) =>
+      run(educationId, () => removeEducationMutation({ variables: { educationId } }), { toastOnError: true }),
     [run, removeEducationMutation],
   );
 
@@ -94,7 +105,8 @@ export function useProfileActions() {
     [run, updateExperienceMutation],
   );
   const removeExperience = useCallback(
-    (experienceId: string) => run(experienceId, () => removeExperienceMutation({ variables: { experienceId } })),
+    (experienceId: string) =>
+      run(experienceId, () => removeExperienceMutation({ variables: { experienceId } }), { toastOnError: true }),
     [run, removeExperienceMutation],
   );
 
@@ -108,7 +120,8 @@ export function useProfileActions() {
     [run, updateLanguageMutation],
   );
   const removeLanguage = useCallback(
-    (languageId: string) => run(languageId, () => removeLanguageMutation({ variables: { languageId } })),
+    (languageId: string) =>
+      run(languageId, () => removeLanguageMutation({ variables: { languageId } }), { toastOnError: true }),
     [run, removeLanguageMutation],
   );
 
@@ -121,7 +134,7 @@ export function useProfileActions() {
     [run, updateSkillMutation],
   );
   const removeSkill = useCallback(
-    (skillId: string) => run(skillId, () => removeSkillMutation({ variables: { skillId } })),
+    (skillId: string) => run(skillId, () => removeSkillMutation({ variables: { skillId } }), { toastOnError: true }),
     [run, removeSkillMutation],
   );
 

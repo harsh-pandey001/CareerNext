@@ -21,6 +21,7 @@ export function DashboardContent() {
     monthlyTrend,
     skills,
     upcomingInterviews,
+    notifications,
     totalApplications,
     profileCompletion,
     loading,
@@ -62,7 +63,7 @@ export function DashboardContent() {
               <ProfileCompletionCard value={profileCompletion} />
               <UpcomingInterviews interviews={upcomingInterviews} />
               <SkillsOverview skills={skills} />
-              <NotificationsPanel />
+              <NotificationsPanel notifications={notifications} />
             </Stack>
           </Box>
         </>

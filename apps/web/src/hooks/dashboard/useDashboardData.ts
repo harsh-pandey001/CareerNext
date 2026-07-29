@@ -3,14 +3,17 @@
 import { useMemo } from 'react';
 import {
   useMyApplicationsQuery,
+  useMyNotificationsQuery,
   useMyProfileQuery,
   useUpcomingInterviewsQuery,
   type InterviewFieldsFragment,
+  type NotificationFieldsFragment,
   type SkillLevel,
 } from '@careernext/graphql-types';
 import { SKILL_LEVEL_LABELS } from '@/components/profile/constants';
 
 const UPCOMING_INTERVIEWS_LIMIT = 5;
+const DASHBOARD_NOTIFICATIONS_LIMIT = 5;
 
 export interface DashboardStats {
   applied: number;
@@ -48,14 +51,18 @@ const TREND_MONTHS = 6;
 
 /**
  * Single data source for every real-data dashboard widget: applications,
- * profile, and upcoming-interviews queries, everything else derived in
- * memory. Notifications stays on sample data until its V2 module lands.
+ * profile, upcoming-interviews, and notifications queries, everything else
+ * derived in memory.
  */
 export function useDashboardData() {
   const applicationsResult = useMyApplicationsQuery({ fetchPolicy: 'cache-and-network' });
   const profileResult = useMyProfileQuery({ fetchPolicy: 'cache-and-network' });
   const interviewsResult = useUpcomingInterviewsQuery({
     variables: { limit: UPCOMING_INTERVIEWS_LIMIT },
+    fetchPolicy: 'cache-and-network',
+  });
+  const notificationsResult = useMyNotificationsQuery({
+    variables: { limit: DASHBOARD_NOTIFICATIONS_LIMIT },
     fetchPolicy: 'cache-and-network',
   });
 
@@ -112,10 +119,12 @@ export function useDashboardData() {
     totalApplications: applications?.length ?? 0,
     profileCompletion: profile?.completionPercentage ?? 0,
     upcomingInterviews: (interviewsResult.data?.upcomingInterviews ?? []) as InterviewFieldsFragment[],
+    notifications: (notificationsResult.data?.myNotifications ?? []) as NotificationFieldsFragment[],
     loading:
       (applicationsResult.loading && !applicationsResult.data) ||
       (profileResult.loading && !profileResult.data) ||
-      (interviewsResult.loading && !interviewsResult.data),
-    error: applicationsResult.error ?? profileResult.error ?? interviewsResult.error,
+      (interviewsResult.loading && !interviewsResult.data) ||
+      (notificationsResult.loading && !notificationsResult.data),
+    error: applicationsResult.error ?? profileResult.error ?? interviewsResult.error ?? notificationsResult.error,
   };
 }

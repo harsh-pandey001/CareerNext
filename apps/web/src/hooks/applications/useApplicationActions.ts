@@ -7,11 +7,12 @@ import {
   type ApplicationStatus,
 } from '@careernext/graphql-types';
 import { MY_APPLICATIONS_QUERY } from '@/graphql/applications/queries';
+import { useToast } from '@/hooks/useToast';
 import { getApolloErrorMessage } from '@/utils';
 
 export function useApplicationActions() {
   const [pendingId, setPendingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const [updateStatusMutation] = useUpdateApplicationStatusMutation();
   // Removal deletes the entity outright — a plain Boolean response gives
   // Apollo's normalized cache nothing to reconcile automatically (unlike the
@@ -21,19 +22,21 @@ export function useApplicationActions() {
     refetchQueries: [{ query: MY_APPLICATIONS_QUERY }],
   });
 
-  const run = useCallback(async (id: string, action: () => Promise<unknown>) => {
-    setError(null);
-    setPendingId(id);
-    try {
-      await action();
-    } catch (err) {
-      setError(getApolloErrorMessage(err));
-    } finally {
-      // Only clear our own pending marker — a slow first action resolving
-      // must not re-enable buttons for a second action still in flight.
-      setPendingId((current) => (current === id ? null : current));
-    }
-  }, []);
+  const run = useCallback(
+    async (id: string, action: () => Promise<unknown>) => {
+      setPendingId(id);
+      try {
+        await action();
+      } catch (err) {
+        toast.error(getApolloErrorMessage(err));
+      } finally {
+        // Only clear our own pending marker — a slow first action resolving
+        // must not re-enable buttons for a second action still in flight.
+        setPendingId((current) => (current === id ? null : current));
+      }
+    },
+    [toast],
+  );
 
   const updateStatus = useCallback(
     (applicationId: string, status: ApplicationStatus) =>
@@ -46,5 +49,5 @@ export function useApplicationActions() {
     [run, removeApplicationMutation],
   );
 
-  return { updateStatus, removeApplication, pendingId, error };
+  return { updateStatus, removeApplication, pendingId };
 }

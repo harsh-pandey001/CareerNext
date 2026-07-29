@@ -50,13 +50,6 @@ export function ProfileManager() {
           Couldn&apos;t load your profile right now. Please try again in a moment.
         </Alert>
       )}
-      {/* Failed removals happen outside any dialog — without this, a failed
-          delete would silently do nothing from the user's point of view. */}
-      {actionError && (
-        <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }} onClose={clearError}>
-          {actionError}
-        </Alert>
-      )}
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>

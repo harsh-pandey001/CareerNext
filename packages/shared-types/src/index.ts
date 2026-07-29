@@ -15,3 +15,4 @@ export * from './job';
 export * from './application';
 export * from './interview';
 export * from './document';
+export * from './notification';

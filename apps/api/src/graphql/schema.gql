@@ -198,6 +198,8 @@ type Mutation {
   forgotPassword(input: ForgotPasswordInput!): Boolean!
   login(input: LoginInput!): AuthPayload!
   logout: Boolean!
+  markAllNotificationsRead: Boolean!
+  markNotificationRead(notificationId: ID!): Notification!
   refreshToken: AuthPayload!
   register(input: RegisterInput!): AuthPayload!
   removeApplication(applicationId: ID!): Boolean!
@@ -220,6 +222,21 @@ type Mutation {
   updateSkill(input: SkillInput!, skillId: ID!): Skill!
   uploadDocument(content: String!, fileName: String!, mimeType: String!, type: DocumentType!): Document!
   uploadResume(content: String!, fileName: String!, mimeType: String!): ResumeVersion!
+}
+
+type Notification {
+  createdAt: DateTime!
+  id: ID!
+  link: String
+  message: String!
+  readAt: DateTime
+  title: String!
+  type: NotificationType!
+}
+
+enum NotificationType {
+  APPLICATION_STATUS_CHANGED
+  INTERVIEW_REMINDER
 }
 
 type PaginatedJobs {
@@ -263,9 +280,11 @@ type Query {
   myApplications: [Application!]!
   myDocuments(type: DocumentType): [Document!]!
   myInterviews: [Interview!]!
+  myNotifications(limit: Int! = 20): [Notification!]!
   myProfile: Profile!
   myResumeVersions: [ResumeVersion!]!
   resumeVersion(id: ID!): ResumeVersion!
+  unreadNotificationCount: Int!
   upcomingInterviews(limit: Int! = 5): [Interview!]!
 }
 

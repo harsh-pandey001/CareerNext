@@ -12,12 +12,12 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
-import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { initials } from '@careernext/utils';
 import { useUIStore } from '@/store/ui.store';
 import { useAuthStore } from '@/store/auth.store';
 import { useLogout } from '@/hooks/auth/useLogout';
+import { NotificationsBell } from '@/components/notifications/NotificationsBell';
 
 export function AppTopBar() {
   const themeMode = useUIStore((s) => s.themeMode);
@@ -64,11 +64,7 @@ export function AppTopBar() {
         {themeMode === 'dark' ? <LightModeRoundedIcon fontSize="small" /> : <DarkModeRoundedIcon fontSize="small" />}
       </IconButton>
 
-      {/* No badge count — real notifications arrive in V2; a permanent fake
-          "4" on every page would train users to ignore it. */}
-      <IconButton aria-label="Notifications" size="small">
-        <NotificationsNoneRoundedIcon fontSize="small" />
-      </IconButton>
+      <NotificationsBell />
 
       <IconButton onClick={handleMenuOpen} aria-label="Account menu" size="small" sx={{ ml: 0.5 }}>
         <Avatar sx={{ width: 34, height: 34, fontSize: '0.85rem', fontWeight: 700 }}>

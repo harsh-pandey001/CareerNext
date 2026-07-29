@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { useDeleteDocumentMutation, useUploadDocumentMutation, type DocumentType } from '@careernext/graphql-types';
 import { MY_DOCUMENTS_QUERY } from '@/graphql/documents/queries';
 import { ACCEPTED_DOCUMENT_MIME_TYPES, MAX_DOCUMENT_FILE_SIZE_BYTES } from '@/components/documents/constants';
+import { useToast } from '@/hooks/useToast';
 import { getApolloErrorMessage, readFileAsBase64 } from '@/utils';
 
 // Upload creates a new item the cache has never seen, and delete removes one
@@ -14,23 +15,25 @@ const REFETCH_MY_DOCUMENTS = { refetchQueries: [{ query: MY_DOCUMENTS_QUERY }] }
 
 export function useDocumentActions() {
   const [pendingId, setPendingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const [uploadMutation] = useUploadDocumentMutation(REFETCH_MY_DOCUMENTS);
   const [deleteMutation] = useDeleteDocumentMutation(REFETCH_MY_DOCUMENTS);
 
-  const run = useCallback(async (id: string, action: () => Promise<unknown>) => {
-    setError(null);
-    setPendingId(id);
-    try {
-      await action();
-    } catch (err) {
-      setError(getApolloErrorMessage(err));
-    } finally {
-      // Only clear our own pending marker — a slow first action resolving
-      // must not re-enable buttons for a second action still in flight.
-      setPendingId((current) => (current === id ? null : current));
-    }
-  }, []);
+  const run = useCallback(
+    async (id: string, action: () => Promise<unknown>) => {
+      setPendingId(id);
+      try {
+        await action();
+      } catch (err) {
+        toast.error(getApolloErrorMessage(err));
+      } finally {
+        // Only clear our own pending marker — a slow first action resolving
+        // must not re-enable buttons for a second action still in flight.
+        setPendingId((current) => (current === id ? null : current));
+      }
+    },
+    [toast],
+  );
 
   const uploadDocument = useCallback(
     (type: DocumentType, file: File) =>
@@ -54,5 +57,5 @@ export function useDocumentActions() {
 
   const isUploading = (type: DocumentType) => pendingId === `__upload_${type}__`;
 
-  return { uploadDocument, deleteDocument, pendingId, isUploading, error };
+  return { uploadDocument, deleteDocument, pendingId, isUploading };
 }

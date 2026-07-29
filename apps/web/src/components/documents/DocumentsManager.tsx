@@ -15,7 +15,7 @@ import { DocumentSection } from './DocumentSection';
 
 export function DocumentsManager() {
   const { sections, loading, error } = useDocuments();
-  const { uploadDocument, deleteDocument, pendingId, isUploading, error: actionError } = useDocumentActions();
+  const { uploadDocument, deleteDocument, pendingId, isUploading } = useDocumentActions();
   const preview = useDocumentPreview();
 
   const previewFile = preview.document
@@ -39,11 +39,6 @@ export function DocumentsManager() {
         </Typography>
       </Stack>
 
-      {actionError && (
-        <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
-          {actionError}
-        </Alert>
-      )}
       {error && (
         <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
           Couldn&apos;t load your documents right now. Please try again in a moment.
