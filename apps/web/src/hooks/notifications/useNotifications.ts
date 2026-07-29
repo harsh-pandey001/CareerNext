@@ -25,8 +25,11 @@ export function useNotifications() {
     fetchPolicy: 'cache-and-network',
   });
   // Polled so the badge count updates on its own (a new status change, or the
-  // interview-reminder cron) without the user having to trigger a refetch.
-  const { data: unreadData } = useUnreadNotificationCountQuery({
+  // interview-reminder cron) without the user having to trigger a refetch —
+  // but the poll interval means it can still be up to 60s stale at the exact
+  // moment the bell opens, so callers also refetch this on open, same as the
+  // list, to keep the two from disagreeing.
+  const { data: unreadData, refetch: refetchUnreadCount } = useUnreadNotificationCountQuery({
     fetchPolicy: 'cache-and-network',
     pollInterval: UNREAD_COUNT_POLL_INTERVAL_MS,
   });
@@ -39,6 +42,17 @@ export function useNotifications() {
   );
   const markAllRead = useCallback(() => markAllReadMutation(), [markAllReadMutation]);
 
+  // The bell mounts once in the persistent top bar, so each query's initial
+  // cache-and-network fetch is the only automatic refresh it ever gets
+  // outside its own poll cycle — a notification created later (another
+  // action, the reminder cron) can leave the list and the polled count
+  // disagreeing until something explicitly re-asks both. Callers refetch
+  // this on open.
+  const refetchNotifications = useCallback(
+    () => Promise.all([refetch(), refetchUnreadCount()]),
+    [refetch, refetchUnreadCount],
+  );
+
   return {
     notifications: data?.myNotifications ?? [],
     unreadCount: unreadData?.unreadNotificationCount ?? 0,
@@ -46,11 +60,6 @@ export function useNotifications() {
     error,
     markRead,
     markAllRead,
-    // The bell mounts once in the persistent top bar, so its initial
-    // cache-and-network fetch is the only automatic refresh the list ever
-    // gets — a notification created later (another action, the reminder
-    // cron) bumps the polled unread count but leaves this list stale until
-    // something explicitly re-asks. Callers should refetch on open.
-    refetchNotifications: refetch,
+    refetchNotifications,
   };
 }
