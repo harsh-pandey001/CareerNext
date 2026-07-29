@@ -31,9 +31,26 @@ type ApplicationStatusHistory {
   toStatus: ApplicationStatus!
 }
 
+type ApplicationsAnalytics {
+  funnel: [FunnelStage!]!
+  interviewsByRound: [InterviewRoundBreakdown!]!
+  successRates: SuccessRates!
+  trend: [ApplicationsTrendPoint!]!
+}
+
+type ApplicationsTrendPoint {
+  count: Int!
+  period: String!
+}
+
 type AuthPayload {
   accessToken: String!
   user: User!
+}
+
+input DateRangeInput {
+  from: DateTime
+  to: DateTime
 }
 
 """
@@ -104,6 +121,11 @@ input ForgotPasswordInput {
   email: String!
 }
 
+type FunnelStage {
+  count: Int!
+  status: ApplicationStatus!
+}
+
 type Interview {
   application: Application!
   createdAt: DateTime!
@@ -131,6 +153,11 @@ enum InterviewRound {
   ONLINE_ASSESSMENT
   TECHNICAL_ROUND_1
   TECHNICAL_ROUND_2
+}
+
+type InterviewRoundBreakdown {
+  count: Int!
+  round: InterviewRound!
 }
 
 type Job {
@@ -270,6 +297,7 @@ type Profile {
 
 type Query {
   applicationStatusHistory(applicationId: ID!): [ApplicationStatusHistory!]!
+  applicationsAnalytics(range: DateRangeInput): ApplicationsAnalytics!
   document(id: ID!): Document!
 
   """Liveness probe for the CareerNext API."""
@@ -326,6 +354,15 @@ enum SkillLevel {
   BEGINNER
   EXPERT
   INTERMEDIATE
+}
+
+type SuccessRates {
+  acceptanceRate: Float!
+  offerRate: Float!
+  totalAccepted: Int!
+  totalApplications: Int!
+  totalOffers: Int!
+  totalRejected: Int!
 }
 
 input UpdateProfileInput {

@@ -18,7 +18,7 @@ export type ApplicationWithJob = PrismaApplication & { job: PrismaJob };
  * here — it's a side branch reachable from any non-terminal stage, not a
  * step in the sequence. Index position is what "forward" means below.
  */
-const PIPELINE_ORDER: readonly PrismaApplicationStatus[] = [
+export const PIPELINE_ORDER: readonly PrismaApplicationStatus[] = [
   PrismaApplicationStatus.SAVED,
   PrismaApplicationStatus.APPLIED,
   PrismaApplicationStatus.OA_SCHEDULED,

@@ -16,6 +16,7 @@ const GUARDED_ROUTES = [
   ROUTES.JOBS,
   ROUTES.APPLICATIONS,
   ROUTES.INTERVIEWS,
+  ROUTES.ANALYTICS,
   ROUTES.RESUME,
   ROUTES.DOCUMENTS,
 ];
@@ -60,6 +61,7 @@ export const config = {
     '/jobs/:path*',
     '/applications/:path*',
     '/interviews/:path*',
+    '/analytics/:path*',
     '/resume/:path*',
     '/documents/:path*',
     '/login',

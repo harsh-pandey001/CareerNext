@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import {
-  useMyApplicationsQuery,
+  useApplicationsAnalyticsQuery,
   useMyNotificationsQuery,
   useMyProfileQuery,
   useUpcomingInterviewsQuery,
@@ -50,12 +50,14 @@ const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 const TREND_MONTHS = 6;
 
 /**
- * Single data source for every real-data dashboard widget: applications,
- * profile, upcoming-interviews, and notifications queries, everything else
- * derived in memory.
+ * Single data source for every real-data dashboard widget: the analytics
+ * aggregate (funnel + success rates + trend, all computed server-side —
+ * V2's "Dashboard v2" swap away from fetching the raw application list and
+ * deriving these same numbers client-side), profile, upcoming-interviews,
+ * and notifications queries, everything else derived in memory.
  */
 export function useDashboardData() {
-  const applicationsResult = useMyApplicationsQuery({ fetchPolicy: 'cache-and-network' });
+  const analyticsResult = useApplicationsAnalyticsQuery({ fetchPolicy: 'cache-and-network' });
   const profileResult = useMyProfileQuery({ fetchPolicy: 'cache-and-network' });
   const interviewsResult = useUpcomingInterviewsQuery({
     variables: { limit: UPCOMING_INTERVIEWS_LIMIT },
@@ -66,18 +68,23 @@ export function useDashboardData() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const applications = applicationsResult.data?.myApplications;
+  const analytics = analyticsResult.data?.applicationsAnalytics;
   const profile = profileResult.data?.myProfile;
 
   const derived = useMemo(() => {
-    const apps = applications ?? [];
-
-    const saved = apps.filter((a) => a.status === 'SAVED').length;
-    const accepted = apps.filter((a) => a.status === 'ACCEPTED').length;
-    const rejected = apps.filter((a) => a.status === 'REJECTED').length;
+    const funnel = analytics?.funnel ?? [];
+    // The funnel is cumulative and ordered by pipeline position — index 0 is
+    // "reached at least SAVED" (i.e. everyone), index 1 is "reached at least
+    // APPLIED" (i.e. progressed past the bookmark). Subtracting adjacent
+    // stages recovers the snapshot counts this widget has always shown.
+    const totalApplications = funnel[0]?.count ?? 0;
+    const reachedApplied = funnel[1]?.count ?? 0;
+    const accepted = analytics?.successRates.totalAccepted ?? 0;
+    const rejected = analytics?.successRates.totalRejected ?? 0;
+    const saved = totalApplications - reachedApplied;
     // Everything past the bookmark stage counts as a sent application —
     // including the V2 interview stages, so this holds once those arrive.
-    const applied = apps.length - saved;
+    const applied = reachedApplied;
 
     const statusBreakdown: StatusBreakdownPoint[] = [
       { status: 'Saved', count: saved },
@@ -86,18 +93,14 @@ export function useDashboardData() {
       { status: 'Rejected', count: rejected },
     ];
 
-    // "Applications submitted" — bookmarks don't count, and the submission
-    // date is appliedAt (falling back to createdAt for rows moved to a
-    // post-SAVED status without going through applyToJob).
+    // Server trend is sparse (only months with data); zero-fill the last 6
+    // calendar months here for a continuous chart, same as before.
+    const trendByPeriod = new Map((analytics?.trend ?? []).map((point) => [point.period, point.count]));
     const now = new Date();
-    const submitted = apps.filter((a) => a.status !== 'SAVED');
     const monthlyTrend: MonthlyTrendPoint[] = Array.from({ length: TREND_MONTHS }, (_, index) => {
       const date = new Date(now.getFullYear(), now.getMonth() - (TREND_MONTHS - 1 - index), 1);
-      const applicationsInMonth = submitted.filter((a) => {
-        const submittedAt = new Date(a.appliedAt ?? a.createdAt);
-        return submittedAt.getFullYear() === date.getFullYear() && submittedAt.getMonth() === date.getMonth();
-      }).length;
-      return { month: MONTH_LABELS[date.getMonth()] ?? '', applications: applicationsInMonth };
+      const period = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      return { month: MONTH_LABELS[date.getMonth()] ?? '', applications: trendByPeriod.get(period) ?? 0 };
     });
 
     const skills: SkillOverviewItem[] = [...(profile?.skills ?? [])]
@@ -111,20 +114,19 @@ export function useDashboardData() {
 
     const stats: DashboardStats = { applied, saved, accepted, skills: profile?.skills.length ?? 0 };
 
-    return { stats, statusBreakdown, monthlyTrend, skills };
-  }, [applications, profile]);
+    return { stats, statusBreakdown, monthlyTrend, skills, totalApplications };
+  }, [analytics, profile]);
 
   return {
     ...derived,
-    totalApplications: applications?.length ?? 0,
     profileCompletion: profile?.completionPercentage ?? 0,
     upcomingInterviews: (interviewsResult.data?.upcomingInterviews ?? []) as InterviewFieldsFragment[],
     notifications: (notificationsResult.data?.myNotifications ?? []) as NotificationFieldsFragment[],
     loading:
-      (applicationsResult.loading && !applicationsResult.data) ||
+      (analyticsResult.loading && !analyticsResult.data) ||
       (profileResult.loading && !profileResult.data) ||
       (interviewsResult.loading && !interviewsResult.data) ||
       (notificationsResult.loading && !notificationsResult.data),
-    error: applicationsResult.error ?? profileResult.error ?? interviewsResult.error ?? notificationsResult.error,
+    error: analyticsResult.error ?? profileResult.error ?? interviewsResult.error ?? notificationsResult.error,
   };
 }

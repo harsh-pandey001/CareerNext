@@ -19,6 +19,7 @@ import { DocumentsModule } from './modules/documents/documents.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { InterviewsModule } from './modules/interviews/interviews.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 const gqlLogger = new Logger('GraphQL');
 
@@ -94,7 +95,7 @@ function maskInternalErrors(formattedError: GraphQLFormattedError): GraphQLForma
     ProfileModule,
     InterviewsModule,
     NotificationsModule,
-    // AnalyticsModule,      // V2
+    AnalyticsModule,
   ],
   providers: [AppResolver],
 })

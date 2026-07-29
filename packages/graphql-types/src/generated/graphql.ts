@@ -16,6 +16,11 @@ export type ApplicationStatus =
   | 'REJECTED'
   | 'SAVED';
 
+export type DateRangeInput = {
+  from?: string | null | undefined;
+  to?: string | null | undefined;
+};
+
 export type DocumentType =
   | 'CERTIFICATE'
   | 'EXPERIENCE_LETTER'
@@ -141,6 +146,15 @@ export type WorkMode =
   | 'HYBRID'
   | 'ONSITE'
   | 'REMOTE';
+
+export type ApplicationsAnalyticsFieldsFragment = { funnel: Array<{ status: ApplicationStatus, count: number }>, trend: Array<{ period: string, count: number }>, successRates: { totalApplications: number, totalOffers: number, totalAccepted: number, totalRejected: number, offerRate: number, acceptanceRate: number }, interviewsByRound: Array<{ round: InterviewRound, count: number }> };
+
+export type ApplicationsAnalyticsQueryVariables = Exact<{
+  range?: DateRangeInput | null | undefined;
+}>;
+
+
+export type ApplicationsAnalyticsQuery = { applicationsAnalytics: { funnel: Array<{ status: ApplicationStatus, count: number }>, trend: Array<{ period: string, count: number }>, successRates: { totalApplications: number, totalOffers: number, totalAccepted: number, totalRejected: number, offerRate: number, acceptanceRate: number }, interviewsByRound: Array<{ round: InterviewRound, count: number }> } };
 
 export type ApplicationFieldsFragment = { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
 
@@ -507,6 +521,30 @@ export type ResumeVersionQueryVariables = Exact<{
 
 export type ResumeVersionQuery = { resumeVersion: { id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string, fileUrl: string } } };
 
+export const ApplicationsAnalyticsFieldsFragmentDoc = gql`
+    fragment ApplicationsAnalyticsFields on ApplicationsAnalytics {
+  funnel {
+    status
+    count
+  }
+  trend {
+    period
+    count
+  }
+  successRates {
+    totalApplications
+    totalOffers
+    totalAccepted
+    totalRejected
+    offerRate
+    acceptanceRate
+  }
+  interviewsByRound {
+    round
+    count
+  }
+}
+    `;
 export const AuthUserFieldsFragmentDoc = gql`
     fragment AuthUserFields on User {
   id
@@ -679,6 +717,49 @@ export const ResumeVersionWithContentFieldsFragmentDoc = gql`
   }
 }
     ${ResumeVersionFieldsFragmentDoc}`;
+export const ApplicationsAnalyticsDocument = gql`
+    query ApplicationsAnalytics($range: DateRangeInput) {
+  applicationsAnalytics(range: $range) {
+    ...ApplicationsAnalyticsFields
+  }
+}
+    ${ApplicationsAnalyticsFieldsFragmentDoc}`;
+
+/**
+ * __useApplicationsAnalyticsQuery__
+ *
+ * To run a query within a React component, call `useApplicationsAnalyticsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useApplicationsAnalyticsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useApplicationsAnalyticsQuery({
+ *   variables: {
+ *      range: // value for 'range'
+ *   },
+ * });
+ */
+export function useApplicationsAnalyticsQuery(baseOptions?: Apollo.QueryHookOptions<ApplicationsAnalyticsQuery, ApplicationsAnalyticsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ApplicationsAnalyticsQuery, ApplicationsAnalyticsQueryVariables>(ApplicationsAnalyticsDocument, options);
+      }
+export function useApplicationsAnalyticsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ApplicationsAnalyticsQuery, ApplicationsAnalyticsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ApplicationsAnalyticsQuery, ApplicationsAnalyticsQueryVariables>(ApplicationsAnalyticsDocument, options);
+        }
+// @ts-ignore
+export function useApplicationsAnalyticsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<ApplicationsAnalyticsQuery, ApplicationsAnalyticsQueryVariables>): Apollo.UseSuspenseQueryResult<ApplicationsAnalyticsQuery, ApplicationsAnalyticsQueryVariables>;
+export function useApplicationsAnalyticsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ApplicationsAnalyticsQuery, ApplicationsAnalyticsQueryVariables>): Apollo.UseSuspenseQueryResult<ApplicationsAnalyticsQuery | undefined, ApplicationsAnalyticsQueryVariables>;
+export function useApplicationsAnalyticsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ApplicationsAnalyticsQuery, ApplicationsAnalyticsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ApplicationsAnalyticsQuery, ApplicationsAnalyticsQueryVariables>(ApplicationsAnalyticsDocument, options);
+        }
+export type ApplicationsAnalyticsQueryHookResult = ReturnType<typeof useApplicationsAnalyticsQuery>;
+export type ApplicationsAnalyticsLazyQueryHookResult = ReturnType<typeof useApplicationsAnalyticsLazyQuery>;
+export type ApplicationsAnalyticsSuspenseQueryHookResult = ReturnType<typeof useApplicationsAnalyticsSuspenseQuery>;
+export type ApplicationsAnalyticsQueryResult = Apollo.QueryResult<ApplicationsAnalyticsQuery, ApplicationsAnalyticsQueryVariables>;
 export const UpdateApplicationStatusDocument = gql`
     mutation UpdateApplicationStatus($applicationId: ID!, $status: ApplicationStatus!) {
   updateApplicationStatus(applicationId: $applicationId, status: $status) {

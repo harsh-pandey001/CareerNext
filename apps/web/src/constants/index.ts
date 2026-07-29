@@ -11,6 +11,7 @@ export const ROUTES = {
   JOBS: '/jobs',
   APPLICATIONS: '/applications',
   INTERVIEWS: '/interviews',
+  ANALYTICS: '/analytics',
   RESUME: '/resume',
   DOCUMENTS: '/documents',
 } as const;
