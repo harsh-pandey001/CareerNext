@@ -20,7 +20,7 @@ const REFETCH_UNREAD_COUNT = { refetchQueries: [{ query: UNREAD_NOTIFICATION_COU
 
 /** Single data source for the top-bar bell and the dashboard panel alike. */
 export function useNotifications() {
-  const { data, loading, error } = useMyNotificationsQuery({
+  const { data, loading, error, refetch } = useMyNotificationsQuery({
     variables: { limit: NOTIFICATIONS_LIMIT },
     fetchPolicy: 'cache-and-network',
   });
@@ -46,5 +46,11 @@ export function useNotifications() {
     error,
     markRead,
     markAllRead,
+    // The bell mounts once in the persistent top bar, so its initial
+    // cache-and-network fetch is the only automatic refresh the list ever
+    // gets — a notification created later (another action, the reminder
+    // cron) bumps the polled unread count but leaves this list stale until
+    // something explicitly re-asks. Callers should refetch on open.
+    refetchNotifications: refetch,
   };
 }

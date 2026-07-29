@@ -19,11 +19,16 @@ import { NotificationRow } from './NotificationRow';
 
 export function NotificationsBell() {
   const router = useRouter();
-  const { notifications, unreadCount, loading, markRead, markAllRead } = useNotifications();
+  const { notifications, unreadCount, loading, markRead, markAllRead, refetchNotifications } = useNotifications();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
 
-  const handleOpen = (event: MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
+  const handleOpen = (event: MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+    // The badge count polls on its own; the list itself doesn't, so make
+    // sure it's fresh every time it's about to be seen.
+    void refetchNotifications();
+  };
   const handleClose = () => setAnchorEl(null);
 
   const handleSelect = (notification: NotificationFieldsFragment) => {
