@@ -2,10 +2,8 @@
 
 import type { ReactNode } from 'react';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -14,12 +12,25 @@ import Divider from '@mui/material/Divider';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Link from '@mui/material/Link';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import { alpha } from '@mui/material/styles';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
+import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
+import LinkRoundedIcon from '@mui/icons-material/LinkRounded';
+import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import type { JobFieldsFragment } from '@careernext/graphql-types';
-import { JOB_TYPE_LABELS, WORK_MODE_LABELS } from './constants';
+import {
+  APPLICATION_MODE_LABELS,
+  JOB_TYPE_LABELS,
+  WORK_MODE_LABELS,
+  getCompanyInitials,
+} from './constants';
+import { DialogGradientHeader } from './DialogGradientHeader';
 
 interface CustomJobDetailDialogProps {
   open: boolean;
@@ -31,45 +42,111 @@ interface CustomJobDetailDialogProps {
 
 interface DetailBlockProps {
   label: string;
+  icon?: ReactNode;
   children: ReactNode;
 }
 
-function DetailBlock({ label, children }: DetailBlockProps) {
+function DetailBlock({ label, icon, children }: DetailBlockProps) {
   return (
-    <Stack spacing={0.5}>
-      <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-        {label}
-      </Typography>
+    <Stack spacing={0.75}>
+      <Stack direction="row" spacing={0.75} alignItems="center">
+        {icon}
+        <Typography
+          variant="caption"
+          fontWeight={700}
+          color="text.secondary"
+          sx={{ textTransform: 'uppercase', letterSpacing: '0.06em' }}
+        >
+          {label}
+        </Typography>
+      </Stack>
       {children}
     </Stack>
   );
 }
 
-export function CustomJobDetailDialog({ open, onClose, onEdit, job, loading }: CustomJobDetailDialogProps) {
+const labelIconSx = { fontSize: 14, color: 'text.disabled' } as const;
+
+const editButtonSx = {
+  textTransform: 'none',
+  fontWeight: 600,
+  borderRadius: '10px',
+  px: 3,
+  background: (theme: import('@mui/material/styles').Theme) =>
+    theme.palette.mode === 'dark'
+      ? 'linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)'
+      : 'linear-gradient(135deg, #065F46 0%, #0D9488 100%)',
+  '&:hover': {
+    background: (theme: import('@mui/material/styles').Theme) =>
+      theme.palette.mode === 'dark'
+        ? 'linear-gradient(135deg, #115E59 0%, #2DD4BF 100%)'
+        : 'linear-gradient(135deg, #047857 0%, #14B8A6 100%)',
+    boxShadow: '0 6px 20px rgba(13,148,136,0.35)',
+  },
+} as const;
+
+export function CustomJobDetailDialog({
+  open,
+  onClose,
+  onEdit,
+  job,
+  loading,
+}: CustomJobDetailDialogProps) {
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" slotProps={{ paper: { sx: { borderRadius: '20px' } } }}>
-      <DialogTitle sx={{ pr: 7 }}>
-        {job ? job.title : 'Job Details'}
-        <IconButton onClick={onClose} aria-label="Close" sx={{ position: 'absolute', right: 12, top: 12 }}>
-          <CloseRoundedIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent dividers>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      slotProps={{
+        paper: { sx: { borderRadius: '20px' } },
+        backdrop: { sx: { backdropFilter: 'blur(4px)', bgcolor: alpha('#0F172A', 0.55) } },
+      }}
+    >
+      <DialogGradientHeader
+        icon={job ? getCompanyInitials(job.company) : '?'}
+        title={job ? job.title : 'Job Details'}
+        subtitle={job ? job.company : 'Loading…'}
+        onClose={onClose}
+        accessory={
+          job?.applicationStatus === 'APPLIED' ? (
+            <Chip
+              icon={
+                <CheckCircleRoundedIcon sx={{ fontSize: '15px !important', color: 'inherit' }} />
+              }
+              label="Applied"
+              size="small"
+              sx={{
+                flexShrink: 0,
+                fontWeight: 700,
+                color: '#fff',
+                bgcolor: alpha('#fff', 0.18),
+                backdropFilter: 'blur(6px)',
+                border: '1px solid',
+                borderColor: alpha('#fff', 0.3),
+              }}
+            />
+          ) : undefined
+        }
+      />
+      <DialogContent dividers sx={{ pt: 3 }}>
         {loading || !job ? (
           <Stack alignItems="center" sx={{ py: 6 }}>
             <CircularProgress size={24} />
           </Stack>
         ) : (
           <Stack spacing={2.5}>
-            <DetailBlock label="Company">
-              <Typography variant="body1" fontWeight={700}>
-                {job.company}
-              </Typography>
-            </DetailBlock>
-
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              <Chip label={JOB_TYPE_LABELS[job.type]} size="small" sx={{ bgcolor: 'action.hover', fontWeight: 600 }} />
-              <Chip label={WORK_MODE_LABELS[job.workMode]} size="small" sx={{ bgcolor: 'action.hover', fontWeight: 600 }} />
+              <Chip
+                label={JOB_TYPE_LABELS[job.type]}
+                size="small"
+                sx={{ bgcolor: 'action.hover', fontWeight: 600 }}
+              />
+              <Chip
+                label={WORK_MODE_LABELS[job.workMode]}
+                size="small"
+                sx={{ bgcolor: 'action.hover', fontWeight: 600 }}
+              />
               {job.location && (
                 <Chip
                   icon={<LocationOnRoundedIcon sx={{ fontSize: '16px !important' }} />}
@@ -78,11 +155,21 @@ export function CustomJobDetailDialog({ open, onClose, onEdit, job, loading }: C
                   variant="outlined"
                 />
               )}
-              {job.experienceRequired && <Chip label={job.experienceRequired} size="small" variant="outlined" />}
+              {job.experienceRequired && (
+                <Chip label={job.experienceRequired} size="small" variant="outlined" />
+              )}
+              {job.postedAt && (
+                <Chip
+                  icon={<AccessTimeRoundedIcon sx={{ fontSize: '16px !important' }} />}
+                  label={`Posted ${job.postedAt}`}
+                  size="small"
+                  variant="outlined"
+                />
+              )}
             </Stack>
 
             {job.contactEmail && (
-              <DetailBlock label="Contact Email">
+              <DetailBlock label="Contact Email" icon={<EmailRoundedIcon sx={labelIconSx} />}>
                 <Typography variant="body2">{job.contactEmail}</Typography>
               </DetailBlock>
             )}
@@ -91,14 +178,20 @@ export function CustomJobDetailDialog({ open, onClose, onEdit, job, loading }: C
               <DetailBlock label="Tech / Skills Required">
                 <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
                   {job.skills.map((skill) => (
-                    <Chip key={skill} label={skill} size="small" variant="outlined" sx={{ borderColor: 'divider' }} />
+                    <Chip
+                      key={skill}
+                      label={skill}
+                      size="small"
+                      variant="outlined"
+                      sx={{ borderColor: 'divider' }}
+                    />
                   ))}
                 </Stack>
               </DetailBlock>
             )}
 
             {job.externalUrl && (
-              <DetailBlock label="Job Link">
+              <DetailBlock label="Job Link" icon={<LinkRoundedIcon sx={labelIconSx} />}>
                 <Link
                   href={job.externalUrl}
                   target="_blank"
@@ -112,14 +205,32 @@ export function CustomJobDetailDialog({ open, onClose, onEdit, job, loading }: C
             )}
 
             {job.description && (
-              <DetailBlock label="Job Description">
+              <DetailBlock
+                label="Job Description"
+                icon={<DescriptionRoundedIcon sx={labelIconSx} />}
+              >
                 <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
                   {job.description}
                 </Typography>
               </DetailBlock>
             )}
 
-            <Divider />
+            <Divider>
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <AutoAwesomeRoundedIcon sx={{ fontSize: 14, color: 'primary.main' }} />
+                <Typography variant="caption" fontWeight={700} color="text.secondary">
+                  Application Materials
+                </Typography>
+              </Stack>
+            </Divider>
+
+            {job.applicationMode && (
+              <DetailBlock label="Applied Via" icon={<SendRoundedIcon sx={labelIconSx} />}>
+                <Typography variant="body2">
+                  {APPLICATION_MODE_LABELS[job.applicationMode]}
+                </Typography>
+              </DetailBlock>
+            )}
 
             <DetailBlock label="Cover Letter">
               {job.coverLetter ? (
@@ -158,7 +269,7 @@ export function CustomJobDetailDialog({ open, onClose, onEdit, job, loading }: C
           disableElevation
           disabled={!job}
           startIcon={<EditRoundedIcon fontSize="small" />}
-          sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '10px', px: 3 }}
+          sx={editButtonSx}
         >
           Edit
         </Button>

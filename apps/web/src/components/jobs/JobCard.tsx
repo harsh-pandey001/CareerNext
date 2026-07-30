@@ -14,7 +14,7 @@ import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import type { JobFieldsFragment } from '@careernext/graphql-types';
-import { JOB_TYPE_LABELS, WORK_MODE_LABELS, formatSalaryRange } from './constants';
+import { JOB_TYPE_LABELS, WORK_MODE_LABELS, formatSalaryRange, getCompanyInitials } from './constants';
 
 interface JobCardProps {
   job: JobFieldsFragment;
@@ -24,16 +24,6 @@ interface JobCardProps {
   onApply: (jobId: string) => void;
   /** Opens a detail view — Save/Apply stay independently clickable via stopPropagation. */
   onClick?: (jobId: string) => void;
-}
-
-function getCompanyInitials(company: string) {
-  return company
-    .split(' ')
-    .filter(Boolean)
-    .map((word) => word[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
 }
 
 export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: JobCardProps) {

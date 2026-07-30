@@ -1,6 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsArray, IsEmail, IsEnum, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
-import { JobType, WorkMode } from '@careernext/shared-types';
+import { ApplicationMode, JobType, WorkMode } from '@careernext/shared-types';
 
 @InputType()
 export class CustomJobInput {
@@ -40,6 +40,12 @@ export class CustomJobInput {
   @IsEmail()
   contactEmail?: string;
 
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  postedAt?: string;
+
   @Field(() => [String], { nullable: true })
   @IsOptional()
   @IsArray()
@@ -68,4 +74,9 @@ export class CustomJobInput {
   @IsString()
   @MaxLength(5000)
   pitchEmail?: string;
+
+  @Field(() => ApplicationMode, { nullable: true })
+  @IsOptional()
+  @IsEnum(ApplicationMode)
+  applicationMode?: ApplicationMode;
 }

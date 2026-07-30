@@ -1,5 +1,10 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { JobType as PrismaJobType, WorkMode as PrismaWorkMode, type Prisma } from '@prisma/client';
+import {
+  ApplicationMode as PrismaApplicationMode,
+  JobType as PrismaJobType,
+  WorkMode as PrismaWorkMode,
+  type Prisma,
+} from '@prisma/client';
 import { JobType } from '@careernext/shared-types';
 import { PrismaService } from '../../database/prisma.service';
 import { ApplicationsService } from '../applications/applications.service';
@@ -87,14 +92,19 @@ export class JobsService {
         skills: input.skills ?? [],
         experienceRequired: input.experienceRequired,
         contactEmail: input.contactEmail,
+        postedAt: input.postedAt,
         createdById: userId,
       },
     });
     await this.applicationsService.applyToJob(userId, job.id);
-    if (input.coverLetter || input.pitchEmail) {
+    if (input.coverLetter || input.pitchEmail || input.applicationMode) {
       await this.prisma.application.update({
         where: { userId_jobId: { userId, jobId: job.id } },
-        data: { coverLetter: input.coverLetter, pitchEmail: input.pitchEmail },
+        data: {
+          coverLetter: input.coverLetter,
+          pitchEmail: input.pitchEmail,
+          applicationMode: input.applicationMode as unknown as PrismaApplicationMode,
+        },
       });
     }
     return this.findById(userId, job.id);
@@ -110,9 +120,14 @@ export class JobsService {
     const application = await this.prisma.application.findUnique({
       where: { userId_jobId: { userId, jobId } },
     });
-    const model = toJobModel(job, (application?.status as unknown as JobModel['applicationStatus']) ?? null);
+    const model = toJobModel(
+      job,
+      (application?.status as unknown as JobModel['applicationStatus']) ?? null,
+    );
     model.coverLetter = application?.coverLetter ?? undefined;
     model.pitchEmail = application?.pitchEmail ?? undefined;
+    model.applicationMode =
+      (application?.applicationMode as unknown as JobModel['applicationMode']) ?? undefined;
     return model;
   }
 
@@ -132,11 +147,16 @@ export class JobsService {
         skills: input.skills ?? [],
         experienceRequired: input.experienceRequired,
         contactEmail: input.contactEmail,
+        postedAt: input.postedAt,
       },
     });
     await this.prisma.application.update({
       where: { userId_jobId: { userId, jobId } },
-      data: { coverLetter: input.coverLetter, pitchEmail: input.pitchEmail },
+      data: {
+        coverLetter: input.coverLetter,
+        pitchEmail: input.pitchEmail,
+        applicationMode: input.applicationMode as unknown as PrismaApplicationMode,
+      },
     });
     return this.findCustomJobDetail(userId, jobId);
   }

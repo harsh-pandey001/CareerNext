@@ -2,6 +2,7 @@ import { Field, ID, ObjectType } from '@nestjs/graphql';
 import type { Application as PrismaApplication, Job as PrismaJob } from '@prisma/client';
 import { toJobModel, JobModel } from '../../jobs/models/job.model';
 import { ApplicationStatus } from './application-status.enum';
+import { ApplicationMode } from './application-mode.enum';
 
 @ObjectType('Application')
 export class ApplicationModel {
@@ -25,6 +26,10 @@ export class ApplicationModel {
   @Field({ nullable: true })
   pitchEmail?: string;
 
+  /** How this application was actually submitted, if known. Same manual-for-now note. */
+  @Field(() => ApplicationMode, { nullable: true })
+  applicationMode?: ApplicationMode;
+
   @Field()
   createdAt!: Date;
 
@@ -35,7 +40,9 @@ export class ApplicationModel {
   job!: JobModel;
 }
 
-export function toApplicationModel(application: PrismaApplication & { job: PrismaJob }): ApplicationModel {
+export function toApplicationModel(
+  application: PrismaApplication & { job: PrismaJob },
+): ApplicationModel {
   const model = new ApplicationModel();
   model.id = application.id;
   model.status = application.status as unknown as ApplicationStatus;
@@ -43,6 +50,7 @@ export function toApplicationModel(application: PrismaApplication & { job: Prism
   model.appliedAt = application.appliedAt ?? undefined;
   model.coverLetter = application.coverLetter ?? undefined;
   model.pitchEmail = application.pitchEmail ?? undefined;
+  model.applicationMode = (application.applicationMode as unknown as ApplicationMode) ?? undefined;
   model.createdAt = application.createdAt;
   model.updatedAt = application.updatedAt;
   // This application's own status/job relationship isn't relevant to how the

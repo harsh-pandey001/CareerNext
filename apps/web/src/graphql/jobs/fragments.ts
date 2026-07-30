@@ -15,8 +15,10 @@ export const JOB_FIELDS = gql`
     skills
     experienceRequired
     contactEmail
+    postedAt
     coverLetter
     pitchEmail
+    applicationMode
     applicationStatus
     createdAt
   }

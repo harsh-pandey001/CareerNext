@@ -2,6 +2,7 @@ import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import type { Job as PrismaJob } from '@prisma/client';
 import { JobType, WorkMode } from '@careernext/shared-types';
 import { ApplicationStatus } from '../../applications/models/application-status.enum';
+import { ApplicationMode } from '../../applications/models/application-mode.enum';
 
 registerEnumType(JobType, { name: 'JobType' });
 registerEnumType(WorkMode, { name: 'WorkMode' });
@@ -48,6 +49,10 @@ export class JobModel {
   @Field({ nullable: true })
   contactEmail?: string;
 
+  /** Free text, manually entered — e.g. "Today", "2 days ago", "3 weeks ago". */
+  @Field({ nullable: true })
+  postedAt?: string;
+
   /** Null when the current user has never saved/applied to this job. */
   @Field(() => ApplicationStatus, { nullable: true })
   applicationStatus?: ApplicationStatus | null;
@@ -63,6 +68,9 @@ export class JobModel {
 
   @Field({ nullable: true })
   pitchEmail?: string;
+
+  @Field(() => ApplicationMode, { nullable: true })
+  applicationMode?: ApplicationMode;
 
   @Field()
   createdAt!: Date;
@@ -83,6 +91,7 @@ export function toJobModel(job: PrismaJob, applicationStatus?: ApplicationStatus
   model.skills = job.skills;
   model.experienceRequired = job.experienceRequired ?? undefined;
   model.contactEmail = job.contactEmail ?? undefined;
+  model.postedAt = job.postedAt ?? undefined;
   model.applicationStatus = applicationStatus ?? null;
   model.createdAt = job.createdAt;
   return model;

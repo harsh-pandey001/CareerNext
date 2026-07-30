@@ -20,10 +20,19 @@ export enum ApplicationStatus {
   REJECTED = 'REJECTED',
 }
 
+/** How the user actually submitted this application — manually entered, mainly for custom/externally-sourced jobs. */
+export enum ApplicationMode {
+  EMAIL = 'EMAIL',
+  JOB_PORTAL = 'JOB_PORTAL',
+  GOOGLE_FORM = 'GOOGLE_FORM',
+  COMPANY_SITE = 'COMPANY_SITE',
+}
+
 export interface Application extends BaseEntity {
   userId: string;
   jobId: string;
   status: ApplicationStatus;
   appliedAt?: string;
   notes?: string;
+  applicationMode?: ApplicationMode;
 }
