@@ -16,6 +16,21 @@ export type ApplicationStatus =
   | 'REJECTED'
   | 'SAVED';
 
+export type CustomJobInput = {
+  company: string;
+  contactEmail?: string | null | undefined;
+  coverLetter?: string | null | undefined;
+  description?: string | null | undefined;
+  experienceRequired?: string | null | undefined;
+  externalUrl?: string | null | undefined;
+  location?: string | null | undefined;
+  pitchEmail?: string | null | undefined;
+  skills?: Array<string> | null | undefined;
+  title: string;
+  type?: JobType | null | undefined;
+  workMode: WorkMode;
+};
+
 export type DateRangeInput = {
   from?: string | null | undefined;
   to?: string | null | undefined;
@@ -156,7 +171,7 @@ export type ApplicationsAnalyticsQueryVariables = Exact<{
 
 export type ApplicationsAnalyticsQuery = { applicationsAnalytics: { funnel: Array<{ status: ApplicationStatus, count: number }>, trend: Array<{ period: string, count: number }>, successRates: { totalApplications: number, totalOffers: number, totalAccepted: number, totalRejected: number, offerRate: number, acceptanceRate: number }, interviewsByRound: Array<{ round: InterviewRound, count: number }> } };
 
-export type ApplicationFieldsFragment = { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type ApplicationFieldsFragment = { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
 
 export type UpdateApplicationStatusMutationVariables = Exact<{
   applicationId: string | number;
@@ -164,7 +179,7 @@ export type UpdateApplicationStatusMutationVariables = Exact<{
 }>;
 
 
-export type UpdateApplicationStatusMutation = { updateApplicationStatus: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } };
+export type UpdateApplicationStatusMutation = { updateApplicationStatus: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } } };
 
 export type RemoveApplicationMutationVariables = Exact<{
   applicationId: string | number;
@@ -176,7 +191,7 @@ export type RemoveApplicationMutation = { removeApplication: boolean };
 export type MyApplicationsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MyApplicationsQuery = { myApplications: Array<{ id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } }> };
+export type MyApplicationsQuery = { myApplications: Array<{ id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } }> };
 
 export type ApplicationStatusHistoryQueryVariables = Exact<{
   applicationId: string | number;
@@ -263,7 +278,7 @@ export type DocumentQueryVariables = Exact<{
 
 export type DocumentQuery = { document: { fileUrl: string, id: string, type: DocumentType, fileName: string, fileSize: number, mimeType: string, createdAt: string } };
 
-export type InterviewFieldsFragment = { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } };
+export type InterviewFieldsFragment = { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } } };
 
 export type ScheduleInterviewMutationVariables = Exact<{
   applicationId: string | number;
@@ -271,7 +286,7 @@ export type ScheduleInterviewMutationVariables = Exact<{
 }>;
 
 
-export type ScheduleInterviewMutation = { scheduleInterview: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
+export type ScheduleInterviewMutation = { scheduleInterview: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
 
 export type UpdateInterviewMutationVariables = Exact<{
   interviewId: string | number;
@@ -279,7 +294,7 @@ export type UpdateInterviewMutationVariables = Exact<{
 }>;
 
 
-export type UpdateInterviewMutation = { updateInterview: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
+export type UpdateInterviewMutation = { updateInterview: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
 
 export type SetInterviewOutcomeMutationVariables = Exact<{
   interviewId: string | number;
@@ -287,7 +302,7 @@ export type SetInterviewOutcomeMutationVariables = Exact<{
 }>;
 
 
-export type SetInterviewOutcomeMutation = { setInterviewOutcome: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
+export type SetInterviewOutcomeMutation = { setInterviewOutcome: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
 
 export type DeleteInterviewMutationVariables = Exact<{
   interviewId: string | number;
@@ -299,37 +314,52 @@ export type DeleteInterviewMutation = { deleteInterview: boolean };
 export type MyInterviewsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MyInterviewsQuery = { myInterviews: Array<{ id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } }> };
+export type MyInterviewsQuery = { myInterviews: Array<{ id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } } }> };
 
 export type UpcomingInterviewsQueryVariables = Exact<{
   limit?: number | null | undefined;
 }>;
 
 
-export type UpcomingInterviewsQuery = { upcomingInterviews: Array<{ id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } } }> };
+export type UpcomingInterviewsQuery = { upcomingInterviews: Array<{ id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } } }> };
 
-export type JobFieldsFragment = { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string };
+export type JobFieldsFragment = { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string };
 
 export type SaveJobMutationVariables = Exact<{
   jobId: string | number;
 }>;
 
 
-export type SaveJobMutation = { saveJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type SaveJobMutation = { saveJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
 
 export type UnsaveJobMutationVariables = Exact<{
   jobId: string | number;
 }>;
 
 
-export type UnsaveJobMutation = { unsaveJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type UnsaveJobMutation = { unsaveJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
 
 export type ApplyToJobMutationVariables = Exact<{
   jobId: string | number;
 }>;
 
 
-export type ApplyToJobMutation = { applyToJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type ApplyToJobMutation = { applyToJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
+
+export type AddCustomJobMutationVariables = Exact<{
+  input: CustomJobInput;
+}>;
+
+
+export type AddCustomJobMutation = { addCustomJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
+
+export type UpdateCustomJobMutationVariables = Exact<{
+  jobId: string | number;
+  input: CustomJobInput;
+}>;
+
+
+export type UpdateCustomJobMutation = { updateCustomJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
 
 export type JobsQueryVariables = Exact<{
   filter?: JobFilterInput | null | undefined;
@@ -337,14 +367,26 @@ export type JobsQueryVariables = Exact<{
 }>;
 
 
-export type JobsQuery = { jobs: { total: number, page: number, pageSize: number, totalPages: number, items: Array<{ id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string }> } };
+export type JobsQuery = { jobs: { total: number, page: number, pageSize: number, totalPages: number, items: Array<{ id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string }> } };
 
 export type JobQueryVariables = Exact<{
   id: string | number;
 }>;
 
 
-export type JobQuery = { job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type JobQuery = { job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
+
+export type MyCustomJobsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyCustomJobsQuery = { myCustomJobs: Array<{ id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string }> };
+
+export type CustomJobDetailQueryVariables = Exact<{
+  jobId: string | number;
+}>;
+
+
+export type CustomJobDetailQuery = { customJobDetail: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, coverLetter: string | null, pitchEmail: string | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
 
 export type NotificationFieldsFragment = { id: string, type: NotificationType, title: string, message: string, link: string | null, readAt: string | null, createdAt: string };
 
@@ -585,6 +627,10 @@ export const JobFieldsFragmentDoc = gql`
   salaryMax
   externalUrl
   skills
+  experienceRequired
+  contactEmail
+  coverLetter
+  pitchEmail
   applicationStatus
   createdAt
 }
@@ -1628,6 +1674,73 @@ export function useApplyToJobMutation(baseOptions?: Apollo.MutationHookOptions<A
 export type ApplyToJobMutationHookResult = ReturnType<typeof useApplyToJobMutation>;
 export type ApplyToJobMutationResult = Apollo.MutationResult<ApplyToJobMutation>;
 export type ApplyToJobMutationOptions = Apollo.BaseMutationOptions<ApplyToJobMutation, ApplyToJobMutationVariables>;
+export const AddCustomJobDocument = gql`
+    mutation AddCustomJob($input: CustomJobInput!) {
+  addCustomJob(input: $input) {
+    ...JobFields
+  }
+}
+    ${JobFieldsFragmentDoc}`;
+export type AddCustomJobMutationFn = Apollo.MutationFunction<AddCustomJobMutation, AddCustomJobMutationVariables>;
+
+/**
+ * __useAddCustomJobMutation__
+ *
+ * To run a mutation, you first call `useAddCustomJobMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddCustomJobMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addCustomJobMutation, { data, loading, error }] = useAddCustomJobMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useAddCustomJobMutation(baseOptions?: Apollo.MutationHookOptions<AddCustomJobMutation, AddCustomJobMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddCustomJobMutation, AddCustomJobMutationVariables>(AddCustomJobDocument, options);
+      }
+export type AddCustomJobMutationHookResult = ReturnType<typeof useAddCustomJobMutation>;
+export type AddCustomJobMutationResult = Apollo.MutationResult<AddCustomJobMutation>;
+export type AddCustomJobMutationOptions = Apollo.BaseMutationOptions<AddCustomJobMutation, AddCustomJobMutationVariables>;
+export const UpdateCustomJobDocument = gql`
+    mutation UpdateCustomJob($jobId: ID!, $input: CustomJobInput!) {
+  updateCustomJob(jobId: $jobId, input: $input) {
+    ...JobFields
+  }
+}
+    ${JobFieldsFragmentDoc}`;
+export type UpdateCustomJobMutationFn = Apollo.MutationFunction<UpdateCustomJobMutation, UpdateCustomJobMutationVariables>;
+
+/**
+ * __useUpdateCustomJobMutation__
+ *
+ * To run a mutation, you first call `useUpdateCustomJobMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateCustomJobMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateCustomJobMutation, { data, loading, error }] = useUpdateCustomJobMutation({
+ *   variables: {
+ *      jobId: // value for 'jobId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateCustomJobMutation(baseOptions?: Apollo.MutationHookOptions<UpdateCustomJobMutation, UpdateCustomJobMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateCustomJobMutation, UpdateCustomJobMutationVariables>(UpdateCustomJobDocument, options);
+      }
+export type UpdateCustomJobMutationHookResult = ReturnType<typeof useUpdateCustomJobMutation>;
+export type UpdateCustomJobMutationResult = Apollo.MutationResult<UpdateCustomJobMutation>;
+export type UpdateCustomJobMutationOptions = Apollo.BaseMutationOptions<UpdateCustomJobMutation, UpdateCustomJobMutationVariables>;
 export const JobsDocument = gql`
     query Jobs($filter: JobFilterInput, $pagination: PaginationInput) {
   jobs(filter: $filter, pagination: $pagination) {
@@ -1721,6 +1834,91 @@ export type JobQueryHookResult = ReturnType<typeof useJobQuery>;
 export type JobLazyQueryHookResult = ReturnType<typeof useJobLazyQuery>;
 export type JobSuspenseQueryHookResult = ReturnType<typeof useJobSuspenseQuery>;
 export type JobQueryResult = Apollo.QueryResult<JobQuery, JobQueryVariables>;
+export const MyCustomJobsDocument = gql`
+    query MyCustomJobs {
+  myCustomJobs {
+    ...JobFields
+  }
+}
+    ${JobFieldsFragmentDoc}`;
+
+/**
+ * __useMyCustomJobsQuery__
+ *
+ * To run a query within a React component, call `useMyCustomJobsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyCustomJobsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyCustomJobsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyCustomJobsQuery(baseOptions?: Apollo.QueryHookOptions<MyCustomJobsQuery, MyCustomJobsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyCustomJobsQuery, MyCustomJobsQueryVariables>(MyCustomJobsDocument, options);
+      }
+export function useMyCustomJobsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyCustomJobsQuery, MyCustomJobsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyCustomJobsQuery, MyCustomJobsQueryVariables>(MyCustomJobsDocument, options);
+        }
+// @ts-ignore
+export function useMyCustomJobsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MyCustomJobsQuery, MyCustomJobsQueryVariables>): Apollo.UseSuspenseQueryResult<MyCustomJobsQuery, MyCustomJobsQueryVariables>;
+export function useMyCustomJobsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyCustomJobsQuery, MyCustomJobsQueryVariables>): Apollo.UseSuspenseQueryResult<MyCustomJobsQuery | undefined, MyCustomJobsQueryVariables>;
+export function useMyCustomJobsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyCustomJobsQuery, MyCustomJobsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyCustomJobsQuery, MyCustomJobsQueryVariables>(MyCustomJobsDocument, options);
+        }
+export type MyCustomJobsQueryHookResult = ReturnType<typeof useMyCustomJobsQuery>;
+export type MyCustomJobsLazyQueryHookResult = ReturnType<typeof useMyCustomJobsLazyQuery>;
+export type MyCustomJobsSuspenseQueryHookResult = ReturnType<typeof useMyCustomJobsSuspenseQuery>;
+export type MyCustomJobsQueryResult = Apollo.QueryResult<MyCustomJobsQuery, MyCustomJobsQueryVariables>;
+export const CustomJobDetailDocument = gql`
+    query CustomJobDetail($jobId: ID!) {
+  customJobDetail(jobId: $jobId) {
+    ...JobFields
+  }
+}
+    ${JobFieldsFragmentDoc}`;
+
+/**
+ * __useCustomJobDetailQuery__
+ *
+ * To run a query within a React component, call `useCustomJobDetailQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCustomJobDetailQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCustomJobDetailQuery({
+ *   variables: {
+ *      jobId: // value for 'jobId'
+ *   },
+ * });
+ */
+export function useCustomJobDetailQuery(baseOptions: Apollo.QueryHookOptions<CustomJobDetailQuery, CustomJobDetailQueryVariables> & ({ variables: CustomJobDetailQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CustomJobDetailQuery, CustomJobDetailQueryVariables>(CustomJobDetailDocument, options);
+      }
+export function useCustomJobDetailLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CustomJobDetailQuery, CustomJobDetailQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CustomJobDetailQuery, CustomJobDetailQueryVariables>(CustomJobDetailDocument, options);
+        }
+// @ts-ignore
+export function useCustomJobDetailSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<CustomJobDetailQuery, CustomJobDetailQueryVariables>): Apollo.UseSuspenseQueryResult<CustomJobDetailQuery, CustomJobDetailQueryVariables>;
+export function useCustomJobDetailSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CustomJobDetailQuery, CustomJobDetailQueryVariables>): Apollo.UseSuspenseQueryResult<CustomJobDetailQuery | undefined, CustomJobDetailQueryVariables>;
+export function useCustomJobDetailSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CustomJobDetailQuery, CustomJobDetailQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CustomJobDetailQuery, CustomJobDetailQueryVariables>(CustomJobDetailDocument, options);
+        }
+export type CustomJobDetailQueryHookResult = ReturnType<typeof useCustomJobDetailQuery>;
+export type CustomJobDetailLazyQueryHookResult = ReturnType<typeof useCustomJobDetailLazyQuery>;
+export type CustomJobDetailSuspenseQueryHookResult = ReturnType<typeof useCustomJobDetailSuspenseQuery>;
+export type CustomJobDetailQueryResult = Apollo.QueryResult<CustomJobDetailQuery, CustomJobDetailQueryVariables>;
 export const MarkNotificationReadDocument = gql`
     mutation MarkNotificationRead($notificationId: ID!) {
   markNotificationRead(notificationId: $notificationId) {

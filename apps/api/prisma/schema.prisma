@@ -98,6 +98,7 @@ model User {
   notifications       Notification[]
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  customJobs          Job[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -242,6 +243,14 @@ model Job {
   externalUrl String?
   skills      String[] @default([])
 
+  // Null = part of the shared/seeded catalog, visible to everyone. Set =
+  // a user's own externally-sourced application, private to them — the
+  // `jobs` query filters these out, `myCustomJobs` returns only these.
+  createdById        String?
+  experienceRequired String?
+  contactEmail       String?
+
+  createdBy    User?         @relation(fields: [createdById], references: [id], onDelete: Cascade)
   applications Application[]
 
   createdAt DateTime @default(now())
@@ -249,6 +258,7 @@ model Job {
 
   @@index([type])
   @@index([workMode])
+  @@index([createdById])
   @@map("jobs")
 }
 
@@ -259,6 +269,12 @@ model Application {
   status   ApplicationStatus @default(SAVED)
   notes    String?
   appliedAt DateTime?
+
+  // Manually entered for now (mainly on custom/externally-sourced jobs) —
+  // future home for AI-generated drafts built from the user's resume + the
+  // job's description, once that lands.
+  coverLetter String?
+  pitchEmail  String?
 
   user          User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
   job           Job                        @relation(fields: [jobId], references: [id], onDelete: Cascade)

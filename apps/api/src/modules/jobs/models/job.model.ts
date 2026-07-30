@@ -41,9 +41,28 @@ export class JobModel {
   @Field(() => [String])
   skills!: string[];
 
+  /** Set only on a user's own custom (externally-sourced) job entries. */
+  @Field({ nullable: true })
+  experienceRequired?: string;
+
+  @Field({ nullable: true })
+  contactEmail?: string;
+
   /** Null when the current user has never saved/applied to this job. */
   @Field(() => ApplicationStatus, { nullable: true })
   applicationStatus?: ApplicationStatus | null;
+
+  /**
+   * Lives on the Application, not the Job — mirrored here (same borrowed-
+   * context pattern as `applicationStatus`) so the frontend has one type to
+   * work with. Only populated by `customJobDetail`; every other query
+   * (catalog `jobs`, `myCustomJobs`) leaves these undefined.
+   */
+  @Field({ nullable: true })
+  coverLetter?: string;
+
+  @Field({ nullable: true })
+  pitchEmail?: string;
 
   @Field()
   createdAt!: Date;
@@ -62,6 +81,8 @@ export function toJobModel(job: PrismaJob, applicationStatus?: ApplicationStatus
   model.salaryMax = job.salaryMax ?? undefined;
   model.externalUrl = job.externalUrl ?? undefined;
   model.skills = job.skills;
+  model.experienceRequired = job.experienceRequired ?? undefined;
+  model.contactEmail = job.contactEmail ?? undefined;
   model.applicationStatus = applicationStatus ?? null;
   model.createdAt = job.createdAt;
   return model;

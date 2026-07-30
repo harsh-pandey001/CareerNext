@@ -13,6 +13,10 @@ export const JOB_FIELDS = gql`
     salaryMax
     externalUrl
     skills
+    experienceRequired
+    contactEmail
+    coverLetter
+    pitchEmail
     applicationStatus
     createdAt
   }

@@ -24,6 +24,9 @@ export interface Job extends BaseEntity {
   salaryMax?: number;
   externalUrl?: string;
   skills: string[];
+  /** Set only on a user's own custom (externally-sourced) job entries. */
+  experienceRequired?: string;
+  contactEmail?: string;
 }
 
 /** Filters used by the Jobs search + filter UI (V1). */

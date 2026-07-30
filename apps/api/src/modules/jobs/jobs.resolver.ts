@@ -4,6 +4,7 @@ import type { User as PrismaUser } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { PaginationInput } from '../../common/dto/pagination.input';
+import { CustomJobInput } from './dto/custom-job.input';
 import { JobFilterInput } from './dto/job-filter.input';
 import { JobModel } from './models/job.model';
 import { PaginatedJobsModel } from './models/paginated-jobs.model';
@@ -38,6 +39,33 @@ export class JobsResolver {
   @Query(() => JobModel)
   job(@CurrentUser() user: PrismaUser, @Args('id', { type: () => ID }) id: string): Promise<JobModel> {
     return this.jobsService.findById(user.id, id);
+  }
+
+  @Query(() => [JobModel])
+  myCustomJobs(@CurrentUser() user: PrismaUser): Promise<JobModel[]> {
+    return this.jobsService.findMyCustomJobs(user.id);
+  }
+
+  @Query(() => JobModel)
+  customJobDetail(
+    @CurrentUser() user: PrismaUser,
+    @Args('jobId', { type: () => ID }) jobId: string,
+  ): Promise<JobModel> {
+    return this.jobsService.findCustomJobDetail(user.id, jobId);
+  }
+
+  @Mutation(() => JobModel)
+  addCustomJob(@CurrentUser() user: PrismaUser, @Args('input') input: CustomJobInput): Promise<JobModel> {
+    return this.jobsService.addCustomJob(user.id, input);
+  }
+
+  @Mutation(() => JobModel)
+  updateCustomJob(
+    @CurrentUser() user: PrismaUser,
+    @Args('jobId', { type: () => ID }) jobId: string,
+    @Args('input') input: CustomJobInput,
+  ): Promise<JobModel> {
+    return this.jobsService.updateCustomJob(user.id, jobId, input);
   }
 
   @Mutation(() => JobModel)

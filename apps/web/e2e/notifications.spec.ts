@@ -89,29 +89,54 @@ test.describe('notifications', () => {
   test('a failed action shows a toast (not a page banner) and it auto-dismisses', async ({ page, request }) => {
     const email = uniqueEmail('toast');
     await registerViaApi(request, email);
+
+    // Removing an application is a dialog-less, toast-based action (unlike
+    // Custom Jobs' own add flow, which is a dialog and correctly surfaces
+    // errors inline instead) — set one up via the API first.
+    const loginRes = await request.post(API_URL, {
+      data: {
+        query: 'mutation L($input: LoginInput!) { login(input: $input) { accessToken } }',
+        variables: { input: { email, password: E2E_PASSWORD } },
+      },
+    });
+    const { data: loginData } = (await loginRes.json()) as { data: { login: { accessToken: string } } };
+    const token = loginData.login.accessToken;
+
+    const jobsRes = await request.post(API_URL, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { query: 'query { jobs { items { id } } }' },
+    });
+    const { data: jobsData } = (await jobsRes.json()) as { data: { jobs: { items: { id: string }[] } } };
+    const [firstJob] = jobsData.jobs.items;
+    if (!firstJob) throw new Error('Expected at least one seeded job.');
+    await request.post(API_URL, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { query: 'mutation A($jobId: ID!) { applyToJob(jobId: $jobId) { id } }', variables: { jobId: firstJob.id } },
+    });
+
     await loginViaUi(page, email);
 
     await page.route('**/graphql', async (route) => {
       const body = route.request().postDataJSON();
-      if (typeof body?.query === 'string' && body.query.includes('saveJob')) {
+      if (typeof body?.query === 'string' && body.query.includes('removeApplication')) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ errors: [{ message: 'Simulated save failure' }], data: null }),
+          body: JSON.stringify({ errors: [{ message: 'Simulated remove failure' }], data: null }),
         });
         return;
       }
       await route.continue();
     });
 
-    await page.goto('/jobs');
-    const firstSave = page.locator('main').getByRole('button', { name: 'Save job' }).first();
-    await expect(firstSave).toBeVisible();
-    await firstSave.click();
+    await page.goto('/applications');
+    await page.getByRole('button', { name: 'Application actions' }).first().click();
+    await page.getByRole('menuitem', { name: 'Remove' }).click();
+    await page.getByRole('button', { name: 'Remove' }).click();
 
     const toast = page.locator('.MuiAlert-filledError');
     await expect(toast).toBeVisible();
-    await expect(toast).toContainText('Simulated save failure');
+    await expect(toast).toContainText('Simulated remove failure');
     // The old per-page error banner must not also appear — one signal, not two.
     await expect(page.locator('.MuiAlert-outlinedError')).toHaveCount(0);
     await expect(toast).toBeHidden({ timeout: 8000 });

@@ -22,6 +22,8 @@ interface JobCardProps {
   onSave: (jobId: string) => void;
   onUnsave: (jobId: string) => void;
   onApply: (jobId: string) => void;
+  /** Opens a detail view — Save/Apply stay independently clickable via stopPropagation. */
+  onClick?: (jobId: string) => void;
 }
 
 function getCompanyInitials(company: string) {
@@ -34,7 +36,7 @@ function getCompanyInitials(company: string) {
     .toUpperCase();
 }
 
-export function JobCard({ job, pending, onSave, onUnsave, onApply }: JobCardProps) {
+export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: JobCardProps) {
   const isSaved = job.applicationStatus === 'SAVED';
   const isApplied = job.applicationStatus === 'APPLIED' || (!!job.applicationStatus && job.applicationStatus !== 'SAVED');
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax);
@@ -49,6 +51,7 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply }: JobCardProp
   return (
     <Paper
       elevation={0}
+      onClick={onClick ? () => onClick(job.id) : undefined}
       sx={{
         p: 2.75,
         borderRadius: '16px',
@@ -58,6 +61,7 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply }: JobCardProp
         flexDirection: 'column',
         gap: 1.75,
         height: '100%',
+        cursor: onClick ? 'pointer' : undefined,
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {
           borderColor: 'primary.main',
@@ -93,7 +97,10 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply }: JobCardProp
           </Typography>
         </Stack>
         <Button
-          onClick={() => (isSaved ? onUnsave(job.id) : onSave(job.id))}
+          onClick={(event) => {
+            event.stopPropagation();
+            isSaved ? onUnsave(job.id) : onSave(job.id);
+          }}
           disabled={pending || isApplied}
           aria-label={isSaved ? 'Unsave job' : 'Save job'}
           size="small"
@@ -114,6 +121,7 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply }: JobCardProp
             variant="outlined"
           />
         )}
+        {job.experienceRequired && <Chip label={job.experienceRequired} size="small" variant="outlined" />}
       </Stack>
 
       {salary && (
@@ -156,7 +164,10 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply }: JobCardProp
       <Box sx={{ flex: 1 }} />
 
       <Button
-        onClick={handleApply}
+        onClick={(event) => {
+          event.stopPropagation();
+          handleApply();
+        }}
         disabled={pending || isApplied}
         fullWidth
         variant={isApplied ? 'outlined' : 'contained'}

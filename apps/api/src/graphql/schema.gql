@@ -4,10 +4,12 @@
 
 type Application {
   appliedAt: DateTime
+  coverLetter: String
   createdAt: DateTime!
   id: ID!
   job: Job!
   notes: String
+  pitchEmail: String
   status: ApplicationStatus!
   updatedAt: DateTime!
 }
@@ -46,6 +48,21 @@ type ApplicationsTrendPoint {
 type AuthPayload {
   accessToken: String!
   user: User!
+}
+
+input CustomJobInput {
+  company: String!
+  contactEmail: String
+  coverLetter: String
+  description: String
+  experienceRequired: String
+  externalUrl: String
+  location: String
+  pitchEmail: String
+  skills: [String!]
+  title: String!
+  type: JobType
+  workMode: WorkMode!
 }
 
 input DateRangeInput {
@@ -163,11 +180,15 @@ type InterviewRoundBreakdown {
 type Job {
   applicationStatus: ApplicationStatus
   company: String!
+  contactEmail: String
+  coverLetter: String
   createdAt: DateTime!
   description: String!
+  experienceRequired: String
   externalUrl: String
   id: ID!
   location: String
+  pitchEmail: String
   salaryMax: Int
   salaryMin: Int
   skills: [String!]!
@@ -214,6 +235,7 @@ input LoginInput {
 }
 
 type Mutation {
+  addCustomJob(input: CustomJobInput!): Job!
   addEducation(input: EducationInput!): Education!
   addExperience(input: ExperienceInput!): Experience!
   addLanguage(input: LanguageInput!): Language!
@@ -241,6 +263,7 @@ type Mutation {
   setInterviewOutcome(interviewId: ID!, outcome: InterviewOutcome!): Interview!
   unsaveJob(jobId: ID!): Job!
   updateApplicationStatus(applicationId: ID!, status: ApplicationStatus!): Application!
+  updateCustomJob(input: CustomJobInput!, jobId: ID!): Job!
   updateEducation(educationId: ID!, input: EducationInput!): Education!
   updateExperience(experienceId: ID!, input: ExperienceInput!): Experience!
   updateInterview(input: InterviewInput!, interviewId: ID!): Interview!
@@ -298,6 +321,7 @@ type Profile {
 type Query {
   applicationStatusHistory(applicationId: ID!): [ApplicationStatusHistory!]!
   applicationsAnalytics(range: DateRangeInput): ApplicationsAnalytics!
+  customJobDetail(jobId: ID!): Job!
   document(id: ID!): Document!
 
   """Liveness probe for the CareerNext API."""
@@ -306,6 +330,7 @@ type Query {
   jobs(filter: JobFilterInput, pagination: PaginationInput! = {page: 1, pageSize: 10}): PaginatedJobs!
   me: User!
   myApplications: [Application!]!
+  myCustomJobs: [Job!]!
   myDocuments(type: DocumentType): [Document!]!
   myInterviews: [Interview!]!
   myNotifications(limit: Int! = 20): [Notification!]!

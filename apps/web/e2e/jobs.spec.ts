@@ -2,24 +2,32 @@ import { test, expect } from '@playwright/test';
 import { loginViaUi, registerViaApi, uniqueEmail } from './helpers';
 
 test.describe('jobs → applications flow', () => {
-  test('saving a job puts it on the applications board', async ({ page, request }) => {
+  test('adding a custom job puts it on the applications board as Applied', async ({ page, request }) => {
     const email = uniqueEmail('jobs');
     await registerViaApi(request, email);
     await loginViaUi(page, email);
 
     await page.goto('/jobs');
-    const firstCard = page.locator('main').getByRole('button', { name: 'Save job' }).first();
-    await expect(firstCard).toBeVisible();
-    await firstCard.click();
 
-    // The save is confirmed once the toggle flips to "Unsave job".
-    await expect(page.getByRole('button', { name: 'Unsave job' }).first()).toBeVisible();
+    // The curated catalog is Coming Soon — Custom Jobs is the only active
+    // way to get something from Jobs onto the Applications board.
+    await page.getByRole('heading', { name: 'Curated Job Board' }).waitFor({ state: 'visible' });
+
+    await page.getByRole('button', { name: 'Add Custom Job' }).click();
+    await page.getByText('Job Details').waitFor({ state: 'visible' });
+    await page.getByLabel('Company').fill('Acme Testing Co');
+    await page.getByLabel('Job Title').fill('QA Automation Engineer');
+    await page.getByRole('button', { name: 'Next' }).click();
+
+    await page.getByText('Application Materials').waitFor({ state: 'visible' });
+    await page.getByRole('button', { name: 'Add & Mark Applied' }).click();
+
+    // Confirmed added once it shows up in "Your Added Jobs" as Applied.
+    await expect(page.getByText('QA Automation Engineer')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Applied' }).first()).toBeVisible();
 
     await page.goto('/applications');
-    // Fresh account: exactly one card on the board, in the Saved column.
-    // Scoped to the column heading — the card's own pipeline indicator also
-    // renders the word "Saved", so an unscoped match is ambiguous.
-    await expect(page.getByRole('button', { name: 'Application actions' })).toHaveCount(1);
-    await expect(page.getByRole('heading', { name: 'Saved' })).toBeVisible();
+    await expect(page.getByText('QA Automation Engineer')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Applied' })).toBeVisible();
   });
 });

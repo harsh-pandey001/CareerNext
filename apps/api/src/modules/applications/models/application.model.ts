@@ -17,6 +17,14 @@ export class ApplicationModel {
   @Field({ nullable: true })
   appliedAt?: Date;
 
+  /** Manually entered for now — future home for an AI-generated draft. */
+  @Field({ nullable: true })
+  coverLetter?: string;
+
+  /** The pitch/outreach email sent to HR, if any. Same manual-for-now note. */
+  @Field({ nullable: true })
+  pitchEmail?: string;
+
   @Field()
   createdAt!: Date;
 
@@ -33,6 +41,8 @@ export function toApplicationModel(application: PrismaApplication & { job: Prism
   model.status = application.status as unknown as ApplicationStatus;
   model.notes = application.notes ?? undefined;
   model.appliedAt = application.appliedAt ?? undefined;
+  model.coverLetter = application.coverLetter ?? undefined;
+  model.pitchEmail = application.pitchEmail ?? undefined;
   model.createdAt = application.createdAt;
   model.updatedAt = application.updatedAt;
   // This application's own status/job relationship isn't relevant to how the

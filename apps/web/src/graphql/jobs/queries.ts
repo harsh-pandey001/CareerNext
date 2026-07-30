@@ -24,3 +24,21 @@ export const JOB_QUERY = gql`
     }
   }
 `;
+
+export const MY_CUSTOM_JOBS_QUERY = gql`
+  ${JOB_FIELDS}
+  query MyCustomJobs {
+    myCustomJobs {
+      ...JobFields
+    }
+  }
+`;
+
+export const CUSTOM_JOB_DETAIL_QUERY = gql`
+  ${JOB_FIELDS}
+  query CustomJobDetail($jobId: ID!) {
+    customJobDetail(jobId: $jobId) {
+      ...JobFields
+    }
+  }
+`;

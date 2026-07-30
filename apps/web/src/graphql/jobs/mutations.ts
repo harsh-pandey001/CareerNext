@@ -27,3 +27,21 @@ export const APPLY_TO_JOB_MUTATION = gql`
     }
   }
 `;
+
+export const ADD_CUSTOM_JOB_MUTATION = gql`
+  ${JOB_FIELDS}
+  mutation AddCustomJob($input: CustomJobInput!) {
+    addCustomJob(input: $input) {
+      ...JobFields
+    }
+  }
+`;
+
+export const UPDATE_CUSTOM_JOB_MUTATION = gql`
+  ${JOB_FIELDS}
+  mutation UpdateCustomJob($jobId: ID!, $input: CustomJobInput!) {
+    updateCustomJob(jobId: $jobId, input: $input) {
+      ...JobFields
+    }
+  }
+`;
