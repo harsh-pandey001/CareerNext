@@ -3,6 +3,7 @@ import type { Job as PrismaJob } from '@prisma/client';
 import { JobType, WorkMode } from '@careernext/shared-types';
 import { ApplicationStatus } from '../../applications/models/application-status.enum';
 import { ApplicationMode } from '../../applications/models/application-mode.enum';
+import { ResumeVersionModel } from '../../documents/models/resume-version.model';
 
 registerEnumType(JobType, { name: 'JobType' });
 registerEnumType(WorkMode, { name: 'WorkMode' });
@@ -71,6 +72,10 @@ export class JobModel {
 
   @Field(() => ApplicationMode, { nullable: true })
   applicationMode?: ApplicationMode;
+
+  /** Same borrowed-context rule as above — only populated by `customJobDetail`. */
+  @Field(() => ResumeVersionModel, { nullable: true })
+  resumeVersion?: ResumeVersionModel;
 
   @Field()
   createdAt!: Date;

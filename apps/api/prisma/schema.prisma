@@ -72,6 +72,7 @@ enum InterviewOutcome {
 enum NotificationType {
   APPLICATION_STATUS_CHANGED
   INTERVIEW_REMINDER
+  APPLICATION_NO_RESPONSE
 }
 
 enum LanguageProficiency {
@@ -286,8 +287,21 @@ model Application {
   pitchEmail      String?
   applicationMode ApplicationMode?
 
+  // Dedup key for the scheduled "no response" notification (mirrors
+  // Interview.reminderSentAt) — set once, the first time this application
+  // crosses the staleness threshold at APPLIED. The board's own badge is
+  // computed live from appliedAt, not from this field.
+  noResponseNotifiedAt DateTime?
+
+  // Which resume was sent for this specific application — manually picked
+  // from the user's own uploaded versions, mainly useful on custom jobs.
+  // Nullable + SetNull: deleting a resume version later must not destroy
+  // the application record, just clear which one it pointed to.
+  resumeVersionId String?
+
   user          User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
   job           Job                        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  resumeVersion ResumeVersion?             @relation(fields: [resumeVersionId], references: [id], onDelete: SetNull)
   interviews    Interview[]
   statusHistory ApplicationStatusHistory[]
 
@@ -397,6 +411,8 @@ model ResumeVersion {
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  applications Application[]
 
   createdAt DateTime @default(now())
 

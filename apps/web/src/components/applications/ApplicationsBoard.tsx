@@ -9,6 +9,12 @@ import { alpha, type Theme } from '@mui/material/styles';
 import { useApplications } from '@/hooks/applications/useApplications';
 import { useApplicationActions } from '@/hooks/applications/useApplicationActions';
 import { useApplicationTimeline } from '@/hooks/applications/useApplicationTimeline';
+import { SearchFilterBar } from '@/components/common/SearchFilterBar';
+import {
+  APPLICATION_MODE_FILTER_OPTIONS,
+  JOB_TYPE_FILTER_OPTIONS,
+  WORK_MODE_FILTER_OPTIONS,
+} from '@/components/jobs/constants';
 import { ApplicationCard } from './ApplicationCard';
 import { ApplicationTimelineDialog } from './ApplicationTimelineDialog';
 import type { ColumnTone } from './constants';
@@ -19,7 +25,17 @@ function toneColor(theme: Theme, tone: ColumnTone) {
 }
 
 export function ApplicationsBoard() {
-  const { columns, total, loading, error } = useApplications();
+  const {
+    columns,
+    total,
+    filteredTotal,
+    loading,
+    error,
+    filters,
+    updateFilters,
+    resetFilters,
+    locationOptions,
+  } = useApplications();
   const { updateStatus, removeApplication, pendingId } = useApplicationActions();
   const timeline = useApplicationTimeline();
   const timelineApplication = columns
@@ -41,6 +57,20 @@ export function ApplicationsBoard() {
         <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
           Couldn&apos;t load your applications right now. Please try again in a moment.
         </Alert>
+      )}
+
+      {!loading && total > 0 && (
+        <SearchFilterBar
+          filters={filters}
+          onChange={updateFilters}
+          onReset={resetFilters}
+          typeOptions={JOB_TYPE_FILTER_OPTIONS}
+          workModeOptions={WORK_MODE_FILTER_OPTIONS}
+          applicationModeOptions={APPLICATION_MODE_FILTER_OPTIONS}
+          locationOptions={locationOptions}
+          resultCount={filteredTotal}
+          totalCount={total}
+        />
       )}
 
       {loading ? (
@@ -100,13 +130,21 @@ export function ApplicationsBoard() {
                 sx={{
                   p: 1.5,
                   borderRadius: '16px',
-                  bgcolor: (theme) => alpha(toneColor(theme, column.tone), theme.palette.mode === 'dark' ? 0.08 : 0.05),
+                  bgcolor: (theme) =>
+                    alpha(
+                      toneColor(theme, column.tone),
+                      theme.palette.mode === 'dark' ? 0.08 : 0.05,
+                    ),
                   minHeight: 120,
                   flex: 1,
                 }}
               >
                 {column.applications.length === 0 ? (
-                  <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ textAlign: 'center', py: 3 }}
+                  >
                     Nothing here
                   </Typography>
                 ) : (

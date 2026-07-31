@@ -1,5 +1,15 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsArray, IsEmail, IsEnum, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+  MaxLength,
+} from 'class-validator';
 import { ApplicationMode, JobType, WorkMode } from '@careernext/shared-types';
 
 @InputType()
@@ -79,4 +89,16 @@ export class CustomJobInput {
   @IsOptional()
   @IsEnum(ApplicationMode)
   applicationMode?: ApplicationMode;
+
+  /** Omitted/true = the historical "adding IS applying" behavior; false = log it as SAVED. */
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  alreadyApplied?: boolean;
+
+  /** Which of the user's own resume versions was sent for this application, if any. */
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsUUID()
+  resumeVersionId?: string;
 }

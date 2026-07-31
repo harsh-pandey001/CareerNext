@@ -1,4 +1,5 @@
 import type { ApplicationStatus } from '@careernext/graphql-types';
+import { APPLICATION_NO_RESPONSE_THRESHOLD_DAYS } from '@careernext/shared-types';
 
 export type ColumnTone = 'neutral' | 'info' | 'warning' | 'primary' | 'success' | 'error';
 
@@ -66,4 +67,26 @@ export function getValidNextStatuses(current: ApplicationStatus): ApplicationSta
   const currentIndex = PIPELINE_ORDER.indexOf(current);
   const forward = currentIndex === -1 ? [] : PIPELINE_ORDER.slice(currentIndex + 1);
   return [...forward, 'REJECTED'];
+}
+
+/**
+ * A quiet, honest observation — not a claimed status — so this is computed
+ * live rather than read off a backend flag: an application still sitting at
+ * APPLIED this long with no forward move. Same threshold the backend's
+ * one-time notification uses (`APPLICATION_NO_RESPONSE_THRESHOLD_DAYS`), so
+ * the board's badge and the notification can never drift apart.
+ */
+export function daysSinceApplied(appliedAt: string | null | undefined): number | null {
+  if (!appliedAt) return null;
+  const elapsedMs = Date.now() - new Date(appliedAt).getTime();
+  return Math.floor(elapsedMs / (24 * 60 * 60 * 1000));
+}
+
+export function isLikelyNoResponse(
+  status: ApplicationStatus,
+  appliedAt: string | null | undefined,
+): boolean {
+  if (status !== 'APPLIED') return false;
+  const days = daysSinceApplied(appliedAt);
+  return days !== null && days >= APPLICATION_NO_RESPONSE_THRESHOLD_DAYS;
 }

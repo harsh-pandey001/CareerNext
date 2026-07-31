@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   ApplicationStatus as PrismaApplicationStatus,
   Prisma,
@@ -6,7 +11,11 @@ import {
   type ApplicationStatusHistory as PrismaApplicationStatusHistory,
   type Job as PrismaJob,
 } from '@prisma/client';
-import { NotificationType, type ApplicationStatus } from '@careernext/shared-types';
+import {
+  NotificationType,
+  type ApplicationMode,
+  type ApplicationStatus,
+} from '@careernext/shared-types';
 import { humanizeEnum } from '@careernext/utils';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -41,7 +50,10 @@ const TERMINAL_STATUSES: ReadonlySet<PrismaApplicationStatus> = new Set([
  * next stage. What's never valid is going BACKWARD once progress is made,
  * or leaving a terminal state (ACCEPTED/REJECTED) once reached.
  */
-export function isValidTransition(from: PrismaApplicationStatus, to: PrismaApplicationStatus): boolean {
+export function isValidTransition(
+  from: PrismaApplicationStatus,
+  to: PrismaApplicationStatus,
+): boolean {
   if (TERMINAL_STATUSES.has(from)) return false;
   if (to === PrismaApplicationStatus.REJECTED) return true;
 
@@ -67,7 +79,11 @@ export class ApplicationsService {
     });
   }
 
-  async updateStatus(userId: string, applicationId: string, status: ApplicationStatus): Promise<ApplicationWithJob> {
+  async updateStatus(
+    userId: string,
+    applicationId: string,
+    status: ApplicationStatus,
+  ): Promise<ApplicationWithJob> {
     const application = await this.prisma.application.findUnique({
       where: { id: applicationId },
       include: { job: true },
@@ -97,7 +113,10 @@ export class ApplicationsService {
   }
 
   /** Ordered oldest-first — the raw material for a status timeline UI. */
-  async getStatusHistory(userId: string, applicationId: string): Promise<PrismaApplicationStatusHistory[]> {
+  async getStatusHistory(
+    userId: string,
+    applicationId: string,
+  ): Promise<PrismaApplicationStatusHistory[]> {
     await this.ensureOwnership(userId, applicationId);
     return this.prisma.applicationStatusHistory.findMany({
       where: { applicationId },
@@ -125,7 +144,10 @@ export class ApplicationsService {
   }
 
   /** Batch lookup to avoid N+1 queries when resolving a list of jobs. */
-  async findStatusesForUser(userId: string, jobIds: string[]): Promise<Map<string, ApplicationStatus>> {
+  async findStatusesForUser(
+    userId: string,
+    jobIds: string[],
+  ): Promise<Map<string, ApplicationStatus>> {
     if (jobIds.length === 0) return new Map();
 
     const applications = await this.prisma.application.findMany({
@@ -133,7 +155,32 @@ export class ApplicationsService {
       select: { jobId: true, status: true },
     });
 
-    return new Map(applications.map((application) => [application.jobId, application.status as unknown as ApplicationStatus]));
+    return new Map(
+      applications.map((application) => [
+        application.jobId,
+        application.status as unknown as ApplicationStatus,
+      ]),
+    );
+  }
+
+  /** Batch lookup, parallel to `findStatusesForUser` — lets a Job list surface "how did I apply". */
+  async findApplicationModesForUser(
+    userId: string,
+    jobIds: string[],
+  ): Promise<Map<string, ApplicationMode>> {
+    if (jobIds.length === 0) return new Map();
+
+    const applications = await this.prisma.application.findMany({
+      where: { userId, jobId: { in: jobIds }, applicationMode: { not: null } },
+      select: { jobId: true, applicationMode: true },
+    });
+
+    return new Map(
+      applications.map((application) => [
+        application.jobId,
+        application.applicationMode as unknown as ApplicationMode,
+      ]),
+    );
   }
 
   async findStatusForUserAndJob(userId: string, jobId: string): Promise<ApplicationStatus | null> {
@@ -158,7 +205,11 @@ export class ApplicationsService {
           data: { userId, jobId, status: PrismaApplicationStatus.SAVED },
         });
         await tx.applicationStatusHistory.create({
-          data: { applicationId: application.id, fromStatus: null, toStatus: PrismaApplicationStatus.SAVED },
+          data: {
+            applicationId: application.id,
+            fromStatus: null,
+            toStatus: PrismaApplicationStatus.SAVED,
+          },
         });
       });
     } catch (error) {
@@ -190,7 +241,11 @@ export class ApplicationsService {
           data: { userId, jobId, status: PrismaApplicationStatus.APPLIED, appliedAt: new Date() },
         });
         await tx.applicationStatusHistory.create({
-          data: { applicationId: application.id, fromStatus: null, toStatus: PrismaApplicationStatus.APPLIED },
+          data: {
+            applicationId: application.id,
+            fromStatus: null,
+            toStatus: PrismaApplicationStatus.APPLIED,
+          },
         });
       });
       return;
@@ -206,7 +261,9 @@ export class ApplicationsService {
       select: { id: true, status: true },
     });
     if (!existing || existing.status !== PrismaApplicationStatus.SAVED) return;
-    await this.applyStatusChange(existing.id, existing.status, PrismaApplicationStatus.APPLIED, { appliedAt: new Date() });
+    await this.applyStatusChange(existing.id, existing.status, PrismaApplicationStatus.APPLIED, {
+      appliedAt: new Date(),
+    });
   }
 
   /**
@@ -218,7 +275,11 @@ export class ApplicationsService {
    * terminal, or doesn't belong to `userId` (defense in depth — callers are
    * expected to have already checked ownership of the application itself).
    */
-  async advanceStatusIfBehind(userId: string, applicationId: string, candidateStatus: ApplicationStatus): Promise<void> {
+  async advanceStatusIfBehind(
+    userId: string,
+    applicationId: string,
+    candidateStatus: ApplicationStatus,
+  ): Promise<void> {
     const application = await this.prisma.application.findUnique({ where: { id: applicationId } });
     if (!application || application.userId !== userId) return;
 

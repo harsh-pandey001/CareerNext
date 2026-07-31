@@ -8,6 +8,7 @@ export const APPLICATION_FIELDS = gql`
     status
     notes
     appliedAt
+    applicationMode
     createdAt
     updatedAt
     job {

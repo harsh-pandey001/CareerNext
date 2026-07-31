@@ -14,21 +14,30 @@ import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import type { JobFieldsFragment } from '@careernext/graphql-types';
-import { JOB_TYPE_LABELS, WORK_MODE_LABELS, formatSalaryRange, getCompanyInitials } from './constants';
+import {
+  JOB_TYPE_LABELS,
+  WORK_MODE_LABELS,
+  formatSalaryRange,
+  getCompanyInitials,
+} from './constants';
 
 interface JobCardProps {
   job: JobFieldsFragment;
   pending: boolean;
-  onSave: (jobId: string) => void;
-  onUnsave: (jobId: string) => void;
+  /** Omit both to hide the bookmark control entirely (e.g. custom jobs, where it has no use). */
+  onSave?: (jobId: string) => void;
+  onUnsave?: (jobId: string) => void;
   onApply: (jobId: string) => void;
   /** Opens a detail view — Save/Apply stay independently clickable via stopPropagation. */
   onClick?: (jobId: string) => void;
 }
 
 export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: JobCardProps) {
+  const showSaveButton = !!onSave && !!onUnsave;
   const isSaved = job.applicationStatus === 'SAVED';
-  const isApplied = job.applicationStatus === 'APPLIED' || (!!job.applicationStatus && job.applicationStatus !== 'SAVED');
+  const isApplied =
+    job.applicationStatus === 'APPLIED' ||
+    (!!job.applicationStatus && job.applicationStatus !== 'SAVED');
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax);
 
   const handleApply = () => {
@@ -86,23 +95,37 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: Jo
             {job.company}
           </Typography>
         </Stack>
-        <Button
-          onClick={(event) => {
-            event.stopPropagation();
-            isSaved ? onUnsave(job.id) : onSave(job.id);
-          }}
-          disabled={pending || isApplied}
-          aria-label={isSaved ? 'Unsave job' : 'Save job'}
-          size="small"
-          sx={{ minWidth: 0, p: 1, color: isSaved ? 'primary.main' : 'text.secondary' }}
-        >
-          {isSaved ? <BookmarkRoundedIcon fontSize="small" /> : <BookmarkBorderRoundedIcon fontSize="small" />}
-        </Button>
+        {showSaveButton && (
+          <Button
+            onClick={(event) => {
+              event.stopPropagation();
+              isSaved ? onUnsave?.(job.id) : onSave?.(job.id);
+            }}
+            disabled={pending || isApplied}
+            aria-label={isSaved ? 'Unsave job' : 'Save job'}
+            size="small"
+            sx={{ minWidth: 0, p: 1, color: isSaved ? 'primary.main' : 'text.secondary' }}
+          >
+            {isSaved ? (
+              <BookmarkRoundedIcon fontSize="small" />
+            ) : (
+              <BookmarkBorderRoundedIcon fontSize="small" />
+            )}
+          </Button>
+        )}
       </Stack>
 
       <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-        <Chip label={JOB_TYPE_LABELS[job.type]} size="small" sx={{ bgcolor: 'action.hover', fontWeight: 600 }} />
-        <Chip label={WORK_MODE_LABELS[job.workMode]} size="small" sx={{ bgcolor: 'action.hover', fontWeight: 600 }} />
+        <Chip
+          label={JOB_TYPE_LABELS[job.type]}
+          size="small"
+          sx={{ bgcolor: 'action.hover', fontWeight: 600 }}
+        />
+        <Chip
+          label={WORK_MODE_LABELS[job.workMode]}
+          size="small"
+          sx={{ bgcolor: 'action.hover', fontWeight: 600 }}
+        />
         {job.location && (
           <Chip
             icon={<LocationOnRoundedIcon sx={{ fontSize: '16px !important' }} />}
@@ -111,7 +134,9 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: Jo
             variant="outlined"
           />
         )}
-        {job.experienceRequired && <Chip label={job.experienceRequired} size="small" variant="outlined" />}
+        {job.experienceRequired && (
+          <Chip label={job.experienceRequired} size="small" variant="outlined" />
+        )}
       </Stack>
 
       {salary && (

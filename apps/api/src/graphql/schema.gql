@@ -59,6 +59,7 @@ type AuthPayload {
 }
 
 input CustomJobInput {
+  alreadyApplied: Boolean
   applicationMode: ApplicationMode
   company: String!
   contactEmail: String
@@ -69,6 +70,7 @@ input CustomJobInput {
   location: String
   pitchEmail: String
   postedAt: String
+  resumeVersionId: String
   skills: [String!]
   title: String!
   type: JobType
@@ -201,6 +203,7 @@ type Job {
   location: String
   pitchEmail: String
   postedAt: String
+  resumeVersion: ResumeVersion
   salaryMax: Int
   salaryMin: Int
   skills: [String!]!
@@ -297,6 +300,7 @@ type Notification {
 }
 
 enum NotificationType {
+  APPLICATION_NO_RESPONSE
   APPLICATION_STATUS_CHANGED
   INTERVIEW_REMINDER
 }

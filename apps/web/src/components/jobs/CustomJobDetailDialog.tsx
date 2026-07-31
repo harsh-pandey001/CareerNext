@@ -232,6 +232,14 @@ export function CustomJobDetailDialog({
               </DetailBlock>
             )}
 
+            {job.resumeVersion && (
+              <DetailBlock label="Resume Sent" icon={<DescriptionRoundedIcon sx={labelIconSx} />}>
+                <Typography variant="body2">
+                  v{job.resumeVersion.version} — {job.resumeVersion.document.fileName}
+                </Typography>
+              </DetailBlock>
+            )}
+
             <DetailBlock label="Cover Letter">
               {job.coverLetter ? (
                 <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>

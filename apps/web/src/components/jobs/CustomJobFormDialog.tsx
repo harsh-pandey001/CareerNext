@@ -9,6 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
+import Switch from '@mui/material/Switch';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
@@ -35,9 +36,11 @@ import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import LinkRoundedIcon from '@mui/icons-material/LinkRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import type { CustomJobInput, JobFieldsFragment } from '@careernext/graphql-types';
 import { FormTextField } from '@/components/auth/fields/FormTextField';
 import { SubmitButton } from '@/components/auth/SubmitButton';
+import { useResumeVersions } from '@/hooks/resume/useResumeVersions';
 import { customJobSchema, type CustomJobFormValues } from './schemas';
 import {
   APPLICATION_MODE_FILTER_OPTIONS,
@@ -72,21 +75,19 @@ const EMPTY_VALUES: CustomJobFormValues = {
   coverLetter: '',
   pitchEmail: '',
   applicationMode: '',
+  alreadyApplied: true,
+  resumeVersionId: '',
 };
 
-const STEPS = ['Job Details', 'Application Materials'];
+const STEPS_WITH_MATERIALS = ['The Basics', 'More Details', 'Application Materials'];
+const STEPS_WITHOUT_MATERIALS = ['The Basics', 'More Details'];
 
-// Validated before advancing past step 1 — everything else in the schema
-// (coverLetter/pitchEmail/applicationMode) is optional and only lives on step 2.
-const STEP_1_FIELDS = [
-  'company',
-  'title',
-  'workMode',
-  'type',
-  'location',
+// Validated before advancing off step 0 / step 1 respectively — everything
+// on the final "Application Materials" step is optional.
+const STEP_1_FIELDS = ['company', 'title', 'workMode', 'type', 'location', 'postedAt'] as const;
+const STEP_2_FIELDS = [
   'experienceRequired',
   'contactEmail',
-  'postedAt',
   'skills',
   'externalUrl',
   'description',
@@ -130,19 +131,6 @@ function GradientStepIcon({ active, completed, icon: stepNumber }: StepIconProps
   );
 }
 
-function SectionLabel({ children }: { children: string }) {
-  return (
-    <Typography
-      variant="overline"
-      fontWeight={700}
-      color="text.secondary"
-      sx={{ letterSpacing: '0.08em', lineHeight: 1 }}
-    >
-      {children}
-    </Typography>
-  );
-}
-
 const nextButtonSx = {
   textTransform: 'none',
   fontWeight: 600,
@@ -171,6 +159,7 @@ export function CustomJobFormDialog({
 }: CustomJobFormDialogProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [postedAtAnchor, setPostedAtAnchor] = useState<HTMLElement | null>(null);
+  const { versions: resumeVersions } = useResumeVersions();
   const {
     register,
     control,
@@ -178,11 +167,19 @@ export function CustomJobFormDialog({
     trigger,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<CustomJobFormValues>({
     resolver: zodResolver(customJobSchema),
     defaultValues: EMPTY_VALUES,
   });
+
+  const alreadyApplied = watch('alreadyApplied');
+  // Once a job has moved past SAVED, the pipeline never regresses — the
+  // toggle just honestly reflects that instead of pretending it's editable.
+  const isAlreadyAppliedLocked = !!job && job.applicationStatus !== 'SAVED';
+  const stepLabels = alreadyApplied ? STEPS_WITH_MATERIALS : STEPS_WITHOUT_MATERIALS;
+  const isLastStep = activeStep === stepLabels.length - 1;
 
   useEffect(() => {
     if (!open) return;
@@ -204,16 +201,21 @@ export function CustomJobFormDialog({
             coverLetter: job.coverLetter ?? '',
             pitchEmail: job.pitchEmail ?? '',
             applicationMode: job.applicationMode ?? '',
+            // Reflects reality: still SAVED -> off (user can flip it on once
+            // they actually apply); anything further along -> on and locked.
+            alreadyApplied: job.applicationStatus !== 'SAVED',
+            resumeVersionId: job.resumeVersion?.id ?? '',
           }
         : EMPTY_VALUES,
     );
   }, [open, job, reset]);
 
   const goNext = async () => {
-    const valid = await trigger(STEP_1_FIELDS);
-    if (valid) setActiveStep(1);
+    const fields = activeStep === 0 ? STEP_1_FIELDS : STEP_2_FIELDS;
+    const valid = await trigger(fields);
+    if (valid) setActiveStep((step) => step + 1);
   };
-  const goBack = () => setActiveStep(0);
+  const goBack = () => setActiveStep((step) => Math.max(0, step - 1));
 
   const submit = handleSubmit(async (data) => {
     const success = await onSubmit({
@@ -231,6 +233,8 @@ export function CustomJobFormDialog({
       coverLetter: data.coverLetter || undefined,
       pitchEmail: data.pitchEmail || undefined,
       applicationMode: data.applicationMode || undefined,
+      alreadyApplied: data.alreadyApplied,
+      resumeVersionId: data.resumeVersionId || undefined,
     });
     if (success) onClose();
   });
@@ -267,6 +271,49 @@ export function CustomJobFormDialog({
       />
       <DialogContent dividers sx={{ pt: 3 }}>
         <Stack spacing={3}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            spacing={2}
+            sx={{
+              px: 2,
+              py: 1.5,
+              borderRadius: '14px',
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'action.hover',
+            }}
+          >
+            <Stack spacing={0.25}>
+              <Typography variant="body2" fontWeight={700}>
+                {alreadyApplied ? "You've already applied" : 'Just saving this for later'}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {isAlreadyAppliedLocked
+                  ? "This one's already moved past Saved — add your materials in the next steps."
+                  : alreadyApplied
+                    ? "We'll walk through details, then cover letter and pitch email."
+                    : "We'll log it as Saved — flip this on once you actually apply."}
+              </Typography>
+            </Stack>
+            <Controller
+              name="alreadyApplied"
+              control={control}
+              render={({ field }) => (
+                <Switch
+                  checked={field.value}
+                  disabled={isAlreadyAppliedLocked}
+                  onChange={(event) => {
+                    field.onChange(event.target.checked);
+                    if (!event.target.checked) setActiveStep(0);
+                  }}
+                  inputProps={{ 'aria-label': "I've already applied to this job" }}
+                />
+              )}
+            />
+          </Stack>
+
           <Stepper
             activeStep={activeStep}
             sx={{
@@ -276,7 +323,7 @@ export function CustomJobFormDialog({
               '& .MuiStepLabel-label.Mui-completed': { fontWeight: 700 },
             }}
           >
-            {STEPS.map((label) => (
+            {stepLabels.map((label) => (
               <Step key={label}>
                 <StepLabel slots={{ stepIcon: GradientStepIcon }}>{label}</StepLabel>
               </Step>
@@ -289,186 +336,183 @@ export function CustomJobFormDialog({
             </Alert>
           )}
 
-          {activeStep === 0 ? (
-            <Stack spacing={3}>
-              <Stack spacing={2}>
-                <SectionLabel>The Basics</SectionLabel>
-                <FormTextField
-                  label="Company"
-                  registration={register('company')}
-                  error={errors.company?.message}
-                  slotProps={{ input: { startAdornment: startIcon(BusinessRoundedIcon) } }}
-                />
-                <FormTextField
-                  label="Job Title"
-                  registration={register('title')}
-                  error={errors.title?.message}
-                  slotProps={{ input: { startAdornment: startIcon(WorkOutlineRoundedIcon) } }}
-                />
+          {activeStep === 0 && (
+            <Stack spacing={2}>
+              <FormTextField
+                label="Company"
+                registration={register('company')}
+                error={errors.company?.message}
+                slotProps={{ input: { startAdornment: startIcon(BusinessRoundedIcon) } }}
+              />
+              <FormTextField
+                label="Job Title"
+                registration={register('title')}
+                error={errors.title?.message}
+                slotProps={{ input: { startAdornment: startIcon(WorkOutlineRoundedIcon) } }}
+              />
 
-                <Stack direction="row" spacing={2}>
-                  <Controller
-                    name="workMode"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        select
-                        fullWidth
-                        label="Work Mode"
-                        error={!!errors.workMode}
-                        helperText={errors.workMode?.message}
-                      >
-                        {WORK_MODE_FILTER_OPTIONS.map(([value, label]) => (
-                          <MenuItem key={value} value={value}>
-                            {label}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    )}
-                  />
-                  <Controller
-                    name="type"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        select
-                        fullWidth
-                        label="Job Type"
-                        error={!!errors.type}
-                        helperText={errors.type?.message}
-                      >
-                        {JOB_TYPE_FILTER_OPTIONS.map(([value, label]) => (
-                          <MenuItem key={value} value={value}>
-                            {label}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    )}
-                  />
-                </Stack>
-
-                <FormTextField
-                  label="Location"
-                  placeholder="e.g. Bengaluru, or Remote"
-                  registration={register('location')}
-                  error={errors.location?.message}
-                  slotProps={{ input: { startAdornment: startIcon(LocationOnRoundedIcon) } }}
-                />
-
-                <FormTextField
-                  label="Job Posted"
-                  placeholder="e.g. Today, 2 days ago, 3 weeks ago"
-                  registration={register('postedAt')}
-                  error={errors.postedAt?.message}
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <IconButton
-                            size="small"
-                            aria-label="Quick-select when this was posted"
-                            onClick={(event) => setPostedAtAnchor(event.currentTarget)}
-                            sx={{ ml: -1 }}
-                          >
-                            <AccessTimeRoundedIcon
-                              fontSize="small"
-                              sx={{ color: 'text.disabled' }}
-                            />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                />
-                <Menu
-                  anchorEl={postedAtAnchor}
-                  open={!!postedAtAnchor}
-                  onClose={() => setPostedAtAnchor(null)}
-                >
-                  {POSTED_AT_QUICK_OPTIONS.map((option) => (
-                    <MenuItem
-                      key={option}
-                      onClick={() => {
-                        setValue('postedAt', option, { shouldDirty: true, shouldValidate: true });
-                        setPostedAtAnchor(null);
-                      }}
-                    >
-                      {option}
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </Stack>
-
-              <Stack spacing={2}>
-                <SectionLabel>More Details</SectionLabel>
-                <Stack direction="row" spacing={2}>
-                  <FormTextField
-                    label="Experience Required"
-                    placeholder="e.g. 3-5 years"
-                    registration={register('experienceRequired')}
-                    error={errors.experienceRequired?.message}
-                    slotProps={{ input: { startAdornment: startIcon(TrendingUpRoundedIcon) } }}
-                  />
-                  <FormTextField
-                    type="email"
-                    label="Contact Email"
-                    placeholder="hr@company.com"
-                    registration={register('contactEmail')}
-                    error={errors.contactEmail?.message}
-                    slotProps={{ input: { startAdornment: startIcon(EmailRoundedIcon) } }}
-                  />
-                </Stack>
-
+              <Stack direction="row" spacing={2}>
                 <Controller
-                  name="skills"
+                  name="workMode"
                   control={control}
                   render={({ field }) => (
-                    <Autocomplete
-                      multiple
-                      freeSolo
-                      options={[]}
-                      value={field.value}
-                      onChange={(_, value) => field.onChange(value)}
-                      renderTags={(value, getTagProps) =>
-                        value.map((option, index) => {
-                          const { key, ...tagProps } = getTagProps({ index });
-                          return <Chip label={option} size="small" key={key} {...tagProps} />;
-                        })
-                      }
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Tech / Skills Required"
-                          placeholder="Type a skill and press Enter"
-                          error={!!errors.skills}
-                          helperText={errors.skills?.message}
-                        />
-                      )}
-                    />
+                    <TextField
+                      {...field}
+                      select
+                      fullWidth
+                      label="Work Mode"
+                      error={!!errors.workMode}
+                      helperText={errors.workMode?.message}
+                    >
+                      {WORK_MODE_FILTER_OPTIONS.map(([value, label]) => (
+                        <MenuItem key={value} value={value}>
+                          {label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   )}
                 />
-
-                <FormTextField
-                  label="Job Link"
-                  placeholder="https://company.com/careers/123"
-                  registration={register('externalUrl')}
-                  error={errors.externalUrl?.message}
-                  slotProps={{ input: { startAdornment: startIcon(LinkRoundedIcon) } }}
-                />
-
-                <FormTextField
-                  label="Job Description"
-                  multiline
-                  minRows={6}
-                  placeholder="Paste the job description here — powers future features like AI resume matching"
-                  registration={register('description')}
-                  error={errors.description?.message}
+                <Controller
+                  name="type"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      select
+                      fullWidth
+                      label="Job Type"
+                      error={!!errors.type}
+                      helperText={errors.type?.message}
+                    >
+                      {JOB_TYPE_FILTER_OPTIONS.map(([value, label]) => (
+                        <MenuItem key={value} value={value}>
+                          {label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
                 />
               </Stack>
+
+              <FormTextField
+                label="Location"
+                placeholder="e.g. Bengaluru, or Remote"
+                registration={register('location')}
+                error={errors.location?.message}
+                slotProps={{ input: { startAdornment: startIcon(LocationOnRoundedIcon) } }}
+              />
+
+              <FormTextField
+                label="Job Posted"
+                placeholder="e.g. Today, 2 days ago, 3 weeks ago"
+                registration={register('postedAt')}
+                error={errors.postedAt?.message}
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <IconButton
+                          size="small"
+                          aria-label="Quick-select when this was posted"
+                          onClick={(event) => setPostedAtAnchor(event.currentTarget)}
+                          sx={{ ml: -1 }}
+                        >
+                          <AccessTimeRoundedIcon fontSize="small" sx={{ color: 'text.disabled' }} />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+              <Menu
+                anchorEl={postedAtAnchor}
+                open={!!postedAtAnchor}
+                onClose={() => setPostedAtAnchor(null)}
+              >
+                {POSTED_AT_QUICK_OPTIONS.map((option) => (
+                  <MenuItem
+                    key={option}
+                    onClick={() => {
+                      setValue('postedAt', option, { shouldDirty: true, shouldValidate: true });
+                      setPostedAtAnchor(null);
+                    }}
+                  >
+                    {option}
+                  </MenuItem>
+                ))}
+              </Menu>
             </Stack>
-          ) : (
+          )}
+
+          {activeStep === 1 && (
+            <Stack spacing={2}>
+              <Stack direction="row" spacing={2}>
+                <FormTextField
+                  label="Experience Required"
+                  placeholder="e.g. 3-5 years"
+                  registration={register('experienceRequired')}
+                  error={errors.experienceRequired?.message}
+                  slotProps={{ input: { startAdornment: startIcon(TrendingUpRoundedIcon) } }}
+                />
+                <FormTextField
+                  type="email"
+                  label="Contact Email"
+                  placeholder="hr@company.com"
+                  registration={register('contactEmail')}
+                  error={errors.contactEmail?.message}
+                  slotProps={{ input: { startAdornment: startIcon(EmailRoundedIcon) } }}
+                />
+              </Stack>
+
+              <Controller
+                name="skills"
+                control={control}
+                render={({ field }) => (
+                  <Autocomplete
+                    multiple
+                    freeSolo
+                    options={[]}
+                    value={field.value}
+                    onChange={(_, value) => field.onChange(value)}
+                    renderTags={(value, getTagProps) =>
+                      value.map((option, index) => {
+                        const { key, ...tagProps } = getTagProps({ index });
+                        return <Chip label={option} size="small" key={key} {...tagProps} />;
+                      })
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Tech / Skills Required"
+                        placeholder="Type a skill and press Enter"
+                        error={!!errors.skills}
+                        helperText={errors.skills?.message}
+                      />
+                    )}
+                  />
+                )}
+              />
+
+              <FormTextField
+                label="Job Link"
+                placeholder="https://company.com/careers/123"
+                registration={register('externalUrl')}
+                error={errors.externalUrl?.message}
+                slotProps={{ input: { startAdornment: startIcon(LinkRoundedIcon) } }}
+              />
+
+              <FormTextField
+                label="Job Description"
+                multiline
+                minRows={6}
+                placeholder="Paste the job description here — powers future features like AI resume matching"
+                registration={register('description')}
+                error={errors.description?.message}
+              />
+            </Stack>
+          )}
+
+          {activeStep === 2 && alreadyApplied && (
             <Stack spacing={2.5}>
               <Stack
                 direction="row"
@@ -485,10 +529,39 @@ export function CustomJobFormDialog({
               >
                 <AutoAwesomeRoundedIcon sx={{ fontSize: 18, color: 'primary.main', mt: 0.2 }} />
                 <Typography variant="body2" color="text.secondary">
-                  All three are optional and entered manually for now — a future AI/LLM feature will
-                  draft the letter and email from your resume and this job&apos;s description.
+                  All are optional and entered manually for now — a future AI/LLM feature will draft
+                  the letter and email from your resume and this job&apos;s description.
                 </Typography>
               </Stack>
+
+              <Controller
+                name="resumeVersionId"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    select
+                    fullWidth
+                    label="Resume Sent"
+                    disabled={resumeVersions.length === 0}
+                    helperText={
+                      resumeVersions.length === 0
+                        ? 'Upload a resume first to link one here'
+                        : undefined
+                    }
+                    slotProps={{ input: { startAdornment: startIcon(DescriptionRoundedIcon) } }}
+                  >
+                    <MenuItem value="">
+                      <em>Not specified</em>
+                    </MenuItem>
+                    {resumeVersions.map((version) => (
+                      <MenuItem key={version.id} value={version.id}>
+                        v{version.version} — {version.document.fileName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
 
               <Controller
                 name="applicationMode"
@@ -540,18 +613,18 @@ export function CustomJobFormDialog({
         <Button onClick={onClose} sx={{ textTransform: 'none', fontWeight: 600, mr: 'auto' }}>
           Cancel
         </Button>
-        {activeStep === 1 && (
+        {activeStep > 0 && (
           <Button onClick={goBack} sx={{ textTransform: 'none', fontWeight: 600 }}>
             Back
           </Button>
         )}
-        {activeStep === 0 ? (
+        {!isLastStep ? (
           <Button onClick={goNext} variant="contained" disableElevation sx={nextButtonSx}>
             Next
           </Button>
         ) : (
           <SubmitButton loading={submitting} fullWidth={false} sx={{ px: 4 }}>
-            {job ? 'Save Changes' : 'Add & Mark Applied'}
+            {!alreadyApplied ? 'Save Job' : job ? 'Save Changes' : 'Add & Mark Applied'}
           </SubmitButton>
         )}
       </DialogActions>

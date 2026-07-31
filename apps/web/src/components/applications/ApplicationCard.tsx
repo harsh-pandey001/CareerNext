@@ -16,9 +16,15 @@ import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import TimelineRoundedIcon from '@mui/icons-material/TimelineRounded';
+import HourglassBottomRoundedIcon from '@mui/icons-material/HourglassBottomRounded';
 import { ConfirmDialog } from '@careernext/shared-ui';
 import type { ApplicationFieldsFragment, ApplicationStatus } from '@careernext/graphql-types';
-import { STATUS_LABELS, getValidNextStatuses } from './constants';
+import {
+  STATUS_LABELS,
+  getValidNextStatuses,
+  daysSinceApplied,
+  isLikelyNoResponse,
+} from './constants';
 import { PipelineStepper } from './PipelineStepper';
 
 interface ApplicationCardProps {
@@ -39,11 +45,19 @@ function getCompanyInitials(company: string) {
     .toUpperCase();
 }
 
-export function ApplicationCard({ application, pending, onMove, onRemove, onViewTimeline }: ApplicationCardProps) {
+export function ApplicationCard({
+  application,
+  pending,
+  onMove,
+  onRemove,
+  onViewTimeline,
+}: ApplicationCardProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { job } = application;
   const nextStatuses = getValidNextStatuses(application.status);
+  const noResponse = isLikelyNoResponse(application.status, application.appliedAt);
+  const daysApplied = daysSinceApplied(application.appliedAt);
 
   const handleOpenMenu = (event: MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleCloseMenu = () => setAnchorEl(null);
@@ -98,7 +112,12 @@ export function ApplicationCard({ application, pending, onMove, onRemove, onView
         {pending ? (
           <CircularProgress size={16} sx={{ mt: 0.5 }} />
         ) : (
-          <IconButton size="small" onClick={handleOpenMenu} aria-label="Application actions" sx={{ mt: -0.5 }}>
+          <IconButton
+            size="small"
+            onClick={handleOpenMenu}
+            aria-label="Application actions"
+            sx={{ mt: -0.5 }}
+          >
             <MoreHorizRoundedIcon fontSize="small" />
           </IconButton>
         )}
@@ -116,7 +135,10 @@ export function ApplicationCard({ application, pending, onMove, onRemove, onView
           {nextStatuses.length > 0 && (
             <>
               <Divider />
-              <Typography variant="caption" sx={{ px: 2, py: 0.5, color: 'text.secondary', display: 'block' }}>
+              <Typography
+                variant="caption"
+                sx={{ px: 2, py: 0.5, color: 'text.secondary', display: 'block' }}
+              >
                 Move to
               </Typography>
               {nextStatuses.map((status) => (
@@ -156,14 +178,28 @@ export function ApplicationCard({ application, pending, onMove, onRemove, onView
         />
       </Stack>
 
-      {job.location && (
-        <Chip
-          icon={<LocationOnRoundedIcon sx={{ fontSize: '14px !important' }} />}
-          label={job.location}
-          size="small"
-          variant="outlined"
-          sx={{ alignSelf: 'flex-start', fontSize: '0.7rem' }}
-        />
+      {(job.location || noResponse) && (
+        <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
+          {job.location && (
+            <Chip
+              icon={<LocationOnRoundedIcon sx={{ fontSize: '14px !important' }} />}
+              label={job.location}
+              size="small"
+              variant="outlined"
+              sx={{ fontSize: '0.7rem' }}
+            />
+          )}
+          {noResponse && (
+            <Chip
+              icon={<HourglassBottomRoundedIcon sx={{ fontSize: '14px !important' }} />}
+              label={`No response · ${daysApplied}d`}
+              size="small"
+              variant="outlined"
+              color="warning"
+              sx={{ fontSize: '0.7rem' }}
+            />
+          )}
+        </Stack>
       )}
 
       <PipelineStepper status={application.status} />

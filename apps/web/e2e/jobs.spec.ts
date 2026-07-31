@@ -14,9 +14,13 @@ test.describe('jobs → applications flow', () => {
     await page.getByRole('heading', { name: 'Curated Job Board' }).waitFor({ state: 'visible' });
 
     await page.getByRole('button', { name: 'Add Custom Job' }).click();
-    await page.getByText('Job Details').waitFor({ state: 'visible' });
+    await page.getByText('The Basics').waitFor({ state: 'visible' });
     await page.getByLabel('Company').fill('Acme Testing Co');
     await page.getByLabel('Job Title').fill('QA Automation Engineer');
+    await page.getByRole('button', { name: 'Next' }).click();
+
+    // Step 2 of 3 — More Details, all optional, skip straight through.
+    await page.getByText('More Details').waitFor({ state: 'visible' });
     await page.getByRole('button', { name: 'Next' }).click();
 
     await page.getByText('Application Materials').waitFor({ state: 'visible' });

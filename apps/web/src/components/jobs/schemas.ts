@@ -23,6 +23,8 @@ export const customJobSchema = z.object({
   applicationMode: z
     .union([z.literal(''), z.enum(['EMAIL', 'JOB_PORTAL', 'GOOGLE_FORM', 'COMPANY_SITE'])])
     .optional(),
+  alreadyApplied: z.boolean(),
+  resumeVersionId: z.string().optional(),
 });
 
 export type CustomJobFormValues = z.infer<typeof customJobSchema>;

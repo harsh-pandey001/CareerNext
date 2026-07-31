@@ -23,6 +23,7 @@ export type ApplicationStatus =
   | 'SAVED';
 
 export type CustomJobInput = {
+  alreadyApplied?: boolean | null | undefined;
   applicationMode?: ApplicationMode | null | undefined;
   company: string;
   contactEmail?: string | null | undefined;
@@ -33,6 +34,7 @@ export type CustomJobInput = {
   location?: string | null | undefined;
   pitchEmail?: string | null | undefined;
   postedAt?: string | null | undefined;
+  resumeVersionId?: string | null | undefined;
   skills?: Array<string> | null | undefined;
   title: string;
   type?: JobType | null | undefined;
@@ -120,6 +122,7 @@ export type LoginInput = {
 };
 
 export type NotificationType =
+  | 'APPLICATION_NO_RESPONSE'
   | 'APPLICATION_STATUS_CHANGED'
   | 'INTERVIEW_REMINDER';
 
@@ -179,7 +182,7 @@ export type ApplicationsAnalyticsQueryVariables = Exact<{
 
 export type ApplicationsAnalyticsQuery = { applicationsAnalytics: { funnel: Array<{ status: ApplicationStatus, count: number }>, trend: Array<{ period: string, count: number }>, successRates: { totalApplications: number, totalOffers: number, totalAccepted: number, totalRejected: number, offerRate: number, acceptanceRate: number }, interviewsByRound: Array<{ round: InterviewRound, count: number }> } };
 
-export type ApplicationFieldsFragment = { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type ApplicationFieldsFragment = { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, applicationMode: ApplicationMode | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } };
 
 export type UpdateApplicationStatusMutationVariables = Exact<{
   applicationId: string | number;
@@ -187,7 +190,7 @@ export type UpdateApplicationStatusMutationVariables = Exact<{
 }>;
 
 
-export type UpdateApplicationStatusMutation = { updateApplicationStatus: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } } };
+export type UpdateApplicationStatusMutation = { updateApplicationStatus: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, applicationMode: ApplicationMode | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } } };
 
 export type RemoveApplicationMutationVariables = Exact<{
   applicationId: string | number;
@@ -199,7 +202,7 @@ export type RemoveApplicationMutation = { removeApplication: boolean };
 export type MyApplicationsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MyApplicationsQuery = { myApplications: Array<{ id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } }> };
+export type MyApplicationsQuery = { myApplications: Array<{ id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, applicationMode: ApplicationMode | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } }> };
 
 export type ApplicationStatusHistoryQueryVariables = Exact<{
   applicationId: string | number;
@@ -286,7 +289,7 @@ export type DocumentQueryVariables = Exact<{
 
 export type DocumentQuery = { document: { fileUrl: string, id: string, type: DocumentType, fileName: string, fileSize: number, mimeType: string, createdAt: string } };
 
-export type InterviewFieldsFragment = { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } } };
+export type InterviewFieldsFragment = { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, applicationMode: ApplicationMode | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } } };
 
 export type ScheduleInterviewMutationVariables = Exact<{
   applicationId: string | number;
@@ -294,7 +297,7 @@ export type ScheduleInterviewMutationVariables = Exact<{
 }>;
 
 
-export type ScheduleInterviewMutation = { scheduleInterview: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
+export type ScheduleInterviewMutation = { scheduleInterview: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, applicationMode: ApplicationMode | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } } } };
 
 export type UpdateInterviewMutationVariables = Exact<{
   interviewId: string | number;
@@ -302,7 +305,7 @@ export type UpdateInterviewMutationVariables = Exact<{
 }>;
 
 
-export type UpdateInterviewMutation = { updateInterview: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
+export type UpdateInterviewMutation = { updateInterview: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, applicationMode: ApplicationMode | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } } } };
 
 export type SetInterviewOutcomeMutationVariables = Exact<{
   interviewId: string | number;
@@ -310,7 +313,7 @@ export type SetInterviewOutcomeMutationVariables = Exact<{
 }>;
 
 
-export type SetInterviewOutcomeMutation = { setInterviewOutcome: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } } } };
+export type SetInterviewOutcomeMutation = { setInterviewOutcome: { id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, applicationMode: ApplicationMode | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } } } };
 
 export type DeleteInterviewMutationVariables = Exact<{
   interviewId: string | number;
@@ -322,44 +325,44 @@ export type DeleteInterviewMutation = { deleteInterview: boolean };
 export type MyInterviewsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MyInterviewsQuery = { myInterviews: Array<{ id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } } }> };
+export type MyInterviewsQuery = { myInterviews: Array<{ id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, applicationMode: ApplicationMode | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } } }> };
 
 export type UpcomingInterviewsQueryVariables = Exact<{
   limit?: number | null | undefined;
 }>;
 
 
-export type UpcomingInterviewsQuery = { upcomingInterviews: Array<{ id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } } }> };
+export type UpcomingInterviewsQuery = { upcomingInterviews: Array<{ id: string, round: InterviewRound, scheduledAt: string | null, outcome: InterviewOutcome, notes: string | null, createdAt: string, application: { id: string, status: ApplicationStatus, notes: string | null, appliedAt: string | null, applicationMode: ApplicationMode | null, createdAt: string, updatedAt: string, job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } } }> };
 
-export type JobFieldsFragment = { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string };
+export type JobFieldsFragment = { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null };
 
 export type SaveJobMutationVariables = Exact<{
   jobId: string | number;
 }>;
 
 
-export type SaveJobMutation = { saveJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type SaveJobMutation = { saveJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } };
 
 export type UnsaveJobMutationVariables = Exact<{
   jobId: string | number;
 }>;
 
 
-export type UnsaveJobMutation = { unsaveJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type UnsaveJobMutation = { unsaveJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } };
 
 export type ApplyToJobMutationVariables = Exact<{
   jobId: string | number;
 }>;
 
 
-export type ApplyToJobMutation = { applyToJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type ApplyToJobMutation = { applyToJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } };
 
 export type AddCustomJobMutationVariables = Exact<{
   input: CustomJobInput;
 }>;
 
 
-export type AddCustomJobMutation = { addCustomJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type AddCustomJobMutation = { addCustomJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } };
 
 export type UpdateCustomJobMutationVariables = Exact<{
   jobId: string | number;
@@ -367,7 +370,7 @@ export type UpdateCustomJobMutationVariables = Exact<{
 }>;
 
 
-export type UpdateCustomJobMutation = { updateCustomJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type UpdateCustomJobMutation = { updateCustomJob: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } };
 
 export type JobsQueryVariables = Exact<{
   filter?: JobFilterInput | null | undefined;
@@ -375,26 +378,26 @@ export type JobsQueryVariables = Exact<{
 }>;
 
 
-export type JobsQuery = { jobs: { total: number, page: number, pageSize: number, totalPages: number, items: Array<{ id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string }> } };
+export type JobsQuery = { jobs: { total: number, page: number, pageSize: number, totalPages: number, items: Array<{ id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null }> } };
 
 export type JobQueryVariables = Exact<{
   id: string | number;
 }>;
 
 
-export type JobQuery = { job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type JobQuery = { job: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } };
 
 export type MyCustomJobsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MyCustomJobsQuery = { myCustomJobs: Array<{ id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string }> };
+export type MyCustomJobsQuery = { myCustomJobs: Array<{ id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null }> };
 
 export type CustomJobDetailQueryVariables = Exact<{
   jobId: string | number;
 }>;
 
 
-export type CustomJobDetailQuery = { customJobDetail: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string } };
+export type CustomJobDetailQuery = { customJobDetail: { id: string, title: string, company: string, location: string | null, description: string, type: JobType, workMode: WorkMode, salaryMin: number | null, salaryMax: number | null, externalUrl: string | null, skills: Array<string>, experienceRequired: string | null, contactEmail: string | null, postedAt: string | null, coverLetter: string | null, pitchEmail: string | null, applicationMode: ApplicationMode | null, applicationStatus: ApplicationStatus | null, createdAt: string, resumeVersion: { id: string, version: number, document: { id: string, fileName: string } } | null } };
 
 export type NotificationFieldsFragment = { id: string, type: NotificationType, title: string, message: string, link: string | null, readAt: string | null, createdAt: string };
 
@@ -642,6 +645,14 @@ export const JobFieldsFragmentDoc = gql`
   pitchEmail
   applicationMode
   applicationStatus
+  resumeVersion {
+    id
+    version
+    document {
+      id
+      fileName
+    }
+  }
   createdAt
 }
     `;
@@ -651,6 +662,7 @@ export const ApplicationFieldsFragmentDoc = gql`
   status
   notes
   appliedAt
+  applicationMode
   createdAt
   updatedAt
   job {

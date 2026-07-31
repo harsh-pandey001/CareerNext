@@ -20,6 +20,14 @@ export const JOB_FIELDS = gql`
     pitchEmail
     applicationMode
     applicationStatus
+    resumeVersion {
+      id
+      version
+      document {
+        id
+        fileName
+      }
+    }
     createdAt
   }
 `;
