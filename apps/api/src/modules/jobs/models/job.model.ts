@@ -50,9 +50,9 @@ export class JobModel {
   @Field({ nullable: true })
   contactEmail?: string;
 
-  /** Free text, manually entered — e.g. "Today", "2 days ago", "3 weeks ago". */
+  /** The actual date the job was posted — the frontend renders it as a live relative label. */
   @Field({ nullable: true })
-  postedAt?: string;
+  postedAt?: Date;
 
   /** Null when the current user has never saved/applied to this job. */
   @Field(() => ApplicationStatus, { nullable: true })

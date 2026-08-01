@@ -27,7 +27,7 @@ export interface Job extends BaseEntity {
   /** Set only on a user's own custom (externally-sourced) job entries. */
   experienceRequired?: string;
   contactEmail?: string;
-  /** Free text, e.g. "Today", "2 days ago", "3 weeks ago" — manually entered. */
+  /** ISO date the job was posted; rendered as a live relative label ("2 days ago"). */
   postedAt?: string;
 }
 

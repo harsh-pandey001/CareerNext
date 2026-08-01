@@ -12,16 +12,7 @@ import type { InterviewFieldsFragment } from '@careernext/graphql-types';
 import { SectionCard } from './SectionCard';
 import { ROUTES } from '@/constants';
 import { ROUND_LABELS } from '@/components/interviews/constants';
-
-function getCompanyInitials(company: string) {
-  return company
-    .split(' ')
-    .filter(Boolean)
-    .map((word) => word[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-}
+import { getCompanyInitials } from '@/components/jobs/constants';
 
 interface UpcomingInterviewsProps {
   interviews: InterviewFieldsFragment[];
@@ -75,13 +66,25 @@ export function UpcomingInterviews({ interviews }: UpcomingInterviewsProps) {
                     icon={<EventNoteRoundedIcon sx={{ fontSize: '14px !important' }} />}
                     label={formatDateTime(interview.scheduledAt)}
                     size="small"
-                    sx={{ height: 20, fontSize: '0.65rem', fontWeight: 600, alignSelf: 'flex-start', bgcolor: 'action.hover' }}
+                    sx={{
+                      height: 20,
+                      fontSize: '0.65rem',
+                      fontWeight: 600,
+                      alignSelf: 'flex-start',
+                      bgcolor: 'action.hover',
+                    }}
                   />
                 ) : (
                   <Chip
                     label="Not scheduled yet"
                     size="small"
-                    sx={{ height: 20, fontSize: '0.65rem', fontWeight: 600, alignSelf: 'flex-start', bgcolor: 'action.hover' }}
+                    sx={{
+                      height: 20,
+                      fontSize: '0.65rem',
+                      fontWeight: 600,
+                      alignSelf: 'flex-start',
+                      bgcolor: 'action.hover',
+                    }}
                   />
                 )}
               </Stack>

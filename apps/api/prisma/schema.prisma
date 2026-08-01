@@ -257,8 +257,10 @@ model Job {
   createdById        String?
   experienceRequired String?
   contactEmail       String?
-  // Free text, manually entered — e.g. "Today", "2 days ago", "3 weeks ago".
-  postedAt           String?
+  // The actual date the job was posted (user picks it, or a "N days ago"
+  // preset). Stored absolute so the UI can render it as a live relative
+  // label ("2 days ago") that stays current as time passes.
+  postedAt           DateTime?
 
   createdBy    User?         @relation(fields: [createdById], references: [id], onDelete: Cascade)
   applications Application[]

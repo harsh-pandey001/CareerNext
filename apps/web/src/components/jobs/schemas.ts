@@ -14,7 +14,7 @@ export const customJobSchema = z.object({
   contactEmail: z
     .union([z.literal(''), z.string().trim().email('Enter a valid email address')])
     .optional(),
-  postedAt: z.string().trim().max(50, 'Keep it under 50 characters').optional(),
+  postedAt: z.string().optional(),
   skills: z.array(z.string()),
   externalUrl: z.union([z.literal(''), z.string().trim().url('Enter a valid URL')]).optional(),
   description: z.string().trim().max(4000, 'Keep it under 4000 characters').optional(),

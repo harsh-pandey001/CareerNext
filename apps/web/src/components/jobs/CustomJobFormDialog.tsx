@@ -11,8 +11,6 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import Switch from '@mui/material/Switch';
 import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
-import IconButton from '@mui/material/IconButton';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
@@ -34,9 +32,9 @@ import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import LinkRoundedIcon from '@mui/icons-material/LinkRounded';
-import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
+import { formatRelativeDate } from '@careernext/utils';
 import type { CustomJobInput, JobFieldsFragment } from '@careernext/graphql-types';
 import { FormTextField } from '@/components/auth/fields/FormTextField';
 import { SubmitButton } from '@/components/auth/SubmitButton';
@@ -45,10 +43,35 @@ import { customJobSchema, type CustomJobFormValues } from './schemas';
 import {
   APPLICATION_MODE_FILTER_OPTIONS,
   JOB_TYPE_FILTER_OPTIONS,
-  POSTED_AT_QUICK_OPTIONS,
+  POSTED_AT_PRESETS,
   WORK_MODE_FILTER_OPTIONS,
 } from './constants';
 import { DialogGradientHeader } from './DialogGradientHeader';
+
+/** Local yyyy-mm-dd for a date N days before today — the native date input's value format. */
+function dateInputFromDaysAgo(daysAgo: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+/** yyyy-mm-dd -> a local-noon ISO instant. Noon keeps the calendar day stable across timezones. */
+function dateInputToIso(value: string): string {
+  const [y, m, d] = value.split('-');
+  return new Date(Number(y), Number(m) - 1, Number(d), 12, 0, 0).toISOString();
+}
+
+/** Stored ISO instant -> the native date input's local yyyy-mm-dd value. */
+function isoToDateInput(iso: string): string {
+  const d = new Date(iso);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+const TODAY_INPUT_VALUE = dateInputFromDaysAgo(0);
 
 interface CustomJobFormDialogProps {
   open: boolean;
@@ -158,7 +181,6 @@ export function CustomJobFormDialog({
   error,
 }: CustomJobFormDialogProps) {
   const [activeStep, setActiveStep] = useState(0);
-  const [postedAtAnchor, setPostedAtAnchor] = useState<HTMLElement | null>(null);
   const { versions: resumeVersions } = useResumeVersions();
   const {
     register,
@@ -166,7 +188,6 @@ export function CustomJobFormDialog({
     handleSubmit,
     trigger,
     reset,
-    setValue,
     watch,
     formState: { errors },
   } = useForm<CustomJobFormValues>({
@@ -194,7 +215,7 @@ export function CustomJobFormDialog({
             location: job.location ?? '',
             experienceRequired: job.experienceRequired ?? '',
             contactEmail: job.contactEmail ?? '',
-            postedAt: job.postedAt ?? '',
+            postedAt: job.postedAt ? isoToDateInput(job.postedAt) : '',
             skills: job.skills,
             externalUrl: job.externalUrl ?? '',
             description: job.description ?? '',
@@ -226,7 +247,7 @@ export function CustomJobFormDialog({
       location: data.location || undefined,
       experienceRequired: data.experienceRequired || undefined,
       contactEmail: data.contactEmail || undefined,
-      postedAt: data.postedAt || undefined,
+      postedAt: data.postedAt ? dateInputToIso(data.postedAt) : undefined,
       skills: data.skills,
       externalUrl: data.externalUrl || undefined,
       description: data.description || undefined,
@@ -402,45 +423,49 @@ export function CustomJobFormDialog({
                 slotProps={{ input: { startAdornment: startIcon(LocationOnRoundedIcon) } }}
               />
 
-              <FormTextField
-                label="Job Posted"
-                placeholder="e.g. Today, 2 days ago, 3 weeks ago"
-                registration={register('postedAt')}
-                error={errors.postedAt?.message}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <IconButton
-                          size="small"
-                          aria-label="Quick-select when this was posted"
-                          onClick={(event) => setPostedAtAnchor(event.currentTarget)}
-                          sx={{ ml: -1 }}
-                        >
-                          <AccessTimeRoundedIcon fontSize="small" sx={{ color: 'text.disabled' }} />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
+              <Controller
+                name="postedAt"
+                control={control}
+                render={({ field }) => (
+                  <Stack spacing={1}>
+                    <TextField
+                      {...field}
+                      type="date"
+                      fullWidth
+                      label="Job Posted"
+                      error={!!errors.postedAt}
+                      helperText={
+                        errors.postedAt?.message ??
+                        (field.value
+                          ? `Shows on the card as “${formatRelativeDate(dateInputToIso(field.value))}” — kept current automatically`
+                          : 'When was it posted? The card keeps this up to date on its own')
+                      }
+                      slotProps={{
+                        htmlInput: { max: TODAY_INPUT_VALUE },
+                        inputLabel: { shrink: true },
+                      }}
+                    />
+                    <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
+                      {POSTED_AT_PRESETS.map((preset) => {
+                        const presetValue = dateInputFromDaysAgo(preset.daysAgo);
+                        return (
+                          <Chip
+                            key={preset.label}
+                            label={preset.label}
+                            size="small"
+                            variant={field.value === presetValue ? 'filled' : 'outlined'}
+                            color={field.value === presetValue ? 'primary' : 'default'}
+                            onClick={() =>
+                              field.onChange(field.value === presetValue ? '' : presetValue)
+                            }
+                            sx={{ cursor: 'pointer', fontWeight: 600 }}
+                          />
+                        );
+                      })}
+                    </Stack>
+                  </Stack>
+                )}
               />
-              <Menu
-                anchorEl={postedAtAnchor}
-                open={!!postedAtAnchor}
-                onClose={() => setPostedAtAnchor(null)}
-              >
-                {POSTED_AT_QUICK_OPTIONS.map((option) => (
-                  <MenuItem
-                    key={option}
-                    onClick={() => {
-                      setValue('postedAt', option, { shouldDirty: true, shouldValidate: true });
-                      setPostedAtAnchor(null);
-                    }}
-                  >
-                    {option}
-                  </MenuItem>
-                ))}
-              </Menu>
             </Stack>
           )}
 

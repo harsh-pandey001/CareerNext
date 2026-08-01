@@ -152,7 +152,15 @@ export function CustomJobsSection() {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' },
+            // `minmax(0, 1fr)` (not a bare `1fr`, which is `minmax(auto, 1fr)`):
+            // without the 0 floor, a card containing long unbreakable content
+            // can grow past its share and make columns unequal widths. The 0
+            // floor forces every column to the same width regardless of content.
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, minmax(0, 1fr))',
+              lg: 'repeat(3, minmax(0, 1fr))',
+            },
             gap: 2.5,
           }}
         >

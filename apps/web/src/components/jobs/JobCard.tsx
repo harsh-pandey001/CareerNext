@@ -13,6 +13,8 @@ import BookmarkBorderRoundedIcon from '@mui/icons-material/BookmarkBorderRounded
 import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import { formatRelativeDate } from '@careernext/utils';
 import type { JobFieldsFragment } from '@careernext/graphql-types';
 import {
   JOB_TYPE_LABELS,
@@ -60,6 +62,14 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: Jo
         flexDirection: 'column',
         gap: 1.75,
         height: '100%',
+        // A grid row only stretches cards to match its OWN tallest card — two
+        // cards with very different content (e.g. one with skills chips, one
+        // without) can still end up in different rows with different row
+        // heights, so the grid reads uneven from row to row. A shared floor
+        // height keeps every card the same size regardless of which row it
+        // lands in; the flex spacer below still pushes the Apply button to
+        // the bottom the same way it always did.
+        minHeight: 328,
         cursor: onClick ? 'pointer' : undefined,
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {
@@ -136,6 +146,14 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: Jo
         )}
         {job.experienceRequired && (
           <Chip label={job.experienceRequired} size="small" variant="outlined" />
+        )}
+        {job.postedAt && (
+          <Chip
+            icon={<AccessTimeRoundedIcon sx={{ fontSize: '15px !important' }} />}
+            label={`Posted ${formatRelativeDate(job.postedAt).toLowerCase()}`}
+            size="small"
+            variant="outlined"
+          />
         )}
       </Stack>
 

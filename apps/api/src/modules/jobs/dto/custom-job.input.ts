@@ -2,6 +2,7 @@ import { Field, InputType } from '@nestjs/graphql';
 import {
   IsArray,
   IsBoolean,
+  IsDateString,
   IsEmail,
   IsEnum,
   IsOptional,
@@ -50,10 +51,10 @@ export class CustomJobInput {
   @IsEmail()
   contactEmail?: string;
 
+  /** ISO date string (the job's actual posting date); the service stores it as a real date. */
   @Field({ nullable: true })
   @IsOptional()
-  @IsString()
-  @MaxLength(50)
+  @IsDateString()
   postedAt?: string;
 
   @Field(() => [String], { nullable: true })

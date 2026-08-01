@@ -20,16 +20,17 @@ export const APPLICATION_MODE_LABELS: Record<ApplicationMode, string> = {
   COMPANY_SITE: 'Company Website',
 };
 
-// Common relative-time presets for the "Job Posted" quick-select menu.
-export const POSTED_AT_QUICK_OPTIONS = [
-  'Today',
-  'Yesterday',
-  '2 hours ago',
-  '2 days ago',
-  '1 week ago',
-  '2 weeks ago',
-  '3 weeks ago',
-  '1 month ago',
+// Quick-fill presets for the "Job Posted" date field — each maps to a
+// concrete number of days back from today, so the stored value is a real
+// date the UI can keep rendering as a live relative label.
+export const POSTED_AT_PRESETS: { label: string; daysAgo: number }[] = [
+  { label: 'Today', daysAgo: 0 },
+  { label: 'Yesterday', daysAgo: 1 },
+  { label: '2 days ago', daysAgo: 2 },
+  { label: '3 days ago', daysAgo: 3 },
+  { label: '1 week ago', daysAgo: 7 },
+  { label: '2 weeks ago', daysAgo: 14 },
+  { label: '1 month ago', daysAgo: 30 },
 ];
 
 export const JOB_TYPE_FILTER_OPTIONS = Object.entries(JOB_TYPE_LABELS) as [JobType, string][];
@@ -51,12 +52,19 @@ export function formatSalaryRange(min?: number | null, max?: number | null): str
   return null;
 }
 
+/**
+ * NFKC first: stylized Unicode letters (e.g. Mathematical Bold "𝐈𝐦𝐩𝐥𝐢𝐞𝐬") fold
+ * back to their plain-ASCII form, and it neutralizes most surrogate-pair
+ * characters (emoji, etc.) before we ever index into the string. Words are
+ * sliced from the *array* (not string-sliced after joining) so an initial
+ * that's still a multi-code-unit character (`Array.from(word)[0]`) can never
+ * get its surrogate pair split in half — that's what rendered as "??".
+ */
 export function getCompanyInitials(company: string): string {
-  return company
-    .split(' ')
-    .filter(Boolean)
-    .map((word) => word[0])
-    .join('')
+  const words = company.normalize('NFKC').split(' ').filter(Boolean);
+  return words
     .slice(0, 2)
+    .map((word) => Array.from(word)[0] ?? '')
+    .join('')
     .toUpperCase();
 }

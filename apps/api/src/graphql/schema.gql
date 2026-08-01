@@ -202,7 +202,7 @@ type Job {
   id: ID!
   location: String
   pitchEmail: String
-  postedAt: String
+  postedAt: DateTime
   resumeVersion: ResumeVersion
   salaryMax: Int
   salaryMin: Int

@@ -107,7 +107,7 @@ export class JobsService {
         skills: input.skills ?? [],
         experienceRequired: input.experienceRequired,
         contactEmail: input.contactEmail,
-        postedAt: input.postedAt,
+        postedAt: input.postedAt ? new Date(input.postedAt) : undefined,
         createdById: userId,
       },
     });
@@ -175,7 +175,7 @@ export class JobsService {
         skills: input.skills ?? [],
         experienceRequired: input.experienceRequired,
         contactEmail: input.contactEmail,
-        postedAt: input.postedAt,
+        postedAt: input.postedAt ? new Date(input.postedAt) : null,
       },
     });
     if (input.alreadyApplied ?? true) {

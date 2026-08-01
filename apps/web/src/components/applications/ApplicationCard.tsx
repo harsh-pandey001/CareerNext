@@ -26,6 +26,7 @@ import {
   isLikelyNoResponse,
 } from './constants';
 import { PipelineStepper } from './PipelineStepper';
+import { getCompanyInitials } from '@/components/jobs/constants';
 
 interface ApplicationCardProps {
   application: ApplicationFieldsFragment;
@@ -33,16 +34,6 @@ interface ApplicationCardProps {
   onMove: (applicationId: string, status: ApplicationStatus) => void;
   onRemove: (applicationId: string) => void;
   onViewTimeline: (applicationId: string) => void;
-}
-
-function getCompanyInitials(company: string) {
-  return company
-    .split(' ')
-    .filter(Boolean)
-    .map((word) => word[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
 }
 
 export function ApplicationCard({

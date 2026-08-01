@@ -31,3 +31,37 @@ export function formatRelativeTime(iso: string, locale = 'en-US'): string {
   if (diffDays < 7) return `${diffDays}d ago`;
   return formatDate(iso, locale);
 }
+
+/** Local midnight timestamp — lets us diff by calendar day, immune to time-of-day/timezone drift. */
+function startOfLocalDay(date: Date): number {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+}
+
+/**
+ * Long-form, calendar-day relative label for a stored date — e.g. "Today",
+ * "Yesterday", "3 days ago", "2 weeks ago", "1 month ago". Recomputed from
+ * the CURRENT clock on every render, so a job stored as "1 day ago" today
+ * reads "2 days ago" tomorrow. Day-based (not hour-based) and compared in
+ * local calendar days, so it never shows a jarring "5 hours ago" for
+ * something the user logged as posted today, and never drifts by a day
+ * across timezones. Future dates fall back to a plain formatted date.
+ */
+export function formatRelativeDate(iso: string, locale = 'en-US'): string {
+  const dayDiff = Math.round(
+    (startOfLocalDay(new Date()) - startOfLocalDay(new Date(iso))) / 86_400_000,
+  );
+  if (dayDiff < 0) return formatDate(iso, locale);
+  if (dayDiff === 0) return 'Today';
+  if (dayDiff === 1) return 'Yesterday';
+  if (dayDiff < 7) return `${dayDiff} days ago`;
+  if (dayDiff < 30) {
+    const weeks = Math.floor(dayDiff / 7);
+    return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+  }
+  if (dayDiff < 365) {
+    const months = Math.floor(dayDiff / 30);
+    return months === 1 ? '1 month ago' : `${months} months ago`;
+  }
+  const years = Math.floor(dayDiff / 365);
+  return years === 1 ? '1 year ago' : `${years} years ago`;
+}

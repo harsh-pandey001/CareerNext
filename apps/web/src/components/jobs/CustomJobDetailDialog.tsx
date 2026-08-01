@@ -23,6 +23,7 @@ import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import { formatRelativeDate } from '@careernext/utils';
 import type { JobFieldsFragment } from '@careernext/graphql-types';
 import {
   APPLICATION_MODE_LABELS,
@@ -161,7 +162,7 @@ export function CustomJobDetailDialog({
               {job.postedAt && (
                 <Chip
                   icon={<AccessTimeRoundedIcon sx={{ fontSize: '16px !important' }} />}
-                  label={`Posted ${job.postedAt}`}
+                  label={`Posted ${formatRelativeDate(job.postedAt).toLowerCase()}`}
                   size="small"
                   variant="outlined"
                 />
@@ -196,10 +197,24 @@ export function CustomJobDetailDialog({
                   href={job.externalUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontWeight: 600 }}
+                  title={job.externalUrl}
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    fontWeight: 600,
+                    maxWidth: '100%',
+                  }}
                 >
-                  {job.externalUrl}
-                  <OpenInNewRoundedIcon sx={{ fontSize: 14 }} />
+                  {/* Truncate a long URL to one ellipsised line so it can't force the
+                      dialog to scroll horizontally — the full link still opens in a new tab. */}
+                  <Box
+                    component="span"
+                    sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  >
+                    {job.externalUrl}
+                  </Box>
+                  <OpenInNewRoundedIcon sx={{ fontSize: 14, flexShrink: 0 }} />
                 </Link>
               </DetailBlock>
             )}
@@ -209,7 +224,11 @@ export function CustomJobDetailDialog({
                 label="Job Description"
                 icon={<DescriptionRoundedIcon sx={labelIconSx} />}
               >
-                <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
+                >
                   {job.description}
                 </Typography>
               </DetailBlock>
@@ -242,7 +261,11 @@ export function CustomJobDetailDialog({
 
             <DetailBlock label="Cover Letter">
               {job.coverLetter ? (
-                <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
+                >
                   {job.coverLetter}
                 </Typography>
               ) : (
@@ -254,7 +277,11 @@ export function CustomJobDetailDialog({
 
             <DetailBlock label="Pitch Email">
               {job.pitchEmail ? (
-                <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
+                >
                   {job.pitchEmail}
                 </Typography>
               ) : (
