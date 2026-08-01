@@ -15,4 +15,5 @@ export * from './job';
 export * from './application';
 export * from './interview';
 export * from './document';
+export * from './resume';
 export * from './notification';

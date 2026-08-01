@@ -537,6 +537,8 @@ export type MyProfileQuery = { myProfile: { id: string, headline: string | null,
 
 export type ResumeVersionFieldsFragment = { id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string } };
 
+export type ResumeDraftFieldsFragment = { id: string, title: string, template: string, createdAt: string, updatedAt: string };
+
 export type ResumeVersionWithContentFieldsFragment = { id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string, fileUrl: string } };
 
 export type UploadResumeMutationVariables = Exact<{
@@ -562,6 +564,13 @@ export type DeleteResumeVersionMutationVariables = Exact<{
 
 export type DeleteResumeVersionMutation = { deleteResumeVersion: boolean };
 
+export type DeleteResumeDraftMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type DeleteResumeDraftMutation = { deleteResumeDraft: boolean };
+
 export type MyResumeVersionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -573,6 +582,11 @@ export type ResumeVersionQueryVariables = Exact<{
 
 
 export type ResumeVersionQuery = { resumeVersion: { id: string, version: number, isActive: boolean, createdAt: string, document: { id: string, fileName: string, fileSize: number, mimeType: string, fileUrl: string } } };
+
+export type MyResumeDraftsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyResumeDraftsQuery = { myResumeDrafts: Array<{ id: string, title: string, template: string, createdAt: string, updatedAt: string }> };
 
 export const ApplicationsAnalyticsFieldsFragmentDoc = gql`
     fragment ApplicationsAnalyticsFields on ApplicationsAnalytics {
@@ -759,6 +773,15 @@ export const ProfileFieldsFragmentDoc = gql`
 ${ExperienceFieldsFragmentDoc}
 ${LanguageFieldsFragmentDoc}
 ${SkillFieldsFragmentDoc}`;
+export const ResumeDraftFieldsFragmentDoc = gql`
+    fragment ResumeDraftFields on ResumeDraft {
+  id
+  title
+  template
+  createdAt
+  updatedAt
+}
+    `;
 export const ResumeVersionFieldsFragmentDoc = gql`
     fragment ResumeVersionFields on ResumeVersion {
   id
@@ -2653,6 +2676,37 @@ export function useDeleteResumeVersionMutation(baseOptions?: Apollo.MutationHook
 export type DeleteResumeVersionMutationHookResult = ReturnType<typeof useDeleteResumeVersionMutation>;
 export type DeleteResumeVersionMutationResult = Apollo.MutationResult<DeleteResumeVersionMutation>;
 export type DeleteResumeVersionMutationOptions = Apollo.BaseMutationOptions<DeleteResumeVersionMutation, DeleteResumeVersionMutationVariables>;
+export const DeleteResumeDraftDocument = gql`
+    mutation DeleteResumeDraft($id: ID!) {
+  deleteResumeDraft(id: $id)
+}
+    `;
+export type DeleteResumeDraftMutationFn = Apollo.MutationFunction<DeleteResumeDraftMutation, DeleteResumeDraftMutationVariables>;
+
+/**
+ * __useDeleteResumeDraftMutation__
+ *
+ * To run a mutation, you first call `useDeleteResumeDraftMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteResumeDraftMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteResumeDraftMutation, { data, loading, error }] = useDeleteResumeDraftMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteResumeDraftMutation(baseOptions?: Apollo.MutationHookOptions<DeleteResumeDraftMutation, DeleteResumeDraftMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteResumeDraftMutation, DeleteResumeDraftMutationVariables>(DeleteResumeDraftDocument, options);
+      }
+export type DeleteResumeDraftMutationHookResult = ReturnType<typeof useDeleteResumeDraftMutation>;
+export type DeleteResumeDraftMutationResult = Apollo.MutationResult<DeleteResumeDraftMutation>;
+export type DeleteResumeDraftMutationOptions = Apollo.BaseMutationOptions<DeleteResumeDraftMutation, DeleteResumeDraftMutationVariables>;
 export const MyResumeVersionsDocument = gql`
     query MyResumeVersions {
   myResumeVersions {
@@ -2738,3 +2792,45 @@ export type ResumeVersionQueryHookResult = ReturnType<typeof useResumeVersionQue
 export type ResumeVersionLazyQueryHookResult = ReturnType<typeof useResumeVersionLazyQuery>;
 export type ResumeVersionSuspenseQueryHookResult = ReturnType<typeof useResumeVersionSuspenseQuery>;
 export type ResumeVersionQueryResult = Apollo.QueryResult<ResumeVersionQuery, ResumeVersionQueryVariables>;
+export const MyResumeDraftsDocument = gql`
+    query MyResumeDrafts {
+  myResumeDrafts {
+    ...ResumeDraftFields
+  }
+}
+    ${ResumeDraftFieldsFragmentDoc}`;
+
+/**
+ * __useMyResumeDraftsQuery__
+ *
+ * To run a query within a React component, call `useMyResumeDraftsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyResumeDraftsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyResumeDraftsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyResumeDraftsQuery(baseOptions?: Apollo.QueryHookOptions<MyResumeDraftsQuery, MyResumeDraftsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyResumeDraftsQuery, MyResumeDraftsQueryVariables>(MyResumeDraftsDocument, options);
+      }
+export function useMyResumeDraftsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyResumeDraftsQuery, MyResumeDraftsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyResumeDraftsQuery, MyResumeDraftsQueryVariables>(MyResumeDraftsDocument, options);
+        }
+// @ts-ignore
+export function useMyResumeDraftsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MyResumeDraftsQuery, MyResumeDraftsQueryVariables>): Apollo.UseSuspenseQueryResult<MyResumeDraftsQuery, MyResumeDraftsQueryVariables>;
+export function useMyResumeDraftsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyResumeDraftsQuery, MyResumeDraftsQueryVariables>): Apollo.UseSuspenseQueryResult<MyResumeDraftsQuery | undefined, MyResumeDraftsQueryVariables>;
+export function useMyResumeDraftsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyResumeDraftsQuery, MyResumeDraftsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyResumeDraftsQuery, MyResumeDraftsQueryVariables>(MyResumeDraftsDocument, options);
+        }
+export type MyResumeDraftsQueryHookResult = ReturnType<typeof useMyResumeDraftsQuery>;
+export type MyResumeDraftsLazyQueryHookResult = ReturnType<typeof useMyResumeDraftsLazyQuery>;
+export type MyResumeDraftsSuspenseQueryHookResult = ReturnType<typeof useMyResumeDraftsSuspenseQuery>;
+export type MyResumeDraftsQueryResult = Apollo.QueryResult<MyResumeDraftsQuery, MyResumeDraftsQueryVariables>;

@@ -24,3 +24,9 @@ export const DELETE_RESUME_VERSION_MUTATION = gql`
     deleteResumeVersion(resumeVersionId: $resumeVersionId)
   }
 `;
+
+export const DELETE_RESUME_DRAFT_MUTATION = gql`
+  mutation DeleteResumeDraft($id: ID!) {
+    deleteResumeDraft(id: $id)
+  }
+`;

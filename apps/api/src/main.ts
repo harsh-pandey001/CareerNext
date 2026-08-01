@@ -26,8 +26,15 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
+  // WEB_ORIGIN is a comma-separated allow-list: the Next.js web app plus
+  // trusted sibling frontends (e.g. the Resume Builder) that authenticate
+  // with the same refresh cookie.
+  const allowedOrigins = (config.get<string>('webOrigin') ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
   app.enableCors({
-    origin: config.get<string>('webOrigin'),
+    origin: allowedOrigins,
     credentials: true,
   });
 

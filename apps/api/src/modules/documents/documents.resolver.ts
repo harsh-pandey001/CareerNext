@@ -5,7 +5,9 @@ import { DocumentType } from '@careernext/shared-types';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { DocumentsService } from './documents.service';
+import { CreateResumeDraftInput, UpdateResumeDraftInput } from './dto/resume-draft.input';
 import { DocumentModel, toDocumentModel } from './models/document.model';
+import { ResumeDraftModel, toResumeDraftModel } from './models/resume-draft.model';
 import { ResumeVersionModel, toResumeVersionModel } from './models/resume-version.model';
 
 @Resolver(() => DocumentModel)
@@ -54,6 +56,48 @@ export class DocumentsResolver {
     @Args('resumeVersionId', { type: () => ID }) resumeVersionId: string,
   ): Promise<boolean> {
     return this.documentsService.deleteResumeVersion(user.id, resumeVersionId);
+  }
+
+  @Query(() => [ResumeDraftModel])
+  async myResumeDrafts(@CurrentUser() user: PrismaUser): Promise<ResumeDraftModel[]> {
+    const drafts = await this.documentsService.listResumeDrafts(user.id);
+    return drafts.map(toResumeDraftModel);
+  }
+
+  @Query(() => ResumeDraftModel)
+  async resumeDraft(
+    @CurrentUser() user: PrismaUser,
+    @Args('id', { type: () => ID }) id: string,
+  ): Promise<ResumeDraftModel> {
+    const draft = await this.documentsService.findResumeDraft(user.id, id);
+    return toResumeDraftModel(draft);
+  }
+
+  @Mutation(() => ResumeDraftModel)
+  async createResumeDraft(
+    @CurrentUser() user: PrismaUser,
+    @Args('input') input: CreateResumeDraftInput,
+  ): Promise<ResumeDraftModel> {
+    const draft = await this.documentsService.createResumeDraft(user.id, input);
+    return toResumeDraftModel(draft);
+  }
+
+  @Mutation(() => ResumeDraftModel)
+  async updateResumeDraft(
+    @CurrentUser() user: PrismaUser,
+    @Args('id', { type: () => ID }) id: string,
+    @Args('input') input: UpdateResumeDraftInput,
+  ): Promise<ResumeDraftModel> {
+    const draft = await this.documentsService.updateResumeDraft(user.id, id, input);
+    return toResumeDraftModel(draft);
+  }
+
+  @Mutation(() => Boolean)
+  deleteResumeDraft(
+    @CurrentUser() user: PrismaUser,
+    @Args('id', { type: () => ID }) id: string,
+  ): Promise<boolean> {
+    return this.documentsService.deleteResumeDraft(user.id, id);
   }
 
   @Query(() => [DocumentModel])

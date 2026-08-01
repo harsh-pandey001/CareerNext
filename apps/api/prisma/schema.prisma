@@ -102,6 +102,7 @@ model User {
   applications        Application[]
   documents           Document[]
   resumeVersions      ResumeVersion[]
+  resumeDrafts        ResumeDraft[]
   skills              Skill[]
   notifications       Notification[]
   refreshTokens       RefreshToken[]
@@ -424,4 +425,26 @@ model ResumeVersion {
   @@unique([userId, version])
   @@index([userId])
   @@map("resume_versions")
+}
+
+// A structured resume authored in the external Resume Builder. CareerNext
+// owns the content; the builder is a stateless editor that loads/saves it
+// over GraphQL with the same JWT. Distinct from ResumeVersion, which wraps
+// an uploaded rendered file — a draft may later be exported into one.
+model ResumeDraft {
+  id       String @id @default(uuid())
+  userId   String
+  title    String
+  template String @default("classic")
+  // Serialized ResumeContent JSON (shape in packages/shared-types). Stored
+  // as text so the GraphQL layer needs no extra JSON-scalar dependency.
+  content  String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("resume_drafts")
 }

@@ -2,11 +2,13 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import {
   DocumentType as PrismaDocumentType,
   type Document as PrismaDocument,
+  type ResumeDraft as PrismaResumeDraft,
   type ResumeVersion as PrismaResumeVersion,
   type Prisma,
 } from '@prisma/client';
 import type { DocumentType } from '@careernext/shared-types';
 import { PrismaService } from '../../database/prisma.service';
+import type { CreateResumeDraftInput, UpdateResumeDraftInput } from './dto/resume-draft.input';
 
 /** Everything about a document EXCEPT its bytes — what list/detail queries return. */
 export type DocumentMeta = Omit<PrismaDocument, 'fileData'>;
@@ -230,6 +232,76 @@ export class DocumentsService {
       throw new ForbiddenException('You do not have access to this document.');
     }
     return document;
+  }
+
+  // --- Resume drafts (structured resumes authored in the Resume Builder) ---
+
+  async listResumeDrafts(userId: string): Promise<PrismaResumeDraft[]> {
+    return this.prisma.resumeDraft.findMany({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+
+  async findResumeDraft(userId: string, id: string): Promise<PrismaResumeDraft> {
+    const draft = await this.prisma.resumeDraft.findUnique({ where: { id } });
+    if (!draft) {
+      throw new NotFoundException('Resume draft not found.');
+    }
+    if (draft.userId !== userId) {
+      throw new ForbiddenException('You do not have access to this resume draft.');
+    }
+    return draft;
+  }
+
+  async createResumeDraft(userId: string, input: CreateResumeDraftInput): Promise<PrismaResumeDraft> {
+    this.validateResumeDraftContent(input.content);
+    return this.prisma.resumeDraft.create({
+      data: {
+        userId,
+        title: input.title.trim(),
+        template: input.template ?? 'classic',
+        content: input.content,
+      },
+    });
+  }
+
+  async updateResumeDraft(userId: string, id: string, input: UpdateResumeDraftInput): Promise<PrismaResumeDraft> {
+    await this.findResumeDraft(userId, id);
+    if (input.content !== undefined) {
+      this.validateResumeDraftContent(input.content);
+    }
+    return this.prisma.resumeDraft.update({
+      where: { id },
+      data: {
+        ...(input.title !== undefined ? { title: input.title.trim() } : {}),
+        ...(input.template !== undefined ? { template: input.template } : {}),
+        ...(input.content !== undefined ? { content: input.content } : {}),
+      },
+    });
+  }
+
+  async deleteResumeDraft(userId: string, id: string): Promise<boolean> {
+    await this.findResumeDraft(userId, id);
+    await this.prisma.resumeDraft.delete({ where: { id } });
+    return true;
+  }
+
+  /**
+   * Content is opaque to the API (the builder owns the editing semantics),
+   * but it must at least be a JSON object — otherwise a corrupted save
+   * would brick the draft the next time the builder tries to open it.
+   */
+  private validateResumeDraftContent(content: string): void {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(content);
+    } catch {
+      throw new BadRequestException('Resume content must be valid JSON.');
+    }
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new BadRequestException('Resume content must be a JSON object.');
+    }
   }
 
   private validateFileName(fileName: string): void {

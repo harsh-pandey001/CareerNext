@@ -58,6 +58,12 @@ type AuthPayload {
   user: User!
 }
 
+input CreateResumeDraftInput {
+  content: String!
+  template: String
+  title: String!
+}
+
 input CustomJobInput {
   alreadyApplied: Boolean
   applicationMode: ApplicationMode
@@ -256,8 +262,10 @@ type Mutation {
   addLanguage(input: LanguageInput!): Language!
   addSkill(input: SkillInput!): Skill!
   applyToJob(jobId: ID!): Job!
+  createResumeDraft(input: CreateResumeDraftInput!): ResumeDraft!
   deleteDocument(documentId: ID!): Boolean!
   deleteInterview(interviewId: ID!): Boolean!
+  deleteResumeDraft(id: ID!): Boolean!
   deleteResumeVersion(resumeVersionId: ID!): Boolean!
   forgotPassword(input: ForgotPasswordInput!): Boolean!
   login(input: LoginInput!): AuthPayload!
@@ -284,6 +292,7 @@ type Mutation {
   updateInterview(input: InterviewInput!, interviewId: ID!): Interview!
   updateLanguage(input: LanguageInput!, languageId: ID!): Language!
   updateProfile(input: UpdateProfileInput!): Profile!
+  updateResumeDraft(id: ID!, input: UpdateResumeDraftInput!): ResumeDraft!
   updateSkill(input: SkillInput!, skillId: ID!): Skill!
   uploadDocument(content: String!, fileName: String!, mimeType: String!, type: DocumentType!): Document!
   uploadResume(content: String!, fileName: String!, mimeType: String!): ResumeVersion!
@@ -351,7 +360,9 @@ type Query {
   myInterviews: [Interview!]!
   myNotifications(limit: Int! = 20): [Notification!]!
   myProfile: Profile!
+  myResumeDrafts: [ResumeDraft!]!
   myResumeVersions: [ResumeVersion!]!
+  resumeDraft(id: ID!): ResumeDraft!
   resumeVersion(id: ID!): ResumeVersion!
   unreadNotificationCount: Int!
   upcomingInterviews(limit: Int! = 5): [Interview!]!
@@ -367,6 +378,15 @@ input RegisterInput {
 input ResetPasswordInput {
   newPassword: String!
   token: String!
+}
+
+type ResumeDraft {
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  template: String!
+  title: String!
+  updatedAt: DateTime!
 }
 
 type ResumeVersion {
@@ -413,6 +433,12 @@ input UpdateProfileInput {
   linkedinUrl: String
   location: String
   portfolioUrl: String
+}
+
+input UpdateResumeDraftInput {
+  content: String
+  template: String
+  title: String
 }
 
 type User {
