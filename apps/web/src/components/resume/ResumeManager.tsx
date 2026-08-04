@@ -13,6 +13,7 @@ import { useResumeVersions } from '@/hooks/resume/useResumeVersions';
 import { useResumeActions } from '@/hooks/resume/useResumeActions';
 import { useResumePreview } from '@/hooks/resume/useResumePreview';
 import { useResumeDrafts } from '@/hooks/resume/useResumeDrafts';
+import { useUIStore } from '@/store/ui.store';
 import { getApolloErrorMessage } from '@/utils';
 import { ActiveResumeCard } from './ActiveResumeCard';
 import { ResumeUploadZone } from './ResumeUploadZone';
@@ -25,6 +26,7 @@ export function ResumeManager() {
   const { uploadResume, setActiveResume, deleteResumeVersion, pendingId, uploading } = useResumeActions();
   const drafts = useResumeDrafts();
   const preview = useResumePreview();
+  const themeMode = useUIStore((state) => state.themeMode);
 
   const hasVersions = versions.length > 0;
   const previewFile = preview.version
@@ -52,7 +54,7 @@ export function ResumeManager() {
           variant="contained"
           size="medium"
           startIcon={<AutoAwesomeRoundedIcon />}
-          href={resumeBuilderUrl()}
+          href={resumeBuilderUrl({ theme: themeMode })}
           sx={{ borderRadius: '10px', flexShrink: 0, textTransform: 'none', fontWeight: 700 }}
         >
           Create with Resume Builder

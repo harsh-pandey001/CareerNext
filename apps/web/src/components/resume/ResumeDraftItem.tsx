@@ -15,6 +15,7 @@ import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { formatDate } from '@careernext/utils';
 import { ConfirmDialog } from '@careernext/shared-ui';
 import type { ResumeDraftFieldsFragment } from '@careernext/graphql-types';
+import { useUIStore } from '@/store/ui.store';
 import { resumeBuilderUrl } from './builder-link';
 
 interface ResumeDraftItemProps {
@@ -25,6 +26,7 @@ interface ResumeDraftItemProps {
 
 export function ResumeDraftItem({ draft, pending, onDelete }: ResumeDraftItemProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const themeMode = useUIStore((state) => state.themeMode);
 
   return (
     <Paper
@@ -79,7 +81,7 @@ export function ResumeDraftItem({ draft, pending, onDelete }: ResumeDraftItemPro
             <IconButton
               size="small"
               component="a"
-              href={resumeBuilderUrl(draft.id)}
+              href={resumeBuilderUrl({ draftId: draft.id, theme: themeMode })}
               aria-label="Edit in Resume Builder"
             >
               <EditRoundedIcon fontSize="small" />
