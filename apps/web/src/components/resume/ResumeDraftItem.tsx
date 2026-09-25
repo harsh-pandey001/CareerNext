@@ -82,6 +82,8 @@ export function ResumeDraftItem({ draft, pending, onDelete }: ResumeDraftItemPro
               size="small"
               component="a"
               href={resumeBuilderUrl({ draftId: draft.id, theme: themeMode })}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="Edit in Resume Builder"
             >
               <EditRoundedIcon fontSize="small" />

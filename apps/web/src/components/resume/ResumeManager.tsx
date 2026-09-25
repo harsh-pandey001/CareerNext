@@ -7,6 +7,7 @@ import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded';
 import { FilePreviewDialog } from '@careernext/shared-ui';
 import { formatDate, formatFileSize } from '@careernext/utils';
 import { useResumeVersions } from '@/hooks/resume/useResumeVersions';
@@ -50,15 +51,30 @@ export function ResumeManager() {
             Upload, preview, and manage every version of your resume.
           </Typography>
         </Stack>
-        <Button
-          variant="contained"
-          size="medium"
-          startIcon={<AutoAwesomeRoundedIcon />}
-          href={resumeBuilderUrl({ theme: themeMode })}
-          sx={{ borderRadius: '10px', flexShrink: 0, textTransform: 'none', fontWeight: 700 }}
-        >
-          Create with Resume Builder
-        </Button>
+        <Stack direction="row" spacing={1.5} flexShrink={0}>
+          <Button
+            variant="outlined"
+            size="medium"
+            startIcon={<UploadFileRoundedIcon />}
+            href={resumeBuilderUrl({ theme: themeMode, mode: 'import' })}
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700 }}
+          >
+            Import Resume File
+          </Button>
+          <Button
+            variant="contained"
+            size="medium"
+            startIcon={<AutoAwesomeRoundedIcon />}
+            href={resumeBuilderUrl({ theme: themeMode })}
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700 }}
+          >
+            Create with Resume Builder
+          </Button>
+        </Stack>
       </Stack>
 
       {error && (
