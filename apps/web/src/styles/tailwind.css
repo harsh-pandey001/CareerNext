@@ -1,0 +1,27 @@
+/*
+ * Tailwind for shadcn-style components ONLY (src/components/ui/*). Preflight
+ * (Tailwind's base/reset layer) is deliberately excluded — this app's global
+ * element styles are owned by MUI's CssBaseline, and Tailwind's reset would
+ * fight it (margins, box-sizing, typography defaults) across the whole app,
+ * not just the new components. Only theme tokens + utility classes are
+ * imported, so Tailwind classNames work inside components/ui without
+ * touching anything outside them.
+ */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* Explicit scope: this is a pnpm monorepo, so Tailwind v4's automatic content
+   detection could otherwise walk up past apps/web looking for the repo root. */
+@source '../';
+
+/* CareerNext's dark mode toggles `data-theme="dark"` on <html> (see
+   store/ui.store.ts), not Tailwind's default `.dark` class convention —
+   without this, every `dark:` utility here would silently follow the OS
+   color scheme instead of the app's own theme toggle. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@layer theme {
+  :root {
+    --radius: 0.5rem;
+  }
+}

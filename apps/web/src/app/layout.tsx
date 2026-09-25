@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import { AppProviders } from '@/providers/app-providers';
 import '@/styles/globals.css';
+import '@/styles/tailwind.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 
