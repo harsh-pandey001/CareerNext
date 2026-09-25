@@ -8,6 +8,7 @@ import { alpha } from '@mui/material/styles';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
 import type SvgIcon from '@mui/material/SvgIcon';
+import { AnimatedNumber } from '@/components/motion';
 
 interface StatCardProps {
   icon: typeof SvgIcon;
@@ -73,7 +74,7 @@ export function StatCard({ icon: Icon, label, value, trend }: StatCardProps) {
       </Stack>
       <Box>
         <Typography variant="h4" fontWeight={700} letterSpacing="-0.02em">
-          {value}
+          <AnimatedNumber value={value} />
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {label}

@@ -1,16 +1,18 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import WorkOutlineRoundedIcon from '@mui/icons-material/WorkOutlineRounded';
+import SearchOffRoundedIcon from '@mui/icons-material/SearchOffRounded';
 import { useCustomJobs } from '@/hooks/jobs/useCustomJobs';
 import { useCustomJobDetail } from '@/hooks/jobs/useCustomJobDetail';
 import { useJobActions } from '@/hooks/jobs/useJobActions';
 import { SearchFilterBar } from '@/components/common/SearchFilterBar';
+import { EmptyState } from '@/components/common/EmptyState';
+import { MotionButton, StaggerList } from '@/components/motion';
 import { JobCard } from './JobCard';
 import { CustomJobFormDialog } from './CustomJobFormDialog';
 import { CustomJobDetailDialog } from './CustomJobDetailDialog';
@@ -107,14 +109,14 @@ export function CustomJobsSection() {
             Applied somewhere outside CareerNext? Log it here to track it alongside everything else.
           </Typography>
         </Stack>
-        <Button
+        <MotionButton
           onClick={openAddForm}
           variant="outlined"
           startIcon={<AddRoundedIcon />}
           sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '10px', flexShrink: 0 }}
         >
           Add Custom Job
-        </Button>
+        </MotionButton>
       </Stack>
 
       {listError && (
@@ -137,19 +139,29 @@ export function CustomJobsSection() {
         />
       )}
 
+      {customJobs.length === 0 && (
+        <EmptyState
+          icon={WorkOutlineRoundedIcon}
+          title="No jobs added yet"
+          description="Applied somewhere outside CareerNext? Log it here to keep every application in one place."
+          action={{ label: 'Add Custom Job', onClick: openAddForm, icon: <AddRoundedIcon /> }}
+        />
+      )}
+
       {customJobs.length > 0 && filteredJobs.length === 0 && (
-        <Stack spacing={0.5} alignItems="center" sx={{ py: 6 }}>
-          <Typography variant="body1" fontWeight={600}>
-            No jobs match your filters
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Try a different search or clear a filter.
-          </Typography>
-        </Stack>
+        <EmptyState
+          icon={SearchOffRoundedIcon}
+          title="No jobs match your filters"
+          description="Try a different search or clear a filter."
+        />
       )}
 
       {filteredJobs.length > 0 && (
-        <Box
+        <StaggerList
+          // Re-run the entrance when the visible set changes (a new filter or
+          // search settling). `filters.query` is debounced upstream, so this
+          // doesn't re-trigger on every keystroke.
+          key={JSON.stringify(filters)}
           sx={{
             display: 'grid',
             // `minmax(0, 1fr)` (not a bare `1fr`, which is `minmax(auto, 1fr)`):
@@ -173,7 +185,7 @@ export function CustomJobsSection() {
               onClick={openDetail}
             />
           ))}
-        </Box>
+        </StaggerList>
       )}
 
       <CustomJobDetailDialog

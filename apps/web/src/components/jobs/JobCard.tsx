@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
@@ -16,6 +18,7 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import { formatRelativeDate } from '@careernext/utils';
 import type { JobFieldsFragment } from '@careernext/graphql-types';
+import { MotionButton } from '@/components/motion';
 import {
   JOB_TYPE_LABELS,
   WORK_MODE_LABELS,
@@ -41,8 +44,19 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: Jo
     job.applicationStatus === 'APPLIED' ||
     (!!job.applicationStatus && job.applicationStatus !== 'SAVED');
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax);
+  const reduce = useReducedMotion();
+
+  // The save/applied icons "pop" when their state changes — but only after
+  // the user has interacted with THIS card. Without the gate, every card
+  // would pop its icon on initial render/refetch, which is noise, not
+  // feedback.
+  const [interacted, setInteracted] = useState(false);
+  const pop = (active: boolean) =>
+    active && !reduce ? { initial: { scale: 0.4, rotate: -25 }, animate: { scale: 1, rotate: 0 } } : {};
+  const popSpring = { type: 'spring', stiffness: 600, damping: 18 } as const;
 
   const handleApply = () => {
+    setInteracted(true);
     onApply(job.id);
     if (job.externalUrl) {
       window.open(job.externalUrl, '_blank', 'noopener,noreferrer');
@@ -71,12 +85,16 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: Jo
         // the bottom the same way it always did.
         minHeight: 328,
         cursor: onClick ? 'pointer' : undefined,
-        transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+        transition: 'border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
         '&:hover': {
           borderColor: 'primary.main',
+          // A 2px lift alongside the existing shadow — enough to read as
+          // "this is interactive" without the card visibly jumping.
+          transform: 'translateY(-2px)',
           boxShadow: (theme) =>
-            `0 4px 20px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.1)}`,
+            `0 6px 22px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.2 : 0.12)}`,
         },
+        '@media (prefers-reduced-motion: reduce)': { '&:hover': { transform: 'none' } },
       }}
     >
       <Stack direction="row" spacing={1.5} alignItems="flex-start">
@@ -109,6 +127,7 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: Jo
           <Button
             onClick={(event) => {
               event.stopPropagation();
+              setInteracted(true);
               isSaved ? onUnsave?.(job.id) : onSave?.(job.id);
             }}
             disabled={pending || isApplied}
@@ -116,11 +135,19 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: Jo
             size="small"
             sx={{ minWidth: 0, p: 1, color: isSaved ? 'primary.main' : 'text.secondary' }}
           >
-            {isSaved ? (
-              <BookmarkRoundedIcon fontSize="small" />
-            ) : (
-              <BookmarkBorderRoundedIcon fontSize="small" />
-            )}
+            {/* Keyed on state so a toggle remounts the icon and replays the pop. */}
+            <motion.span
+              key={isSaved ? 'saved' : 'unsaved'}
+              {...pop(interacted)}
+              transition={popSpring}
+              style={{ display: 'inline-flex' }}
+            >
+              {isSaved ? (
+                <BookmarkRoundedIcon fontSize="small" />
+              ) : (
+                <BookmarkBorderRoundedIcon fontSize="small" />
+              )}
+            </motion.span>
           </Button>
         )}
       </Stack>
@@ -196,7 +223,7 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: Jo
 
       <Box sx={{ flex: 1 }} />
 
-      <Button
+      <MotionButton
         onClick={(event) => {
           event.stopPropagation();
           handleApply();
@@ -208,10 +235,17 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: Jo
         startIcon={
           pending ? (
             <CircularProgress size={16} color="inherit" />
-          ) : isApplied ? (
-            <CheckCircleRoundedIcon fontSize="small" />
           ) : (
-            <OpenInNewRoundedIcon fontSize="small" />
+            // The checkmark springs in when the card flips to Applied after
+            // the user's own click — the "it worked" moment.
+            <motion.span
+              key={isApplied ? 'applied' : 'apply'}
+              {...pop(interacted && isApplied)}
+              transition={popSpring}
+              style={{ display: 'inline-flex' }}
+            >
+              {isApplied ? <CheckCircleRoundedIcon fontSize="small" /> : <OpenInNewRoundedIcon fontSize="small" />}
+            </motion.span>
           )
         }
         sx={{
@@ -229,7 +263,7 @@ export function JobCard({ job, pending, onSave, onUnsave, onApply, onClick }: Jo
         }}
       >
         {isApplied ? 'Applied' : 'Apply Now'}
-      </Button>
+      </MotionButton>
     </Paper>
   );
 }

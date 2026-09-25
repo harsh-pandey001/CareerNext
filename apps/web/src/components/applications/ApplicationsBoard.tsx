@@ -5,11 +5,14 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import { alpha, type Theme } from '@mui/material/styles';
 import { useApplications } from '@/hooks/applications/useApplications';
 import { useApplicationActions } from '@/hooks/applications/useApplicationActions';
 import { useApplicationTimeline } from '@/hooks/applications/useApplicationTimeline';
 import { SearchFilterBar } from '@/components/common/SearchFilterBar';
+import { EmptyState } from '@/components/common/EmptyState';
+import { StaggerList } from '@/components/motion';
 import {
   APPLICATION_MODE_FILTER_OPTIONS,
   JOB_TYPE_FILTER_OPTIONS,
@@ -78,14 +81,11 @@ export function ApplicationsBoard() {
           <CircularProgress size={28} />
         </Box>
       ) : total === 0 && !error ? (
-        <Stack spacing={0.5} alignItems="center" sx={{ py: 10 }}>
-          <Typography variant="body1" fontWeight={600}>
-            Nothing here yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Save or apply to a job from the Jobs page and it&apos;ll show up here.
-          </Typography>
-        </Stack>
+        <EmptyState
+          icon={AssignmentOutlinedIcon}
+          title="Nothing here yet"
+          description="Save or apply to a job from the Jobs page and it'll show up here."
+        />
       ) : (
         <Box
           sx={{
@@ -125,8 +125,7 @@ export function ApplicationsBoard() {
                 </Typography>
               </Stack>
 
-              <Stack
-                spacing={1.5}
+              <Box
                 sx={{
                   p: 1.5,
                   borderRadius: '16px',
@@ -143,23 +142,25 @@ export function ApplicationsBoard() {
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    sx={{ textAlign: 'center', py: 3 }}
+                    sx={{ textAlign: 'center', py: 3, display: 'block' }}
                   >
                     Nothing here
                   </Typography>
                 ) : (
-                  column.applications.map((application) => (
-                    <ApplicationCard
-                      key={application.id}
-                      application={application}
-                      pending={pendingId === application.id}
-                      onMove={updateStatus}
-                      onRemove={removeApplication}
-                      onViewTimeline={timeline.open}
-                    />
-                  ))
+                  <StaggerList sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }} stagger={0.06}>
+                    {column.applications.map((application) => (
+                      <ApplicationCard
+                        key={application.id}
+                        application={application}
+                        pending={pendingId === application.id}
+                        onMove={updateStatus}
+                        onRemove={removeApplication}
+                        onViewTimeline={timeline.open}
+                      />
+                    ))}
+                  </StaggerList>
                 )}
-              </Stack>
+              </Box>
             </Box>
           ))}
         </Box>

@@ -3,7 +3,6 @@
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { alpha } from '@mui/material/styles';
@@ -17,6 +16,7 @@ import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
 import type SvgIcon from '@mui/material/SvgIcon';
 import { BrandLogo } from '@/components/auth/BrandLogo';
+import { StaggerList } from '@/components/motion';
 import { ROUTES } from '@/constants';
 
 interface NavItem {
@@ -40,9 +40,11 @@ const NAV_ITEMS: NavItem[] = [
 interface AppSidebarProps {
   /** Mobile drawer usage: close the drawer when a destination is picked. */
   onNavigate?: () => void;
+  /** Mobile drawer usage: change to replay the nav-item entrance (e.g. each time the drawer opens). */
+  replayKey?: string | number;
 }
 
-export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
+export function AppSidebar({ onNavigate, replayKey }: AppSidebarProps = {}) {
   const pathname = usePathname();
 
   return (
@@ -66,7 +68,12 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
         <BrandLogo />
       </Box>
 
-      <Stack spacing={0.5}>
+      <StaggerList
+        key={replayKey}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+        stagger={0.045}
+        delayChildren={0.1}
+      >
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -126,7 +133,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
             </Box>
           );
         })}
-      </Stack>
+      </StaggerList>
     </Box>
   );
 }

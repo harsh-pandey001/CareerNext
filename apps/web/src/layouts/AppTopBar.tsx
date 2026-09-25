@@ -11,18 +11,19 @@ import Divider from '@mui/material/Divider';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
-import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { initials } from '@careernext/utils';
 import { useUIStore } from '@/store/ui.store';
 import { useAuthStore } from '@/store/auth.store';
 import { useLogout } from '@/hooks/auth/useLogout';
 import { NotificationsBell } from '@/components/notifications/NotificationsBell';
+import { AnimatedMenuIcon } from '@/components/common/AnimatedMenuIcon';
 
 export function AppTopBar() {
   const themeMode = useUIStore((s) => s.themeMode);
   const toggleTheme = useUIStore((s) => s.toggleTheme);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const user = useAuthStore((s) => s.user);
   const { logout } = useLogout();
 
@@ -53,11 +54,12 @@ export function AppTopBar() {
       {/* Mobile-only: opens the nav drawer (the md+ sidebar is permanent). */}
       <IconButton
         onClick={toggleSidebar}
-        aria-label="Open navigation menu"
+        aria-label={sidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
+        aria-expanded={sidebarOpen}
         size="small"
         sx={{ display: { xs: 'inline-flex', md: 'none' }, mr: 'auto' }}
       >
-        <MenuRoundedIcon fontSize="small" />
+        <AnimatedMenuIcon open={sidebarOpen} />
       </IconButton>
 
       <IconButton onClick={toggleTheme} aria-label="Toggle color mode" size="small">
