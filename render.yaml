@@ -1,0 +1,68 @@
+# CareerNext — Render blueprint for the NestJS GraphQL API.
+#
+# Deployed alongside: web on Vercel, Postgres on Neon, documents on
+# Cloudflare R2. The browser never calls this service directly — Vercel
+# rewrites /graphql to it (see apps/web/next.config.mjs), so the refresh
+# cookie stays same-origin.
+#
+# NOTE: rootDir is the repo root, NOT apps/api. The API depends on four
+# workspace packages (@careernext/shared-types, utils, eslint-config,
+# typescript-config); building from apps/api alone cannot resolve them.
+services:
+  - type: web
+    name: careernext-api
+    runtime: node
+    plan: free
+    region: singapore # keep in the same region as the Neon project
+    branch: Dev
+    rootDir: .
+    # `--filter @careernext/api...` (trailing dots) builds the API *and* its
+    # workspace dependencies, in topological order. `prisma generate` runs
+    # via the api package's own postinstall hook.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @careernext/api... build
+    startCommand: node apps/api/dist/main.js
+    envVars:
+      # Drives `secure: true` on the refresh cookie and makes missing JWT
+      # secrets a hard boot failure. Must be "production", not "staging".
+      - key: NODE_ENV
+        value: production
+      - key: GRAPHQL_PLAYGROUND
+        value: 'false'
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: RESET_TOKEN_TTL_MIN
+        value: '30'
+      # Free plan builds get 512 MB; the Nest + Prisma build can OOM without
+      # a ceiling that leaves headroom for the process itself.
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=460
+      # --- set these in the Render dashboard (never commit them) ---
+      - key: DATABASE_URL # Neon POOLED connection string (-pooler host)
+        sync: false
+      - key: DIRECT_URL # Neon DIRECT connection string (migrations)
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: WEB_ORIGIN # https://<app>.vercel.app — CORS allow-list
+        sync: false
+      # --- Cloudflare R2 (documents) ---
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      #
+      # COOKIE_DOMAIN is deliberately NOT set. Leaving it undefined scopes
+      # the refresh cookie to the request host (the Vercel domain, since
+      # Vercel proxies /graphql). Setting it to the Render host would stop
+      # the browser from ever sending the cookie back.
+      #
+      # PORT is injected by Render and read by apps/api/src/config
+      # (`process.env.PORT ?? 4000`) — do not hardcode it.
