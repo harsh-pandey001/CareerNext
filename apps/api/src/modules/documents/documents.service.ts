@@ -8,17 +8,17 @@ import {
 } from '@prisma/client';
 import type { DocumentType } from '@careernext/shared-types';
 import { PrismaService } from '../../database/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import type { CreateResumeDraftInput, UpdateResumeDraftInput } from './dto/resume-draft.input';
 
-/** Everything about a document EXCEPT its bytes — what list/detail queries return. */
-export type DocumentMeta = Omit<PrismaDocument, 'fileData'>;
+/** Everything about a document EXCEPT its storage key — what list/detail queries return. */
+export type DocumentMeta = Omit<PrismaDocument, 'fileKey'>;
 
 export type ResumeVersionWithDocument = PrismaResumeVersion & { document: DocumentMeta };
 
-// `fileData` is deliberately absent: a user's document list would otherwise
-// drag every stored blob (megabytes each) out of Postgres just to render
-// file names. Bytes are fetched one document at a time via getFileData,
-// only when a query actually selects `fileUrl`.
+// `fileKey` is deliberately absent: it is an internal storage address, and
+// listing documents should never leak one. It is read on its own, for a
+// single document at a time, when a query actually selects `fileUrl`.
 const DOCUMENT_META_SELECT = {
   id: true,
   userId: true,
@@ -47,7 +47,10 @@ const ACCEPTED_VAULT_MIME_TYPES = new Set([
 
 @Injectable()
 export class DocumentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
 
   async listResumeVersions(userId: string): Promise<ResumeVersionWithDocument[]> {
     return this.prisma.resumeVersion.findMany({
@@ -83,33 +86,46 @@ export class DocumentsService {
     const buffer = decodeUploadContent(base64Content);
     validateFileSignature(buffer, mimeType);
 
-    return this.prisma.$transaction(async (tx) => {
-      await tx.resumeVersion.updateMany({ where: { userId, isActive: true }, data: { isActive: false } });
+    // The object is written before the transaction opens, never inside it:
+    // an S3 PUT cannot be rolled back, and holding a Postgres transaction
+    // open across a network upload would pin a connection from a small
+    // pooled budget for the length of the transfer. If the transaction then
+    // fails, the now-orphaned object is swept up in the catch below.
+    const fileKey = this.storage.buildKey(userId, fileName);
+    await this.storage.putObject(fileKey, buffer, mimeType);
 
-      const lastVersion = await tx.resumeVersion.findFirst({
-        where: { userId },
-        orderBy: { version: 'desc' },
-        select: { version: true },
-      });
-      const nextVersion = (lastVersion?.version ?? 0) + 1;
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        await tx.resumeVersion.updateMany({ where: { userId, isActive: true }, data: { isActive: false } });
 
-      const document = await tx.document.create({
-        data: {
-          userId,
-          type: PrismaDocumentType.RESUME,
-          fileName,
-          fileData: buffer,
-          fileSize: buffer.length,
-          mimeType,
-        },
-        select: { id: true },
-      });
+        const lastVersion = await tx.resumeVersion.findFirst({
+          where: { userId },
+          orderBy: { version: 'desc' },
+          select: { version: true },
+        });
+        const nextVersion = (lastVersion?.version ?? 0) + 1;
 
-      return tx.resumeVersion.create({
-        data: { userId, documentId: document.id, version: nextVersion, isActive: true },
-        include: { document: { select: DOCUMENT_META_SELECT } },
+        const document = await tx.document.create({
+          data: {
+            userId,
+            type: PrismaDocumentType.RESUME,
+            fileName,
+            fileKey,
+            fileSize: buffer.length,
+            mimeType,
+          },
+          select: { id: true },
+        });
+
+        return tx.resumeVersion.create({
+          data: { userId, documentId: document.id, version: nextVersion, isActive: true },
+          include: { document: { select: DOCUMENT_META_SELECT } },
+        });
       });
-    });
+    } catch (error) {
+      await this.storage.deleteObjectQuietly(fileKey);
+      throw error;
+    }
   }
 
   async setActiveResume(userId: string, resumeVersionId: string): Promise<ResumeVersionWithDocument> {
@@ -188,25 +204,46 @@ export class DocumentsService {
     const buffer = decodeUploadContent(base64Content);
     validateFileSignature(buffer, mimeType);
 
-    return this.prisma.document.create({
-      data: { userId, type: prismaType, fileName, fileData: buffer, fileSize: buffer.length, mimeType },
-      select: DOCUMENT_META_SELECT,
-    });
+    const fileKey = this.storage.buildKey(userId, fileName);
+    await this.storage.putObject(fileKey, buffer, mimeType);
+
+    try {
+      return await this.prisma.document.create({
+        data: { userId, type: prismaType, fileName, fileKey, fileSize: buffer.length, mimeType },
+        select: DOCUMENT_META_SELECT,
+      });
+    } catch (error) {
+      await this.storage.deleteObjectQuietly(fileKey);
+      throw error;
+    }
   }
 
   async deleteDocument(userId: string, documentId: string): Promise<boolean> {
     const document = await this.findDocument(userId, documentId);
+    // Read the key before the row disappears, then drop the row first: the
+    // user asked to delete the document, and a storage hiccup must not
+    // leave it visible in their list. A stranded object is swept quietly.
+    const stored = await this.prisma.document.findUnique({
+      where: { id: document.id },
+      select: { fileKey: true },
+    });
     await this.prisma.document.delete({ where: { id: document.id } });
+    if (stored) await this.storage.deleteObjectQuietly(stored.fileKey);
     return true;
   }
 
-  /** Ownership is enforced HERE too, not just on the parent query — this is the raw-bytes path. */
-  async getFileData(userId: string, documentId: string): Promise<{ data: Buffer; mimeType: string } | null> {
+  /**
+   * Ownership is enforced HERE too, not just on the parent query — a
+   * presigned URL carries its own authorisation, so minting one for a
+   * document the caller does not own would hand over the file outright.
+   */
+  async getFileDownloadUrl(userId: string, documentId: string): Promise<string | null> {
     const document = await this.prisma.document.findFirst({
       where: { id: documentId, userId },
-      select: { fileData: true, mimeType: true },
+      select: { fileKey: true, fileName: true, mimeType: true },
     });
-    return document ? { data: document.fileData, mimeType: document.mimeType } : null;
+    if (!document) return null;
+    return this.storage.getSignedDownloadUrl(document.fileKey, document.fileName, document.mimeType);
   }
 
   private async ensureOwnership(userId: string, resumeVersionId: string): Promise<PrismaResumeVersion> {

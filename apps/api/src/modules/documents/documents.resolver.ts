@@ -132,10 +132,15 @@ export class DocumentsResolver {
     return this.documentsService.deleteDocument(user.id, documentId);
   }
 
+  /**
+   * Resolved lazily, so listing documents never mints URLs for files the
+   * client is not about to open. Returns a short-lived presigned R2 URL
+   * (previously a base64 data: URI built from bytes held in Postgres) —
+   * the field's type and name are unchanged, so clients need no update.
+   */
   @ResolveField(() => String)
   async fileUrl(@CurrentUser() user: PrismaUser, @Parent() document: DocumentModel): Promise<string> {
-    const file = await this.documentsService.getFileData(user.id, document.id);
-    if (!file) return '';
-    return `data:${file.mimeType};base64,${file.data.toString('base64')}`;
+    const url = await this.documentsService.getFileDownloadUrl(user.id, document.id);
+    return url ?? '';
   }
 }

@@ -391,11 +391,13 @@ model Document {
   userId   String
   type     DocumentType
   fileName String
-  // Raw file bytes, stored directly in Postgres — V3 brings AWS S3 (see
-  // CLAUDE.md's roadmap); this column becomes a `fileUrl` pointing at S3
-  // then, without changing the GraphQL contract (DocumentModel.fileUrl is
-  // already a lazily-resolved field, computed as a data: URL for now).
-  fileData Bytes
+  // Object-storage key (Cloudflare R2), e.g.
+  // "documents/<userId>/<uuid>.pdf". Replaced the former `fileData Bytes`
+  // column: the managed Postgres free tier is 0.5 GB, and serving blobs as
+  // base64 data: URIs inflated every read by a third. The GraphQL contract
+  // is unchanged — DocumentModel.fileUrl is still a lazily-resolved field,
+  // now computed as a short-lived presigned URL instead of a data: URL.
+  fileKey  String
   fileSize Int
   mimeType String
 

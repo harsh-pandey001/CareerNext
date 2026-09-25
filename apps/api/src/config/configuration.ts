@@ -19,6 +19,14 @@ export interface AppConfig {
     cookieDomain?: string;
     resetTokenTtlMin: number;
   };
+  storage: {
+    accountId?: string;
+    accessKeyId?: string;
+    secretAccessKey?: string;
+    bucket?: string;
+    /** Lifetime of the presigned download URLs handed to the browser. */
+    signedUrlTtlSec: number;
+  };
 }
 
 const env = (): string => process.env.NODE_ENV ?? 'development';
@@ -51,5 +59,16 @@ export default (): AppConfig => ({
   auth: {
     cookieDomain: process.env.COOKIE_DOMAIN,
     resetTokenTtlMin: parseInt(process.env.RESET_TOKEN_TTL_MIN ?? '30', 10),
+  },
+  // Cloudflare R2 (S3-compatible). Deliberately NOT validated at boot like
+  // the JWT secrets: the API is deployed before the bucket exists, and an
+  // instance with no document traffic is perfectly healthy without it.
+  // StorageService fails loudly at call time instead — see assertConfigured.
+  storage: {
+    accountId: process.env.R2_ACCOUNT_ID,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    bucket: process.env.R2_BUCKET,
+    signedUrlTtlSec: parseInt(process.env.R2_SIGNED_URL_TTL_SEC ?? '300', 10),
   },
 });
